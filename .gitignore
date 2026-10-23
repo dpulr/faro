@@ -1,0 +1,17 @@
+# SwiftPM y compilación
+.build/
+.swiftpm/
+build/
+DerivedData/
+
+# Xcode
+xcuserdata/
+*.xcuserstate
+
+# macOS y editores
+.DS_Store
+.vscode/
+.idea/
+
+# Archivos de prueba locales
+*.log
