@@ -2,6 +2,14 @@
 
 Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen [SemVer](https://semver.org/lang/es/).
 
+## [1.1.0] — 2026-10-23
+
+### Cambios
+- **Logo nuevo:** un faro con haces de luz ámbar y olas. En la barra de menú va dentro de un círculo y de una sola tinta (con los haces encendidos en modo despierto); en la ventana de escritorio aparece solo el emblema junto a "faro" en minúscula. El logo se publica también como [SVG](docs/images/logo.svg) y nuevo ícono de la app.
+- **Barra superior del menú:** el logo abre la ventana de escritorio; las flechas de expandir y el apagado pasan a ser íconos discretos, sin botón; la batería se ve más grande y clara.
+- **Cerrar con `⌘Q`** muestra un aviso: cerrar faro, minimizar solo la vista de escritorio (faro sigue en la barra de menú) o cancelar. El botón de apagar del menú, el reinicio y el cierre de sesión no preguntan.
+- Nuevo generador del logo (`scripts/make-logo.py`) que produce el SVG y el código Swift desde una sola fuente.
+
 ## [1.0.0] — 2026-10-23
 
 Primera versión pública, con el nombre **faro**.

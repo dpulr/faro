@@ -25,7 +25,7 @@ Los nombres pertenecen a sus respectivos dueños. faro no tiene relación con el
 ## Tecnologías
 
 - **Swift**, **SwiftUI**, **AppKit**, **EventKit**, **Charts**, **CryptoKit**, **ImageIO** y **IOKit**, de Apple.
-- **Símbolos SF** de Apple para los íconos de las funciones. El símbolo del faro, y los signos de más, equis, flecha y palomita de la interfaz, están dibujados a mano para este proyecto.
+- **Símbolos SF** de Apple para los íconos de las funciones. El logo del faro (`docs/images/logo.svg`), y los signos de más, equis, flecha y palomita de la interfaz, están dibujados a mano para este proyecto.
 - El código de conducta se inspira en el [Contributor Covenant](https://www.contributor-covenant.org) 2.1 (CC BY 4.0).
 
 ## Dependencias

@@ -58,6 +58,7 @@ Para agregar una fuente: implementa `ImageSource`, agrega un caso a `SourceKind`
 ## Interfaz
 
 - **Tema y controles:** `UI/Theme.swift` (colores, tarjetas, estilos de botón) y `UI/Controls.swift` (desplegable, segmentos, interruptor, marcas dibujadas a mano).
+- **Logo:** la geometría vive en `scripts/make-logo.py`, que escribe el SVG (`docs/images/logo.svg`) y `UI/FaroLogoData.swift`; `UI/FaroLogo.swift` lee esos trazos y los dibuja con `Canvas`, a color o de una sola tinta (la barra de menú, donde un trazo extra engrosa los detalles finos).
 - **Color de resalte dinámico:** `Theme.accent` lee de `Appearance`. `.tint` **no** cambia `Color.accentColor` en macOS, así que las ventanas raíz se reconstruyen con `.id(appearance.revision)` cuando el color cambia.
 - **Cristal líquido:** `UI/Glass.swift` usa `glassEffect` en macOS 26 y un material translúcido antes.
 - **`Menu` vs. `Dropdown`:** el `Menu` del sistema descarta las formas de su etiqueta, por eso las páginas usan `Dropdown` (un *popover* propio). Dentro del panel del menú de la barra se mantiene `Menu`, porque un *popover* le quitaría el foco y lo cerraría.
@@ -83,6 +84,10 @@ En ambos, mantener `Esc` 3 segundos y la cuenta regresiva liberan el teclado.
 ## Seguridad de la limpieza
 
 `Safety.allows` solo permite borrar **dentro de las carpetas del catálogo** (`CleanupCatalog`) o un archivo suelto que el usuario eligió. Se valida la ruta estandarizada, así que `..` no sirve para salirse. Por defecto todo va a la Papelera.
+
+## Salir de la app
+
+`applicationShouldTerminate` pregunta antes de cerrar (cerrar, minimizar la vista de escritorio o cancelar). Salir por el botón de apagar, un reinicio o el cierre de sesión (`willPowerOffNotification`) activa `forceQuit` y no pregunta, para no bloquear el apagado del Mac.
 
 ## Firma y permisos
 

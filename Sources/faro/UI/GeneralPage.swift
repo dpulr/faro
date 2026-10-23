@@ -77,7 +77,7 @@ struct GeneralPage: View {
         return Card {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
-                    LighthouseMark.stroked(lit: true, height: 18)
+                    FaroLogo(style: .color, ring: true).frame(width: 26, height: 26)
                     Text("faro \(version)").font(.callout.weight(.semibold))
                 }
                 Text("Software libre: puedes usarlo, estudiarlo, modificarlo y compartirlo bajo los términos de la licencia GNU Affero General Public License, versión 3 o posterior. Se ofrece sin ninguna garantía.")

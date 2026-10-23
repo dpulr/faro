@@ -103,14 +103,12 @@ struct MainWindow: View {
 
     private var wordmark: some View {
         HStack(spacing: 10) {
-            LighthouseMark.stroked(lit: true, height: 17, color: .white)
-                .frame(width: 30, height: 30)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Theme.accent))
-            Text("faro").font(.system(size: 20, weight: .semibold))
+            FaroLogo(style: .color, ring: false).frame(width: 40, height: 40)
+            Text("faro").font(.system(size: 28, weight: .semibold)).tracking(-0.5)
             Spacer()
         }
-        .padding(.horizontal, 6)
+        .padding(.horizontal, 10)
         .padding(.top, 46)
-        .padding(.bottom, 14)
+        .padding(.bottom, 16)
     }
 }

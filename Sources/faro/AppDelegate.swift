@@ -4,9 +4,15 @@
 import AppKit
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    /// `true` cuando salir es una orden explícita (botón de apagar, reinicio, cierre de sesión): no se pregunta.
+    static var forceQuit = false
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
         installMainMenu()
+        // Al apagar o cerrar sesión no hay que mostrar ningún aviso: bloquearía el apagado.
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.willPowerOffNotification, object: nil, queue: .main) { _ in AppDelegate.forceQuit = true }
         let env = ProcessInfo.processInfo.environment
         if let dir = env["FARO_SNAPSHOT"] {
             Task { @MainActor in await Snapshot.run(dir) }
@@ -22,6 +28,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if let dir = env["FARO_DEBUG_SHOT"] {
                 print("ventanas al arrancar: \(NSApp.windows.filter { $0.isVisible }.map(\.title))")
                 await AppController.shared.debugCapture(to: dir)
+            } else if env["FARO_DEBUG_QUIT"] != nil {
+                AppController.shared.openMain()
+                try? await Task.sleep(nanoseconds: 1_500_000_000)
+                print("antes de ⌘Q: ventana visible=\(AppController.shared.mainWindowVisible)")
+                NSApp.terminate(nil)
+                try? await Task.sleep(nanoseconds: 800_000_000)
+                print("tras ⌘Q (elección=\(env["FARO_QUIT_CHOICE"] ?? "-")): la app sigue viva; ventana visible=\(AppController.shared.mainWindowVisible)")
+                exit(0)
             } else if !atLogin {
                 AppController.shared.openMain() // abrir faro desde Aplicaciones muestra su ventana
             }
@@ -32,6 +46,35 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
         Task { @MainActor in AppController.shared.openMain() }
         return true
+    }
+
+    /// ⌘Q pregunta antes de cerrar, como un navegador: se puede solo minimizar la vista de escritorio y dejar faro en la barra de menú.
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if Self.forceQuit { return .terminateNow }
+        let choice = ProcessInfo.processInfo.environment["FARO_QUIT_CHOICE"] ?? askBeforeQuitting()
+        switch choice {
+        case "quit": return .terminateNow
+        case "minimize":
+            Task { @MainActor in AppController.shared.closeMainWindow() }
+            return .terminateCancel
+        default: return .terminateCancel
+        }
+    }
+
+    private func askBeforeQuitting() -> String {
+        let alert = NSAlert()
+        alert.alertStyle = .informational
+        alert.messageText = "¿Seguro que quieres cerrar faro?"
+        alert.informativeText = "También puedes minimizar solo la vista de escritorio: faro sigue en la barra de menú, con los fondos cambiando y el portapapeles guardando."
+        alert.addButton(withTitle: "Minimizar la vista de escritorio")
+        alert.addButton(withTitle: "Cerrar faro")
+        alert.addButton(withTitle: "Cancelar")
+        NSApp.activate(ignoringOtherApps: true)
+        switch alert.runModal() {
+        case .alertFirstButtonReturn: return "minimize"
+        case .alertSecondButtonReturn: return "quit"
+        default: return "cancel"
+        }
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }

@@ -25,30 +25,51 @@ struct MenuView: View {
     // MARK: Barra superior
 
     private var topBar: some View {
-        HStack(spacing: 6) {
-            LighthouseMark.stroked(lit: true, height: 15, color: .white)
-                .frame(width: 26, height: 26)
-                .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Theme.accent))
-            Text("faro").font(.system(size: 16, weight: .semibold)).padding(.leading, 2)
-            Spacer()
-            if let pct = monitor.batteryPercent {
-                Label("\(pct)%", systemImage: monitor.batteryCharging ? "battery.100.bolt" : (pct <= 20 ? "battery.25" : "battery.75"))
-                    .font(.caption.weight(.medium).monospacedDigit())
-                    .foregroundStyle(pct <= 20 && !monitor.batteryCharging ? Theme.critical : Color.secondary)
-                    .padding(.trailing, 2)
+        HStack(spacing: 8) {
+            // El logo abre la ventana de escritorio.
+            Button { AppController.shared.openMain() } label: {
+                HStack(spacing: 8) {
+                    FaroLogo(style: .color, ring: false).frame(width: 30, height: 30)
+                    Text("faro").font(.system(size: 20, weight: .semibold)).tracking(-0.3)
+                }
+                .contentShape(Rectangle())
             }
-            Button { AppController.shared.openMain() } label: { Image(systemName: "macwindow") }
-                .buttonStyle(IconButtonStyle(size: 30)).instantTip("Abrir la ventana de faro", anchor: .bottom)
+            .buttonStyle(.plain)
+            .instantTip("Abrir la ventana de faro", anchor: .bottomLeading)
+            Spacer(minLength: 6)
+            battery
             Button { AppController.shared.showClipboard() } label: { Image(systemName: "doc.on.clipboard") }
                 .buttonStyle(IconButtonStyle(size: 30)).instantTip("Historial del portapapeles (⌃⌥⌘V)", anchor: .bottomTrailing)
             Button { AppController.shared.showShelf() } label: { Image(systemName: "tray.and.arrow.down") }
                 .buttonStyle(IconButtonStyle(size: 30)).instantTip("Bandeja de archivos (⌃⌥⌘B)", anchor: .bottomTrailing)
-            Button { NSApplication.shared.terminate(nil) } label: { Image(systemName: "power") }
-                .buttonStyle(IconButtonStyle(tint: Theme.critical, size: 30))
-                .instantTip("Salir de faro", anchor: .bottomTrailing)
+            // Dos acciones discretas, sin botón: expandir a la ventana y salir.
+            Button { AppController.shared.openMain() } label: {
+                Image(systemName: "arrow.up.left.and.arrow.down.right").font(.system(size: 11, weight: .semibold))
+            }
+            .buttonStyle(QuietIconStyle()).instantTip("Expandir a la ventana", anchor: .bottomTrailing)
+            Button { AppController.shared.quit() } label: {
+                Image(systemName: "power").font(.system(size: 12, weight: .semibold))
+            }
+            .buttonStyle(QuietIconStyle(tint: Theme.critical)).instantTip("Salir de faro", anchor: .bottomTrailing)
         }
-        .padding(.leading, 12).padding(.trailing, 6).padding(.vertical, 6)
+        .padding(.leading, 12).padding(.trailing, 10).padding(.vertical, 6)
         .glassCapsule()
+    }
+
+    /// Batería bien visible: ícono y porcentaje grandes; en rojo si queda poca.
+    @ViewBuilder private var battery: some View {
+        if let pct = monitor.batteryPercent {
+            let low = pct <= 20 && !monitor.batteryCharging
+            HStack(spacing: 5) {
+                Image(systemName: monitor.batteryCharging ? "battery.100.bolt" : (pct <= 20 ? "battery.25" : (pct <= 60 ? "battery.50" : "battery.75")))
+                    .font(.system(size: 17))
+                    .foregroundStyle(low ? Theme.critical : (monitor.batteryCharging ? Theme.accent : Color.primary))
+                Text("\(pct)%").font(.system(size: 14, weight: .semibold).monospacedDigit())
+                    .foregroundStyle(low ? Theme.critical : Color.primary)
+            }
+            .padding(.trailing, 4)
+            .instantTip(monitor.batteryCharging ? "Cargando" : "Batería", anchor: .bottom)
+        }
     }
 
     // MARK: Foto actual

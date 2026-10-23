@@ -67,13 +67,24 @@ final class AppController: NSObject {
         if !cleaning.start() { openMain(.teclado) }
     }
 
+    /// Salir porque el usuario lo pidió expresamente (botón de apagar): no se pregunta.
+    func quit() {
+        AppDelegate.forceQuit = true
+        NSApp.terminate(nil)
+    }
+
+    var mainWindowVisible: Bool { mainWindow?.isVisible ?? false }
+
+    /// Oculta la ventana de escritorio; faro sigue funcionando en la barra de menú.
+    func closeMainWindow() { mainWindow?.orderOut(nil) }
+
     /// Vuelve a abrir faro (a veces macOS solo aplica un permiso nuevo al reiniciar la app).
     func relaunch() {
         let shell = Process()
         shell.executableURL = URL(fileURLWithPath: "/bin/sh")
         shell.arguments = ["-c", "sleep 1; open \"\(Bundle.main.bundlePath)\""]
         try? shell.run()
-        NSApp.terminate(nil)
+        quit()
     }
 
     func showShelf() {

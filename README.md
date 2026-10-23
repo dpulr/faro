@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="docs/images/icon.png" width="128" alt="Ícono de faro: un faro dibujado con líneas blancas sobre fondo verde azulado">
+<img src="docs/images/logo.svg" width="140" alt="Logo de faro: un faro con haces de luz ámbar y olas, dentro de un círculo azul">
 
 # faro
 
@@ -49,7 +49,7 @@ Principios con los que está hecho:
 - **Minimalista y en lenguaje llano.** Pocas cosas en pantalla y textos que cualquiera entiende, en español.
 - **Sin pagos ni claves de API.** Las fuentes de fotos, el clima y la medición de internet funcionan sin registrarse en nada.
 - **Respeta tu disco.** Solo guarda la foto actual de cada monitor; todo lo demás se descarga y se borra.
-- **Diseño propio.** Cristal líquido en macOS 26, un símbolo de faro dibujado a mano y controles propios en lugar de los genéricos del sistema.
+- **Diseño propio.** Cristal líquido en macOS 26, un logo de faro dibujado a mano (disponible en [SVG](docs/images/logo.svg)) y controles propios en lugar de los genéricos del sistema.
 
 ## Funciones
 
@@ -143,7 +143,7 @@ Sin notch, el panel aparece como una cápsula arriba al centro.
 ### Barra de menú y apariencia
 
 - **Datos en vivo en la barra:** procesador, memoria, espacio libre, red, batería y velocidad de internet, a tu elección y con vista previa.
-- **El faro se enciende:** el ícono de la barra muestra rayos de luz cuando el Mac está en modo despierto.
+- **El faro se enciende:** el ícono de la barra, un faro dentro de un círculo, muestra los haces de luz cuando el Mac está en modo despierto.
 - **Cristal líquido** en macOS 26 (con un material translúcido equivalente en versiones anteriores).
 - **Tus colores:** color de resalte (siete listos y uno libre), tinte del cristal del menú y color de fondo de la ventana.
 
@@ -169,7 +169,9 @@ El script compila en modo *release*, firma la app con la identidad de **Apple De
 
 Para que arranque con tu sesión, activa **Abrir al iniciar sesión** en la página *General*.
 
-> **Primer arranque:** faro se abre con su ventana principal. Después vive en la barra de menú: el ícono del faro abre el menú, y soltar archivos sobre él los manda a la bandeja.
+> **Primer arranque:** faro se abre con su ventana principal. Después vive en la barra de menú: el ícono del faro abre el menú (pulsar el logo dentro del menú expande la ventana), y soltar archivos sobre él los manda a la bandeja.
+>
+> **Cerrar con `⌘Q`:** faro pregunta antes de cerrarse, y ofrece minimizar solo la vista de escritorio para que siga en la barra de menú.
 
 ## Atajos de teclado
 
@@ -247,6 +249,7 @@ faro trae modos de prueba, activados con variables de entorno, que no cambian na
 
 | Variable | Qué hace |
 |---|---|
+| `python3 scripts/make-logo.py` | Regenera el logo (`docs/images/logo.svg`, `logo-mark.svg`) y el código Swift que lo dibuja |
 | `FARO_SELFTEST=1 .build/release/faro` | Cambia el fondo 8 veces e imprime la fuente de cada foto y el tamaño de la caché |
 | `FARO_SNAPSHOT=<carpeta>` | Dibuja cada pantalla a PNG sin abrir la app |
 | `open --env FARO_DEBUG_SHOT=<carpeta> --stdout <archivo> -n /Applications/faro.app` | Abre menú, bandeja y notch de verdad, ejecuta pruebas y captura las ventanas |

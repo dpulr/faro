@@ -229,6 +229,31 @@ private struct IconBody: View {
     }
 }
 
+/// Ícono suelto, sin fondo: se aclara al pasar el cursor.
+struct QuietIconStyle: ButtonStyle {
+    var tint: Color?
+
+    func makeBody(configuration: ButtonStyleConfiguration) -> some View {
+        QuietBody(configuration: configuration, tint: tint)
+    }
+}
+
+private struct QuietBody: View {
+    let configuration: ButtonStyleConfiguration
+    let tint: Color?
+    @State private var hovering = false
+
+    var body: some View {
+        configuration.label
+            .foregroundStyle(tint ?? Color.secondary)
+            .opacity(configuration.isPressed ? 0.5 : (hovering ? 1 : 0.75))
+            .frame(width: 22, height: 30)
+            .contentShape(Rectangle())
+            .animation(.easeOut(duration: 0.12), value: hovering)
+            .onHover { hovering = $0 }
+    }
+}
+
 /// Ayuda que aparece al instante al pasar el cursor (la nativa tarda cerca de un segundo).
 extension View {
     func instantTip(_ text: String, anchor: Alignment = .top) -> some View {

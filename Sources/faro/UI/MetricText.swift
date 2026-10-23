@@ -31,7 +31,7 @@ struct MenuBarLabel: View {
     var body: some View {
         HStack(spacing: 8) {
             if engine.state.menuBarShowIcon || metrics.isEmpty {
-                LighthouseMark.stroked(lit: awake.active, height: 16)
+                FaroLogo(style: .template, ring: true, lit: awake.active).frame(width: 18, height: 18)
             }
             ForEach(metrics) { metric in
                 HStack(spacing: 3) {
