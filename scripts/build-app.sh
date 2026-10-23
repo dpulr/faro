@@ -4,7 +4,14 @@
 # Compila en release y empaqueta faro.app (firmado con tu identidad de Apple Development si existe).
 set -euo pipefail
 cd "$(dirname "$0")/.."
-swift build -c release
+# FARO_RELEASE=1 (lo usa scripts/release.sh): binario universal, firma Developer ID y no instala nada.
+if [ "${FARO_RELEASE:-0}" = "1" ]; then
+    swift build -c release --arch arm64 --arch x86_64
+    BIN="$(swift build -c release --arch arm64 --arch x86_64 --show-bin-path 2>/dev/null)/faro"
+else
+    swift build -c release
+    BIN=".build/release/faro"
+fi
 APP="build/faro.app"
 VERSION="$(cat VERSION)"
 BUILD="$(git rev-list --count HEAD 2>/dev/null || echo 1)"
@@ -12,7 +19,7 @@ rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 cp -R Resources/*.lproj "$APP/Contents/Resources/"
-cp ".build/release/faro" "$APP/Contents/MacOS/faro"
+cp "$BIN" "$APP/Contents/MacOS/faro"
 cat > "$APP/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -36,6 +43,15 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>NSHighResolutionCapable</key><true/>
 </dict></plist>
 PLIST
+if [ "${FARO_RELEASE:-0}" = "1" ]; then
+    # Distribución: Developer ID Application, hardened runtime y marca de tiempo (requisitos de la notarización).
+    IDENTITY="${SIGN_IDENTITY:-$(security find-identity -v -p codesigning | grep "Developer ID Application" | head -1 | awk '{print $2}')}"
+    if [ -z "$IDENTITY" ]; then echo "Falta el certificado 'Developer ID Application' (ver docs/DISTRIBUCION.md)."; exit 1; fi
+    codesign --force --options runtime --timestamp --entitlements scripts/faro.entitlements --sign "$IDENTITY" "$APP"
+    codesign --verify --strict --verbose=2 "$APP"
+    echo "Listo para notarizar: $APP"
+    exit 0
+fi
 # Firma con una identidad estable si existe: así macOS conserva los permisos (Accesibilidad) entre compilaciones.
 IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Development" | head -1 | awk '{print $2}')
 if [ -n "$IDENTITY" ]; then

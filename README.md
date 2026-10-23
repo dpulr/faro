@@ -170,7 +170,7 @@ Sin notch, el panel aparece como una cápsula arriba al centro.
 
 ## Instalación
 
-Por ahora faro se **compila desde el código fuente**; todavía no hay binarios publicados.
+Cuando haya una *Release* publicada, descarga el `.dmg` y arrastra faro a *Aplicaciones* (firmado y notarizado por Apple). Mientras tanto, o si prefieres compilarlo tú, se **compila desde el código fuente**. Para publicar una versión, mira [`docs/DISTRIBUCION.md`](docs/DISTRIBUCION.md).
 
 ```bash
 git clone https://github.com/dpulr/faro.git
