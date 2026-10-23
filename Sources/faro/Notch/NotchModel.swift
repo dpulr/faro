@@ -43,6 +43,8 @@ final class NotchModel: ObservableObject {
     @Published var eyeBreak: Bool { didSet { save("notchEyeBreak", eyeBreak); scheduleBreak() } }
     @Published var eyeBreakMinutes: Int { didSet { save("notchEyeMinutes", eyeBreakMinutes); scheduleBreak() } }
     @Published var city: String { didSet { save("notchCity", city) } }
+    /// Si es cierto, el panel solo se despliega con un clic sobre el notch (no con solo pasar el cursor).
+    @Published var openOnClick: Bool { didSet { save("notchOpenOnClick", openOnClick) } }
     @Published var showVolume: Bool { didSet { save("notchVolume", showVolume) } }
     @Published var showBluetooth: Bool {
         didSet {
@@ -68,6 +70,8 @@ final class NotchModel: ObservableObject {
     @Published var toast: Toast?
     /// Hay un archivo arrastrándose cerca del notch: se muestra la zona para soltarlo.
     @Published var dropActive = false
+    /// Recoge el panel desplegado (lo asigna el controlador).
+    var collapse: (() -> Void)?
     /// Lo llama la zona de soltar con los archivos recibidos.
     var onFilesDropped: (([URL]) -> Void)?
 
@@ -89,6 +93,7 @@ final class NotchModel: ObservableObject {
         showMusic = flag("notchMusic", true)
         showCalendar = flag("notchCalendar", false)
         showWeather = flag("notchWeather", true)
+        openOnClick = flag("notchOpenOnClick", false)
         showVolume = flag("notchVolume", true)
         showBluetooth = flag("notchBluetooth", true)
         eyeBreak = flag("notchEyeBreak", false)

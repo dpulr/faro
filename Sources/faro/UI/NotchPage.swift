@@ -13,7 +13,7 @@ struct NotchPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             PageHeader(title: "Notch",
-                       subtitle: "Un panel que cuelga del notch: lleva el cursor arriba al centro de la pantalla y se despliega.")
+                       subtitle: "Un panel que cuelga del notch y se despliega desde arriba al centro de la pantalla.")
 
             Card {
                 HStack(spacing: 14) {
@@ -33,6 +33,10 @@ struct NotchPage: View {
 
             Card(padding: 4) {
                 VStack(spacing: 0) {
+                    row("Cómo se abre", "Al pasar el cursor por el notch, o solo cuando le das un clic.") {
+                        Segments(selection: $notch.openOnClick, options: [("Al pasar", false), ("Con un clic", true)])
+                    }
+                    Divider().padding(.horizontal, 12)
                     row("Música", "Lo que suena en Música o Spotify, con controles. macOS te pide permiso la primera vez.") {
                         Toggle("", isOn: $notch.showMusic).toggleStyle(MiniSwitchStyle()).labelsHidden()
                     }
@@ -77,7 +81,7 @@ struct NotchPage: View {
             Card {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Cómo se usa").font(.callout.weight(.semibold))
-                    tip("cursorarrow.motionlines", "Lleva el cursor al notch: el panel se despliega y, al alejarlo, se recoge.")
+                    tip("cursorarrow.motionlines", notch.openOnClick ? "Haz clic en el notch: el panel se despliega y, al alejar el cursor, se recoge." : "Lleva el cursor al notch: el panel se despliega y, al alejarlo, se recoge.")
                     tip("waveform", "Mientras suena música o corre un descanso, aparecen detalles a los lados del notch sin desplegarlo.")
                     tip("tray.and.arrow.down", "Arrastra un archivo hacia el notch y suéltalo en la zona que aparece: se guarda en la bandeja.")
                     tip("eye", "En el panel, el botón «Descanso» empieza la pausa de 20 segundos cuando tú quieras.")

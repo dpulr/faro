@@ -144,6 +144,8 @@ Un panel negro que cuelga del notch: lleva el cursor arriba al centro de la pant
 - **Volumen:** un control del volumen de tu Mac dentro del panel.
 - **Bluetooth:** un aviso al conectarse tus audífonos, teclado, ratón o mando.
 - **Soltar archivos:** arrastra un archivo hacia el notch y suéltalo en la zona que aparece; se guarda en la bandeja.
+- **Cómo se abre:** al pasar el cursor o solo con un clic (*Notch → Cómo se abre*).
+- **Accesos rápidos:** dos botones abren el portapapeles y la bandeja.
 - **Poco espacio en disco:** el notch muestra una señal ámbar cuando se acaba el espacio.
 
 <img src="docs/images/notch-soltar.png" width="480" alt="La zona para soltar archivos sobre el notch">

@@ -575,3 +575,11 @@
 "elegir" = "select";
 "pegar" = "paste";
 "cerrar" = "close";
+"ya" = "now";
+"%lld min" = "%lld min";
+"Un panel que cuelga del notch y se despliega desde arriba al centro de la pantalla." = "A panel that hangs from the notch and unfolds from the top center of the screen.";
+"Cómo se abre" = "How it opens";
+"Al pasar el cursor por el notch, o solo cuando le das un clic." = "When you hover over the notch, or only when you click it.";
+"Al pasar" = "On hover";
+"Con un clic" = "On click";
+"Haz clic en el notch: el panel se despliega y, al alejar el cursor, se recoge." = "Click the notch: the panel unfolds and, when you move the cursor away, folds back.";

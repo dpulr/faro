@@ -214,12 +214,12 @@ struct NotchView: View {
 
     private var chips: some View {
         let items = chipItems
-        return Group {
-            if items.isEmpty {
-                Text("Activa módulos en faro → Notch").font(.system(size: 12)).foregroundStyle(.white.opacity(0.5))
-            } else {
-                HStack(spacing: 8) { ForEach(items, id: \.id) { chip($0) } }
-            }
+        return HStack(spacing: 8) {
+            ForEach(items, id: \.id) { chip($0) }
+            control("doc.on.clipboard") { model.collapse?(); AppController.shared.showClipboard() }
+                .help(tr("Portapapeles"))
+            control("tray.and.arrow.down") { model.collapse?(); AppController.shared.showShelf() }
+                .help(tr("Bandeja"))
         }
     }
 
@@ -243,7 +243,7 @@ struct NotchView: View {
         }
         if model.eyeBreak, model.breakRemaining == nil, let next = model.nextBreak {
             let minutes = max(Int((next.timeIntervalSinceNow / 60).rounded(.up)), 0)
-            out.append(Chip(id: "e", symbol: "eye", text: minutes <= 0 ? "Descanso ya" : "Descanso en \(minutes) min",
+            out.append(Chip(id: "e", symbol: "eye", text: minutes <= 0 ? tr("ya") : String(format: tr("%lld min"), minutes),
                             action: { model.startBreakNow() }))
         }
         return out
@@ -252,9 +252,9 @@ struct NotchView: View {
     private func eventLabel(_ e: EventInfo) -> String {
         let now = Date()
         if e.allDay { return e.title }
-        if e.start <= now { return "Ahora: \(e.title)" }
+        if e.start <= now { return String(format: tr("Ahora: %@"), e.title) }
         let minutes = Int(e.start.timeIntervalSince(now) / 60)
-        let when = minutes < 60 ? "en \(max(minutes, 1)) min" : e.start.formatted(date: .omitted, time: .shortened)
+        let when = minutes < 60 ? String(format: tr("en %lld min"), max(minutes, 1)) : e.start.formatted(date: .omitted, time: .shortened)
         return "\(e.title) · \(when)"
     }
 

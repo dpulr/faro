@@ -2,6 +2,17 @@
 
 Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen [SemVer](https://semver.org/lang/es/).
 
+## [1.3.0] — 2026-10-23
+
+### Novedades
+- **Notch: accesos rápidos.** Dos botones redondos junto al clima abren el historial del portapapeles y la bandeja de archivos.
+- **Notch: cómo se abre.** Nuevo ajuste en *Notch → Cómo se abre*: *Al pasar* el cursor (como antes) o *Con un clic*, para quien no quiere que el panel se despliegue solo.
+- El descanso visual en el panel se simplifica a un ojo y los minutos que faltan.
+
+### Arreglos
+- **Soltar archivos sobre el notch** funciona también al arrastrar desde la carpeta del Dock: una ventana casi invisible sobre el notch recibe el arrastre y ya no depende del portapapeles de arrastre.
+- Los textos del descanso y del evento del calendario en el panel ya se traducen al inglés.
+
 ## [1.2.0] — 2026-10-23
 
 ### Novedades
