@@ -39,18 +39,18 @@ final class SystemMonitor: ObservableObject {
         let freeFraction = diskTotal > 0 ? Double(diskFree) / Double(diskTotal) : 1
         let free = ByteCountFormatter.string(fromByteCount: diskFree, countStyle: .file)
         if diskFree < 10_000_000_000 || freeFraction < 0.05 {
-            return Health(title: "Casi sin espacio en disco", detail: "Solo quedan \(free). Conviene liberar espacio.", level: .critical)
+            return Health(title: tr("Casi sin espacio en disco"), detail: String(format: tr("Solo quedan %@. Conviene liberar espacio."), free), level: .critical)
         }
         if memFraction > 0.92 {
-            return Health(title: "Memoria casi llena", detail: "Cerrar apps que no uses ayudaría.", level: .warning)
+            return Health(title: tr("Memoria casi llena"), detail: tr("Cerrar apps que no uses ayudaría."), level: .warning)
         }
         if cpu > 85 {
-            return Health(title: "El procesador está muy ocupado", detail: "Alguna app está trabajando duro.", level: .warning)
+            return Health(title: tr("El procesador está muy ocupado"), detail: tr("Alguna app está trabajando duro."), level: .warning)
         }
         if freeFraction < 0.1 {
-            return Health(title: "Poco espacio en disco", detail: "Te quedan \(free).", level: .warning)
+            return Health(title: tr("Poco espacio en disco"), detail: String(format: tr("Te quedan %@."), free), level: .warning)
         }
-        return Health(title: "Tu Mac va tranquilo", detail: "Todo está en orden.", level: .ok)
+        return Health(title: tr("Tu Mac va tranquilo"), detail: tr("Todo está en orden."), level: .ok)
     }
 
     private var timer: Timer?

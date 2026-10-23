@@ -47,6 +47,9 @@ enum Theme {
         case .wikimedia: return Color(red: 0.84, green: 0.60, blue: 0.24)
         case .bing: return Color(red: 0.34, green: 0.48, blue: 0.82)
         case .folder: return Color(red: 0.55, green: 0.55, blue: 0.58)
+        case .artic: return Color(red: 0.74, green: 0.42, blue: 0.70)
+        case .nasa: return Color(red: 0.87, green: 0.42, blue: 0.38)
+        case .picsum: return Color(red: 0.45, green: 0.66, blue: 0.80)
         }
     }
 }
@@ -68,8 +71,8 @@ struct Card<Content: View>: View {
 struct RingGauge: View {
     var value: Double
     var tint: Color
-    var title: String
-    var detail: String
+    var title: LocalizedStringKey
+    var detail: LocalizedStringKey
     var size: CGFloat = 64
 
     var body: some View {
@@ -98,8 +101,8 @@ struct RingGauge: View {
 struct MiniGauge: View {
     var value: Double
     var tint: Color
-    var title: String
-    var detail: String
+    var title: LocalizedStringKey
+    var detail: LocalizedStringKey
 
     var body: some View {
         HStack(spacing: 8) {
@@ -272,7 +275,7 @@ private struct InstantTip: ViewModifier {
             .onHover { inside in withAnimation(.easeOut(duration: 0.1)) { hovering = inside } }
             .overlay(alignment: anchor) {
                 if hovering {
-                    Text(text)
+                    Text(LocalizedStringKey(text))
                         .font(.caption.weight(.medium))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 9).padding(.vertical, 5)
@@ -295,7 +298,7 @@ struct NoticeBar: View {
         if let text {
             HStack(spacing: 6) {
                 Image(systemName: "checkmark.circle.fill").foregroundStyle(Theme.accent)
-                Text(text).font(.caption.weight(.medium)).foregroundStyle(.white)
+                Text(LocalizedStringKey(text)).font(.caption.weight(.medium)).foregroundStyle(.white)
             }
             .padding(.horizontal, 12).padding(.vertical, 7)
             .background(Capsule().fill(Color.black.opacity(0.78)))
@@ -324,8 +327,8 @@ struct MixBar: View {
 }
 
 struct PageHeader: View {
-    var title: String
-    var subtitle: String
+    var title: LocalizedStringKey
+    var subtitle: LocalizedStringKey
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {

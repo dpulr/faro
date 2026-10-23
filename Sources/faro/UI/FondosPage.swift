@@ -9,9 +9,9 @@ enum Level: Int, CaseIterable, Identifiable {
     var id: Int { rawValue }
     var label: String {
         switch self {
-        case .low: return "Poco"
-        case .normal: return "Normal"
-        case .high: return "Mucho"
+        case .low: return tr("Poco")
+        case .normal: return tr("Normal")
+        case .high: return tr("Mucho")
         }
     }
     static func from(weight: Int) -> Level { weight <= 18 ? .low : (weight <= 45 ? .normal : .high) }
@@ -148,11 +148,11 @@ private struct ChannelCard: View {
         ZStack(alignment: .topTrailing) {
             Button(action: onSelect) {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text(channel.name).font(.callout.weight(.semibold)).lineLimit(1)
+                    Text(tr(channel.name)).font(.callout.weight(.semibold)).lineLimit(1)
                     if channel.isCombo { MemberBar(members: channel.members, height: 6) }
                     else { MixBar(sources: channel.sources, height: 6) }
                     Text(channel.isCombo ? "Mezcla de \(channel.members.count) canales"
-                         : "\(channel.sources.count) \(channel.sources.count == 1 ? "fuente" : "fuentes")")
+                         : String(format: tr(channel.sources.count == 1 ? "%lld fuente" : "%lld fuentes"), channel.sources.count))
                         .font(.caption).foregroundStyle(.secondary)
                 }
                 .padding(14)
@@ -270,7 +270,7 @@ struct ChannelSheet: View {
             }
             Dropdown { AddLabel(text: "Agregar canal") } content: {
                 ForEach(candidates) { c in
-                    DropdownRow(title: c.name) {
+                    DropdownRow(title: tr(c.name)) {
                         withAnimation { channel.wrappedValue.members.append(ChannelMember(channelID: c.id, weight: 30)) }
                     }
                 }

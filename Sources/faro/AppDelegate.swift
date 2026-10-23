@@ -28,6 +28,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             if let dir = env["FARO_DEBUG_SHOT"] {
                 print("ventanas al arrancar: \(NSApp.windows.filter { $0.isVisible }.map(\.title))")
                 await AppController.shared.debugCapture(to: dir)
+            } else if env["FARO_DEBUG_FEATURES"] != nil {
+                await AppController.shared.debugFeatures()
+            } else if env["FARO_DEBUG_SOURCES"] != nil {
+                await AppController.debugSources()
             } else if env["FARO_DEBUG_QUIT"] != nil {
                 AppController.shared.openMain()
                 try? await Task.sleep(nanoseconds: 1_500_000_000)
@@ -64,11 +68,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private func askBeforeQuitting() -> String {
         let alert = NSAlert()
         alert.alertStyle = .informational
-        alert.messageText = "¿Seguro que quieres cerrar faro?"
-        alert.informativeText = "También puedes minimizar solo la vista de escritorio: faro sigue en la barra de menú, con los fondos cambiando y el portapapeles guardando."
-        alert.addButton(withTitle: "Minimizar la vista de escritorio")
-        alert.addButton(withTitle: "Cerrar faro")
-        alert.addButton(withTitle: "Cancelar")
+        alert.messageText = tr("¿Seguro que quieres cerrar faro?")
+        alert.informativeText = tr("También puedes minimizar solo la vista de escritorio: faro sigue en la barra de menú, con los fondos cambiando y el portapapeles guardando.")
+        alert.addButton(withTitle: tr("Minimizar la vista de escritorio"))
+        alert.addButton(withTitle: tr("Cerrar faro"))
+        alert.addButton(withTitle: tr("Cancelar"))
         NSApp.activate(ignoringOtherApps: true)
         switch alert.runModal() {
         case .alertFirstButtonReturn: return "minimize"
@@ -92,28 +96,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         let appItem = NSMenuItem()
         let appMenu = NSMenu()
-        appMenu.addItem(withTitle: "Ocultar faro", action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
+        appMenu.addItem(withTitle: tr("Ocultar faro"), action: #selector(NSApplication.hide(_:)), keyEquivalent: "h")
         appMenu.addItem(.separator())
-        appMenu.addItem(withTitle: "Salir de faro", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        appMenu.addItem(withTitle: tr("Salir de faro"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         appItem.submenu = appMenu
         main.addItem(appItem)
 
         let editItem = NSMenuItem()
-        let edit = NSMenu(title: "Edición")
-        edit.addItem(withTitle: "Deshacer", action: Selector(("undo:")), keyEquivalent: "z")
-        edit.addItem(withTitle: "Rehacer", action: Selector(("redo:")), keyEquivalent: "Z")
+        let edit = NSMenu(title: tr("Edición"))
+        edit.addItem(withTitle: tr("Deshacer"), action: Selector(("undo:")), keyEquivalent: "z")
+        edit.addItem(withTitle: tr("Rehacer"), action: Selector(("redo:")), keyEquivalent: "Z")
         edit.addItem(.separator())
-        edit.addItem(withTitle: "Cortar", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
-        edit.addItem(withTitle: "Copiar", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
-        edit.addItem(withTitle: "Pegar", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
-        edit.addItem(withTitle: "Seleccionar todo", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        edit.addItem(withTitle: tr("Cortar"), action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        edit.addItem(withTitle: tr("Copiar"), action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        edit.addItem(withTitle: tr("Pegar"), action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        edit.addItem(withTitle: tr("Seleccionar todo"), action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
         editItem.submenu = edit
         main.addItem(editItem)
 
         let windowItem = NSMenuItem()
-        let window = NSMenu(title: "Ventana")
-        window.addItem(withTitle: "Cerrar", action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
-        window.addItem(withTitle: "Minimizar", action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
+        let window = NSMenu(title: tr("Ventana"))
+        window.addItem(withTitle: tr("Cerrar"), action: #selector(NSWindow.performClose(_:)), keyEquivalent: "w")
+        window.addItem(withTitle: tr("Minimizar"), action: #selector(NSWindow.performMiniaturize(_:)), keyEquivalent: "m")
         windowItem.submenu = window
         main.addItem(windowItem)
 

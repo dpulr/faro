@@ -79,7 +79,7 @@ struct DropdownRow: View {
     var body: some View {
         Button { action(); dismiss() } label: {
             HStack(spacing: 10) {
-                Text(title).font(.callout)
+                Text(LocalizedStringKey(title)).font(.callout)
                 Spacer(minLength: 18)
                 if selected { CheckMark().stroke(Theme.accent, style: stroke).frame(width: 11, height: 8) }
             }
@@ -101,7 +101,7 @@ struct MenuChip<Content: View>: View {
     var body: some View {
         Dropdown {
             HStack(spacing: 7) {
-                Text(text).font(.callout.weight(.medium)).lineLimit(1)
+                Text(LocalizedStringKey(text)).font(.callout.weight(.medium)).lineLimit(1)
                 ChevronMark().stroke(Color.secondary, style: stroke).frame(width: 8, height: 4.5)
             }
             .padding(.horizontal, 12).padding(.vertical, 6)
@@ -135,7 +135,7 @@ struct Segments<T: Hashable>: View {
         HStack(spacing: 2) {
             ForEach(options.indices, id: \.self) { i in
                 let on = options[i].1 == selection
-                Text(options[i].0)
+                Text(LocalizedStringKey(options[i].0))
                     .font(.caption.weight(.medium))
                     .foregroundStyle(on ? Color.white : Color.secondary)
                     .padding(.horizontal, 11).padding(.vertical, 5)
@@ -197,7 +197,7 @@ struct AddLabel: View {
     var body: some View {
         HStack(spacing: 7) {
             PlusMark().stroke(Theme.accent, style: stroke).frame(width: 10, height: 10)
-            Text(text).font(.callout.weight(.medium))
+            Text(LocalizedStringKey(text)).font(.callout.weight(.medium))
         }
         .foregroundStyle(Theme.accent)
     }
@@ -213,5 +213,36 @@ struct UnderlinedField: View {
             .textFieldStyle(.plain).font(.callout)
             .padding(.vertical, 5)
             .overlay(alignment: .bottom) { Rectangle().fill(Theme.stroke).frame(height: 1) }
+    }
+}
+
+/// Deslizador propio: pista fina, relleno de color y perilla redonda (reemplaza al Slider del sistema).
+struct FaroSlider: View {
+    @Binding var value: Double
+    var tint: Color = Theme.accent
+    var track: Color = Theme.fill
+    var onChange: (Double) -> Void = { _ in }
+
+    var body: some View {
+        GeometryReader { geo in
+            let knob: CGFloat = 16
+            let travel = max(geo.size.width - knob, 1)
+            let x = CGFloat(min(max(value, 0), 1)) * travel
+            ZStack(alignment: .leading) {
+                Capsule().fill(track).frame(height: 6)
+                Capsule().fill(tint).frame(width: x + knob / 2, height: 6)
+                Circle().fill(Color.white).frame(width: knob, height: knob)
+                    .shadow(color: .black.opacity(0.25), radius: 2, y: 1)
+                    .offset(x: x)
+            }
+            .frame(height: geo.size.height)
+            .contentShape(Rectangle())
+            .gesture(DragGesture(minimumDistance: 0).onChanged { drag in
+                let v = Double(min(max((drag.location.x - knob / 2) / travel, 0), 1))
+                value = v
+                onChange(v)
+            })
+        }
+        .frame(height: 22)
     }
 }

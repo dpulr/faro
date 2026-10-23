@@ -46,8 +46,8 @@ struct EnergiaPage: View {
     }
 
     private var status: String {
-        guard awake.active else { return "Elige por cuánto tiempo quieres mantenerlo despierto." }
-        if let until = awake.until { return "Hasta las \(until.formatted(date: .omitted, time: .shortened))." }
-        return "Hasta que lo apagues."
+        guard awake.active else { return tr("Elige por cuánto tiempo quieres mantenerlo despierto.") }
+        if let until = awake.until { return String(format: tr("Hasta las %@."), until.formatted(date: .omitted, time: .shortened)) }
+        return tr("Hasta que lo apagues.")
     }
 }

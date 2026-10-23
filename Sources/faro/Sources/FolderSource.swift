@@ -16,7 +16,7 @@ struct FolderSource: ImageSource {
         guard let walker = FileManager.default.enumerator(
             at: root, includingPropertiesForKeys: nil,
             options: [.skipsHiddenFiles, .skipsPackageDescendants]) else {
-            throw URLError(.fileDoesNotExist, userInfo: [NSLocalizedDescriptionKey: "No existe la carpeta \(query)"])
+            throw URLError(.fileDoesNotExist, userInfo: [NSLocalizedDescriptionKey: String(format: tr("No existe la carpeta %@"), query)])
         }
         var found: [ImageCandidate] = []
         for case let file as URL in walker where extensions.contains(file.pathExtension.lowercased()) {

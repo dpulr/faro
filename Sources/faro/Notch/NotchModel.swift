@@ -13,6 +13,11 @@ struct Track: Equatable {
     var artworkURL: URL?
 }
 
+struct Toast: Equatable {
+    var symbol: String
+    var text: String
+}
+
 struct EventInfo: Equatable {
     var title: String
     var start: Date
@@ -38,6 +43,13 @@ final class NotchModel: ObservableObject {
     @Published var eyeBreak: Bool { didSet { save("notchEyeBreak", eyeBreak); scheduleBreak() } }
     @Published var eyeBreakMinutes: Int { didSet { save("notchEyeMinutes", eyeBreakMinutes); scheduleBreak() } }
     @Published var city: String { didSet { save("notchCity", city) } }
+    @Published var showVolume: Bool { didSet { save("notchVolume", showVolume) } }
+    @Published var showBluetooth: Bool {
+        didSet {
+            save("notchBluetooth", showBluetooth)
+            if showBluetooth { bluetooth.start() } else { bluetooth.stop() }
+        }
+    }
 
     // MARK: Estado
     @Published var expanded = false
@@ -50,13 +62,23 @@ final class NotchModel: ObservableObject {
     @Published var weatherError: String?
     @Published var breakRemaining: Int?
     @Published var nextBreak: Date?
+    /// GB libres mientras el disco esté bajo el límite del aviso; `nil` si todo va bien.
+    @Published var lowDiskGB: Int?
+    /// Aviso breve que cuelga del notch (p. ej. "AirPods conectados").
+    @Published var toast: Toast?
+    /// Hay un archivo arrastrándose cerca del notch: se muestra la zona para soltarlo.
+    @Published var dropActive = false
+    /// Lo llama la zona de soltar con los archivos recibidos.
+    var onFilesDropped: (([URL]) -> Void)?
 
     private var timer: Timer?
+    private var toastTask: Task<Void, Never>?
+    private let bluetooth = BluetoothWatcher()
     private var counter = 0
     private let store = EKEventStore()
     private var lastArtworkKey = ""
 
-    var hasLive: Bool { (showMusic && track?.playing == true) || breakRemaining != nil }
+    var hasLive: Bool { (showMusic && track?.playing == true) || breakRemaining != nil || lowDiskGB != nil }
 
     private func save(_ key: String, _ value: Any) { UserDefaults.standard.set(value, forKey: key) }
 
@@ -67,6 +89,8 @@ final class NotchModel: ObservableObject {
         showMusic = flag("notchMusic", true)
         showCalendar = flag("notchCalendar", false)
         showWeather = flag("notchWeather", true)
+        showVolume = flag("notchVolume", true)
+        showBluetooth = flag("notchBluetooth", true)
         eyeBreak = flag("notchEyeBreak", false)
         eyeBreakMinutes = d.integer(forKey: "notchEyeMinutes") == 0 ? 20 : d.integer(forKey: "notchEyeMinutes")
         let zone = TimeZone.current.identifier.split(separator: "/").last.map(String.init)?
@@ -78,7 +102,7 @@ final class NotchModel: ObservableObject {
     func loadDemo() {
         track = Track(title: "Cavalcade", artist: "Black Midi", source: "Music", playing: true, artworkURL: nil)
         weather = WeatherInfo(temperature: 27, symbol: "cloud.sun.fill", summary: "Parcialmente nublado", city: "Madrid")
-        event = EventInfo(title: "Reunión de equipo", start: Date().addingTimeInterval(25 * 60),
+        event = EventInfo(title: tr("Reunión de equipo"), start: Date().addingTimeInterval(25 * 60),
                           end: Date().addingTimeInterval(85 * 60), allDay: false)
         nextBreak = Date().addingTimeInterval(11 * 60)
     }
@@ -87,6 +111,10 @@ final class NotchModel: ObservableObject {
 
     func start() {
         guard timer == nil else { return }
+        bluetooth.onConnect = { [weak self] name, symbol in
+            Task { @MainActor in self?.showToast(symbol: symbol, text: String(format: tr("%@ conectado"), name)) }
+        }
+        if showBluetooth { bluetooth.start() }
         scheduleBreak()
         refreshCalendar()
         Task { await refreshWeather() }
@@ -103,6 +131,16 @@ final class NotchModel: ObservableObject {
         if counter % 60 == 0 { refreshCalendar() }
         if counter % 1200 == 0 { Task { await refreshWeather() } }
         tickBreak()
+    }
+
+    /// Muestra un aviso colgando del notch unos segundos.
+    func showToast(symbol: String, text: String, seconds: Double = 3.5) {
+        toast = Toast(symbol: symbol, text: text)
+        toastTask?.cancel()
+        toastTask = Task {
+            try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+            if !Task.isCancelled { toast = nil }
+        }
     }
 
     // MARK: Descanso visual (regla 20-20-20)
@@ -237,7 +275,7 @@ final class NotchModel: ObservableObject {
             weather = WeatherInfo(temperature: Int(temp.rounded()), symbol: symbol, summary: text, city: place.name)
             weatherError = nil
         } catch {
-            weatherError = "No encontré «\(city)»"
+            weatherError = String(format: tr("No encontré «%@»"), city)
         }
     }
 

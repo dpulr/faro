@@ -27,9 +27,9 @@ struct InternetPage: View {
             VStack(alignment: .leading, spacing: 18) {
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(speed.last.map { quality($0.downMbps) } ?? "Sin mediciones")
+                        Text(speed.last.map { quality($0.downMbps) } ?? tr("Sin mediciones"))
                             .font(.title3.weight(.semibold))
-                        Text(speed.last.map { "Medido \(Format.relative($0.date))" } ?? "Haz tu primera medición")
+                        Text(speed.last.map { String(format: tr("Medido %@"), Format.relative($0.date)) } ?? tr("Haz tu primera medición"))
                             .font(.callout).foregroundStyle(.secondary)
                     }
                     Spacer()
@@ -54,7 +54,7 @@ struct InternetPage: View {
         }
     }
 
-    private func stat(_ title: String, _ value: String, _ unit: String) -> some View {
+    private func stat(_ title: LocalizedStringKey, _ value: String, _ unit: LocalizedStringKey) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(title).font(.callout).foregroundStyle(.secondary)
             HStack(alignment: .firstTextBaseline, spacing: 4) {
@@ -121,9 +121,9 @@ struct InternetPage: View {
 
     private func quality(_ down: Double) -> String {
         switch down {
-        case 100...: return "Conexión excelente"
-        case 25..<100: return "Conexión buena"
-        case 10..<25: return "Conexión aceptable"
+        case 100...: return tr("Conexión excelente")
+        case 25..<100: return tr("Conexión buena")
+        case 10..<25: return tr("Conexión aceptable")
         default: return "Conexión lenta"
         }
     }

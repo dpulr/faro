@@ -29,18 +29,18 @@ enum Format {
 
     static func relative(_ date: Date) -> String {
         let f = RelativeDateTimeFormatter()
-        f.locale = Locale(identifier: "es")
+        f.locale = Locale(identifier: AppLanguage.activeCode)
         f.unitsStyle = .full
         return f.localizedString(for: date, relativeTo: Date())
     }
 
     static func interval(_ minutes: Int) -> String {
         switch minutes {
-        case 0: return "Solo manual"
-        case ..<60: return "Cada \(minutes) min"
-        case 60: return "Cada hora"
-        case 1440: return "Cada día"
-        default: return "Cada \(minutes / 60) horas"
+        case 0: return tr("Solo manual")
+        case ..<60: return String(format: tr("Cada %lld min"), minutes)
+        case 60: return tr("Cada hora")
+        case 1440: return tr("Cada día")
+        default: return String(format: tr("Cada %lld horas"), minutes / 60)
         }
     }
 }

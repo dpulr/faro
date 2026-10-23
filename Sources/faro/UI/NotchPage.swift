@@ -43,7 +43,7 @@ struct NotchPage: View {
                         Toggle("", isOn: $notch.showCalendar).toggleStyle(MiniSwitchStyle()).labelsHidden()
                     }
                     Divider().padding(.horizontal, 12)
-                    row("Clima", notch.weatherError ?? "Temperatura y estado del cielo de tu ciudad (Open-Meteo, gratis).") {
+                    row("Clima", notch.weatherError.map { LocalizedStringKey($0) } ?? "Temperatura y estado del cielo de tu ciudad (Open-Meteo, gratis).") {
                         HStack(spacing: 10) {
                             if notch.showWeather {
                                 TextField("Ciudad", text: $cityDraft)
@@ -55,10 +55,18 @@ struct NotchPage: View {
                         }
                     }
                     Divider().padding(.horizontal, 12)
+                    row("Volumen", "Un control del volumen de tu Mac dentro del panel.") {
+                        Toggle("", isOn: $notch.showVolume).toggleStyle(MiniSwitchStyle()).labelsHidden()
+                    }
+                    Divider().padding(.horizontal, 12)
+                    row("Bluetooth", "Un aviso en el notch cuando se conectan tus audífonos, teclado o ratón. macOS pide permiso la primera vez.") {
+                        Toggle("", isOn: $notch.showBluetooth).toggleStyle(MiniSwitchStyle()).labelsHidden()
+                    }
+                    Divider().padding(.horizontal, 12)
                     row("Descanso visual", "Un aviso para mirar a lo lejos 20 segundos (regla 20-20-20) y descansar los ojos.") {
                         HStack(spacing: 10) {
                             if notch.eyeBreak {
-                                Choice(selection: $notch.eyeBreakMinutes, options: breakOptions.map { ("Cada \($0) min", $0) })
+                                Choice(selection: $notch.eyeBreakMinutes, options: breakOptions.map { (String(format: tr("Cada %lld min"), $0), $0) })
                             }
                             Toggle("", isOn: $notch.eyeBreak).toggleStyle(MiniSwitchStyle()).labelsHidden()
                         }
@@ -71,6 +79,7 @@ struct NotchPage: View {
                     Text("Cómo se usa").font(.callout.weight(.semibold))
                     tip("cursorarrow.motionlines", "Lleva el cursor al notch: el panel se despliega y, al alejarlo, se recoge.")
                     tip("waveform", "Mientras suena música o corre un descanso, aparecen detalles a los lados del notch sin desplegarlo.")
+                    tip("tray.and.arrow.down", "Arrastra un archivo hacia el notch y suéltalo en la zona que aparece: se guarda en la bandeja.")
                     tip("eye", "En el panel, el botón «Descanso» empieza la pausa de 20 segundos cuando tú quieras.")
                 }
             }
@@ -83,14 +92,14 @@ struct NotchPage: View {
         Task { await notch.refreshWeather() }
     }
 
-    private func tip(_ symbol: String, _ text: String) -> some View {
+    private func tip(_ symbol: String, _ text: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: symbol).frame(width: 20).foregroundStyle(.secondary)
             Text(text).font(.callout).foregroundStyle(.secondary)
         }
     }
 
-    private func row<Control: View>(_ title: String, _ detail: String, @ViewBuilder control: () -> Control) -> some View {
+    private func row<Control: View>(_ title: LocalizedStringKey, _ detail: LocalizedStringKey, @ViewBuilder control: () -> Control) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.callout.weight(.medium))

@@ -4,10 +4,11 @@
 import AppKit
 import Combine
 import SwiftUI
+import UserNotifications
 
 /// Dueño de todo lo que vive fuera de las ventanas: ícono de la barra, menú propio y ventana principal.
 @MainActor
-final class AppController: NSObject {
+final class AppController: NSObject, UNUserNotificationCenterDelegate {
     static let shared = AppController()
 
     let engine = WallpaperEngine()
@@ -18,6 +19,8 @@ final class AppController: NSObject {
     let clipboard = ClipboardStore()
     let cleaning = CleaningMode()
     let notch = NotchModel()
+    let diskAlert = DiskAlert()
+    let mixer = AudioMixer()
     let shelf = ShelfStore(file: Paths.support.appendingPathComponent("shelf.json"), registerShortcut: true)
     let appearance = Appearance.shared
 
@@ -27,6 +30,7 @@ final class AppController: NSObject {
     private var resignObserver: NSObjectProtocol?
     private var lastClosed = Date.distantPast
     private var labelSubscription: AnyCancellable?
+    private var diskSubscription: AnyCancellable?
     private var scheduleTimer: Timer?
     private var lastScheduleKey = ""
 
@@ -47,7 +51,22 @@ final class AppController: NSObject {
             }
             button.addSubview(drop)
         }
-        NotchController.shared.start(model: notch)
+        notch.onFilesDropped = { [weak self] urls in
+            guard let self, !urls.isEmpty else { return }
+            self.shelf.add(urls)
+            self.notch.showToast(symbol: "tray.and.arrow.down.fill",
+                                 text: String(format: tr("Guardado en la bandeja (%d)"), self.shelf.items.count))
+        }
+        NotchController.shared.start(model: notch, mixer: mixer)
+        if Bundle.main.bundleIdentifier != nil { UNUserNotificationCenter.current().delegate = self }
+        if diskAlert.enabled { diskAlert.requestAuthorization() }
+        diskSubscription = monitor.$diskFree
+            .removeDuplicates { abs($0 - $1) < 100_000_000 } // cambios de menos de 0,1 GB no cuentan
+            .sink { [weak self] free in
+                guard let self else { return }
+                self.diskAlert.check(free: free)
+                self.notch.lowDiskGB = self.diskAlert.low ? Int(free / 1_000_000_000) : nil
+            }
         scheduleTimer = Timer.scheduledTimer(withTimeInterval: 20, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.checkSchedule() }
         }
@@ -106,7 +125,7 @@ final class AppController: NSObject {
         if profile.keepAwake { if !awake.active { awake.enable(hours: nil) } } else { awake.disable() }
         notch.eyeBreak = profile.eyeBreak
         engine.state.activeProfileID = profile.id
-        engine.flash("Perfil: \(profile.name)")
+        engine.flash(String(format: tr("Perfil: %@"), tr(profile.name)))
     }
 
     /// Un perfil nuevo con los ajustes que tienes ahora mismo.
@@ -137,7 +156,98 @@ final class AppController: NSObject {
         ClipboardPanelController.shared.show()
     }
 
+    // MARK: Notificaciones
+
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification) async
+        -> UNNotificationPresentationOptions { [.banner, .sound] }
+
+    nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse) async {
+        let raw = response.notification.request.content.userInfo["page"] as? String
+        await MainActor.run { self.openMain(raw.flatMap(Page.init(rawValue:)) ?? .almacenamiento) }
+    }
+
     // MARK: Depuración
+
+    /// Con `FARO_DEBUG_FEATURES=1`: ejercita el aviso de disco, el mezclador, el aviso de Bluetooth y soltar sobre el notch.
+    func debugFeatures() async {
+        // 1) Aviso de poco espacio: la decisión de avisar (sin tocar tu ajuste: se restaura).
+        let (savedOn, savedGB) = (diskAlert.enabled, diskAlert.thresholdGB)
+        diskAlert.enabled = true; diskAlert.thresholdGB = 20
+        let t0 = Date(), gb: (Int64) -> Int64 = { $0 * 1_000_000_000 }
+        let steps: [(String, Int64, TimeInterval, Bool)] = [
+            ("30 GB (sobra)", 30, 0, false), ("10 GB (primer aviso)", 10, 0, true), ("9 GB, 1 h después (no repite)", 9, 3600, false),
+            ("3 GB, 2 h después (mucho peor)", 3, 7200, true), ("40 GB (se recupera)", 40, 7300, false), ("10 GB, 3 h después (vuelve a avisar)", 10, 10800, true),
+        ]
+        for (name, free, delay, expected) in steps {
+            let got = diskAlert.evaluate(free: gb(free), now: t0.addingTimeInterval(delay))
+            print("aviso de disco | \(name): avisa=\(got) \(got == expected ? "✓" : "✗ (se esperaba \(expected))")")
+        }
+        diskAlert.thresholdGB = savedGB; diskAlert.enabled = savedOn
+        print("aviso de disco | notificaciones del sistema: \(Bundle.main.bundleIdentifier != nil ? "disponibles" : "no disponibles fuera de la app")")
+
+        // 2) Mezclador: leer, mover el volumen un poco y restaurarlo.
+        mixer.refresh()
+        print("audio | salida: \(mixer.defaultOutputName) | salidas: \(mixer.outputs.map(\.name)) | volumen: \(Int(mixer.volume * 100))% | silencio: \(mixer.muted) | se puede cambiar: \(mixer.canSetVolume)")
+        if mixer.canSetVolume {
+            let original = mixer.volume, wasMuted = mixer.muted
+            mixer.setVolume(min(original + 0.02, 1)); mixer.refresh()
+            let moved = abs(mixer.volume - min(original + 0.02, 1)) < 0.011
+            mixer.setVolume(original); mixer.refresh()
+            let back = abs(mixer.volume - original) < 0.011
+            mixer.setMuted(!wasMuted); mixer.refresh(); let muteWorks = mixer.muted == !wasMuted
+            mixer.setMuted(wasMuted); mixer.refresh()
+            print("audio | mover volumen: \(moved ? "✓" : "✗") | restaurar: \(back ? "✓" : "✗") | silenciar y quitar: \(muteWorks && mixer.muted == wasMuted ? "✓" : "✗")")
+        }
+        mixer.refreshApps()
+        print("audio | volumen de Música: \(mixer.musicVolume.map { "\(Int($0 * 100))%" } ?? "no abierta") | Spotify: \(mixer.spotifyVolume.map { "\(Int($0 * 100))%" } ?? "no abierta")")
+
+        // 3) Bluetooth: el ícono según el dispositivo y el aviso que cuelga del notch.
+        for name in ["AirPods Pro de Ana", "Magic Keyboard", "Magic Trackpad", "DualSense Wireless Controller", "Altavoz de la sala"] {
+            print("bluetooth | «\(name)» → \(BluetoothWatcher.symbol(for: name, major: 0))")
+        }
+        notch.showToast(symbol: "airpods", text: String(format: tr("%@ conectado"), "AirPods Pro de Ana"), seconds: 1)
+        let shown = notch.toast != nil
+        try? await Task.sleep(nanoseconds: 1_600_000_000)
+        print("bluetooth | el aviso aparece: \(shown ? "✓" : "✗") | y se quita solo: \(notch.toast == nil ? "✓" : "✗")")
+
+        // 4) Soltar sobre el notch: los archivos recibidos llegan a la bandeja y aparece el aviso.
+        let temp = FileManager.default.temporaryDirectory.appendingPathComponent("faro-drop-test.txt")
+        try? Data("x".utf8).write(to: temp)
+        let before = shelf.items.count
+        notch.onFilesDropped?([temp])
+        let added = shelf.items.count == before + 1
+        print("soltar sobre el notch | llegó a la bandeja: \(added ? "✓" : "✗") | aviso: \(notch.toast?.text ?? "ninguno")")
+        if let item = shelf.items.first(where: { $0.path.hasSuffix("faro-drop-test.txt") }) { shelf.remove(item.id) }
+        try? FileManager.default.removeItem(at: temp)
+        notch.toast = nil
+        print("soltar sobre el notch | bandeja restaurada: \(shelf.items.count == before ? "✓" : "✗")")
+        exit(0)
+    }
+
+    /// Con `FARO_DEBUG_SOURCES=1`: pide lotes a cada fuente nueva y descarga y reduce una foto de cada una.
+    static func debugSources() async {
+        let filter = ImageFilter(minWidth: 2400, minHeight: 1500, targetWidth: 3024)
+        let tests: [(SourceKind, String)] = [(.artic, "landscape"), (.artic, "impressionism"), (.nasa, "nebula"), (.nasa, "earth from space"), (.picsum, "")]
+        for (kind, query) in tests {
+            let started = Date()
+            do {
+                let found = try await Sources.make(kind).candidates(query: query, filter: filter)
+                var line = "\(kind.rawValue) «\(query)»: \(found.count) fotos en \(String(format: "%.1f", Date().timeIntervalSince(started))) s"
+                if let first = found.first {
+                    line += " | \(first.title.prefix(34)) · \(first.author.prefix(24))"
+                    let begin = Date()
+                    let file = try await Net.download(first.url)
+                    let bytes = (try? FileManager.default.attributesOfItem(atPath: file.path)[.size] as? Int) ?? 0
+                    let prepared = try Imaging.prepare(file, maxPixel: 3024)
+                    let small = (try? FileManager.default.attributesOfItem(atPath: prepared.path)[.size] as? Int) ?? 0
+                    line += " | bajó \(bytes / 1024) KB y quedó en \(small / 1024) KB (\(String(format: "%.1f", Date().timeIntervalSince(begin))) s)"
+                    try? FileManager.default.removeItem(at: file); try? FileManager.default.removeItem(at: prepared)
+                }
+                print(line)
+            } catch { print("\(kind.rawValue) «\(query)»: ERROR en la búsqueda o la descarga: \(error.localizedDescription)") }
+        }
+        exit(0)
+    }
 
     /// Con `FARO_DEBUG_PERMS=<archivo>` escribe qué permisos ve esta app y si el bloqueo retiene teclas de verdad.
     static func debugPermissions(to file: String) async {
@@ -376,7 +486,7 @@ final class AppController: NSObject {
             window.contentView = NSHostingView(rootView: MainRoot()
                 .environmentObject(engine).environmentObject(monitor).environmentObject(speed)
                 .environmentObject(awake).environmentObject(storage).environmentObject(clipboard)
-                .environmentObject(cleaning).environmentObject(notch).environmentObject(appearance))
+                .environmentObject(cleaning).environmentObject(notch).environmentObject(diskAlert).environmentObject(mixer).environmentObject(appearance))
             window.center()
             mainWindow = window
         }

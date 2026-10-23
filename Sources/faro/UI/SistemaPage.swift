@@ -39,7 +39,7 @@ struct SistemaPage: View {
         }
     }
 
-    private func metricCard(_ title: String, value: String, note: String, tint: Color,
+    private func metricCard(_ title: LocalizedStringKey, value: String, note: LocalizedStringKey, tint: Color,
                             series: [Double], top: Double) -> some View {
         Card {
             VStack(alignment: .leading, spacing: 8) {

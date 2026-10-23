@@ -58,6 +58,7 @@ enum Persistence {
                 .replacingOccurrences(of: "/Caches/Mirador/", with: "/Caches/faro/")
         }
         state.seedCatalogIfNeeded()
+        state.seedExtraChannelsIfNeeded()
         state.seedProfilesIfNeeded()
         return state
     }

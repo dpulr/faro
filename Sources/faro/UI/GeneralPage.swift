@@ -28,6 +28,18 @@ struct GeneralPage: View {
                             .toggleStyle(MiniSwitchStyle()).labelsHidden()
                     }
                     Divider().padding(.horizontal, 12)
+                    setting("Idioma", "Cambia al instante; faro se reinicia para aplicarlo.") {
+                        MenuChip(text: AppLanguage.current.title) {
+                            ForEach(AppLanguage.allCases, id: \.self) { language in
+                                DropdownRow(title: language.title, selected: language == AppLanguage.current) {
+                                    guard language != AppLanguage.current else { return }
+                                    AppLanguage.apply(language)
+                                    AppController.shared.relaunch()
+                                }
+                            }
+                        }
+                    }
+                    Divider().padding(.horizontal, 12)
                     setting("Un fondo distinto por monitor", "Si tienes varias pantallas, cada una muestra una foto diferente.") {
                         Toggle("", isOn: $engine.state.differentPerScreen).toggleStyle(MiniSwitchStyle()).labelsHidden()
                     }
@@ -154,7 +166,7 @@ struct GeneralPage: View {
         }
     }
 
-    private func setting<Control: View>(_ title: String, _ detail: String,
+    private func setting<Control: View>(_ title: LocalizedStringKey, _ detail: LocalizedStringKey,
                                         @ViewBuilder control: () -> Control) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {

@@ -25,6 +25,13 @@ enum Imaging {
         return out
     }
 
+    /// Ancho real en píxeles, sin decodificar toda la imagen.
+    static func pixelWidth(of file: URL) -> Int? {
+        guard let src = CGImageSourceCreateWithURL(file as CFURL, nil),
+              let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any] else { return nil }
+        return props[kCGImagePropertyPixelWidth] as? Int
+    }
+
     static func thumbnail(of file: URL, maxPixel: Int = 640) -> NSImage? {
         guard let src = CGImageSourceCreateWithURL(file as CFURL, nil) else { return nil }
         let opts: [CFString: Any] = [
@@ -38,11 +45,12 @@ enum Imaging {
 }
 
 enum ImagingError: LocalizedError {
-    case unreadable, unwritable
+    case unreadable, unwritable, tooSmall
     var errorDescription: String? {
         switch self {
-        case .unreadable: return "No se pudo leer la imagen descargada"
-        case .unwritable: return "No se pudo guardar la imagen"
+        case .unreadable: return tr("No se pudo leer la imagen descargada")
+        case .unwritable: return tr("No se pudo guardar la imagen")
+        case .tooSmall: return tr("La foto es más pequeña que tu pantalla")
         }
     }
 }

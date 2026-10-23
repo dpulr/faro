@@ -21,7 +21,7 @@ enum Snapshot {
         func render<V: View>(_ view: V, name: String, size: CGSize?) {
             let host = NSHostingView(rootView: view
                 .environmentObject(engine).environmentObject(monitor)
-                .environmentObject(speed).environmentObject(awake).environmentObject(storage).environmentObject(clipboard).environmentObject(CleaningMode()).environmentObject(NotchModel())
+                .environmentObject(speed).environmentObject(awake).environmentObject(storage).environmentObject(clipboard).environmentObject(CleaningMode()).environmentObject(NotchModel()).environmentObject(DiskAlert()).environmentObject(AudioMixer())
                 .environmentObject(Appearance.shared).tint(Appearance.shared.accent))
             let frame = CGRect(origin: .zero, size: size ?? host.fittingSize)
             let window = NSWindow(contentRect: frame, styleMask: [.titled, .fullSizeContentView], backing: .buffered, defer: false)
@@ -56,12 +56,22 @@ enum Snapshot {
         notchDemo.loadDemo()
         notchDemo.showCalendar = false
         notchDemo.expanded = true
-        render(NotchView(model: notchDemo, notchSize: CGSize(width: 220, height: 38), hasHardwareNotch: true)
-            .frame(width: 520, height: 230).background(Color(white: 0.78)), name: "notch-expanded", size: CGSize(width: 520, height: 230))
+        render(NotchView(model: notchDemo, mixer: AudioMixer(), notchSize: CGSize(width: 220, height: 38), hasHardwareNotch: true)
+            .frame(width: 520, height: 290).background(Color(white: 0.78)), name: "notch-expanded", size: CGSize(width: 520, height: 290))
         notchDemo.expanded = false
-        render(NotchView(model: notchDemo, notchSize: CGSize(width: 220, height: 38), hasHardwareNotch: true)
+        render(NotchView(model: notchDemo, mixer: AudioMixer(), notchSize: CGSize(width: 220, height: 38), hasHardwareNotch: true)
             .frame(width: 520, height: 60).background(Color(white: 0.78)), name: "notch-alas", size: CGSize(width: 520, height: 60))
+        let lowDisk = NotchModel(); lowDisk.loadDemo(); lowDisk.lowDiskGB = 7
+        render(NotchView(model: lowDisk, mixer: AudioMixer(), notchSize: CGSize(width: 220, height: 38), hasHardwareNotch: true)
+            .frame(width: 520, height: 70).background(Color(white: 0.78)), name: "notch-poco-espacio", size: CGSize(width: 520, height: 70))
+        let drop = NotchModel(); drop.loadDemo(); drop.dropActive = true
+        render(NotchView(model: drop, mixer: AudioMixer(), notchSize: CGSize(width: 220, height: 38), hasHardwareNotch: true)
+            .frame(width: 520, height: 150).background(Color(white: 0.78)), name: "notch-soltar", size: CGSize(width: 520, height: 150))
+        let toast = NotchModel(); toast.loadDemo(); toast.showToast(symbol: "airpods", text: "AirPods Pro conectado", seconds: 60)
+        render(NotchView(model: toast, mixer: AudioMixer(), notchSize: CGSize(width: 220, height: 38), hasHardwareNotch: true)
+            .frame(width: 520, height: 110).background(Color(white: 0.78)), name: "notch-bluetooth", size: CGSize(width: 520, height: 110))
         render(framed(NotchPage()), name: "page-notch", size: nil)
+        render(framed(AudioPage()), name: "page-audio", size: nil)
         render(framed(TecladoPage()), name: "page-teclado", size: nil)
         render(CleaningOverlay(mode: CleaningMode()), name: "cleaning-overlay", size: CGSize(width: 900, height: 560))
         render(framed(PortapapelesPage()), name: "page-portapapeles", size: nil)

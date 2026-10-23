@@ -2,6 +2,19 @@
 
 Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen [SemVer](https://semver.org/lang/es/).
 
+## [1.2.0] — 2026-10-23
+
+### Novedades
+- **Interfaz en inglés.** faro sigue el idioma del sistema, o puedes elegir *Español* o *English* en *General → Idioma* (se reinicia al cambiarlo). Las traducciones salen de `scripts/en.txt`, que `scripts/gen-strings.py` convierte en `Resources/en.lproj/Localizable.strings`.
+- **Tres fuentes de fotos nuevas, sin clave:** Art Institute of Chicago (dominio público), imágenes de la NASA y Picsum (fotos al azar), con tres canales de fábrica: *Arte*, *Espacio* y *Al azar*. Las fotos más pequeñas que tu pantalla se descartan y se reintenta.
+- **Página Audio:** volumen, silencio y salida de tu Mac, y volumen propio de Música y Spotify.
+- **Notch:** fila de volumen, aviso al conectarse un dispositivo Bluetooth (audífonos, teclado, ratón, mando), zona para **soltar archivos** que van a la bandeja y señal de poco espacio en disco.
+- **Aviso de poco espacio en disco** en *Almacenamiento*: notificación y señal en el notch con un umbral a tu elección.
+
+### Cambios
+- Nuevos permisos opcionales: Bluetooth y Notificaciones.
+- Los textos que se arman en el código pasan por `tr()` para poder traducirse.
+
 ## [1.1.0] — 2026-10-23
 
 ### Cambios

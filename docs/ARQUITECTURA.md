@@ -72,6 +72,10 @@ Menú, portapapeles, bandeja, notch y pantalla de limpieza son `NSPanel` sin bor
 - El **notch** vive siempre en pantalla pero ignora el ratón mientras está recogido; un temporizador de 0,1 s mira si el cursor entra en su zona.
 - Las esquinas redondeadas se logran recortando la vista (`cornerRadius` + `masksToBounds`) y llamando a `invalidateShadow()`; sin eso, macOS dibuja una sombra rectangular.
 
+## Idioma
+
+Las claves son los propios textos en español; `es.lproj` está vacío y `en.lproj/Localizable.strings` se genera desde `scripts/en.txt`. Los literales de SwiftUI (`Text("…")`) se traducen solos; lo que se calcula en el código pasa por `tr()` (`UI/Localization.swift`), y los textos con valores usan `String(format: tr("… %@"), …)`. Como la clave de un texto interpolado depende del tipo del valor (`%@`, `%lld`), el generador expande cada `%#` a todas las variantes. El idioma elegido se guarda en `AppleLanguages` y por eso cambiarlo reinicia la app. Las fechas relativas y los días de la semana usan la configuración regional del idioma activo.
+
 ## Limpiar teclado
 
 Dos modos:

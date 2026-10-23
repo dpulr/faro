@@ -26,6 +26,9 @@ enum Sources {
         case .wikimedia: return WikimediaSource()
         case .bing: return BingSource()
         case .folder: return FolderSource()
+        case .artic: return ArticSource()
+        case .nasa: return NasaSource()
+        case .picsum: return PicsumSource()
         }
     }
 }
@@ -36,6 +39,10 @@ enum Net {
     static func request(_ url: URL) -> URLRequest {
         var r = URLRequest(url: url, timeoutInterval: 30)
         r.setValue(userAgent, forHTTPHeaderField: "User-Agent")
+        // El Art Institute exige identificar a cada app con esta cabecera para servir sus imágenes.
+        if url.host?.hasSuffix("artic.edu") == true {
+            r.setValue("faro (https://github.com/dpulr/faro)", forHTTPHeaderField: "AIC-User-Agent")
+        }
         return r
     }
 

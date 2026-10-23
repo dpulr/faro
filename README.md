@@ -16,7 +16,7 @@ Fondos que cambian solos, el estado del sistema, historial del portapapeles, una
 
 </div>
 
-> **English in one line:** *faro* is a free, local-first macOS menu-bar suite (wallpaper channels, system monitor, clipboard history, file shelf, notch panel, keyboard-cleaning lock and profiles) written in SwiftUI. The interface is in Spanish.
+> **English in one line:** *faro* is a free, local-first macOS menu-bar suite (wallpaper channels, system monitor, clipboard history, file shelf, notch panel, keyboard-cleaning lock and profiles) written in SwiftUI. The interface comes in Spanish and English (it follows your system language, or pick one in *General*).
 
 ---
 
@@ -46,7 +46,7 @@ faro nació para reemplazar una app de pago que solo cambiaba el fondo de pantal
 Principios con los que está hecho:
 
 - **Local primero.** Tus datos viven en tu Mac. No hay cuentas, ni telemetría, ni servidor propio.
-- **Minimalista y en lenguaje llano.** Pocas cosas en pantalla y textos que cualquiera entiende, en español.
+- **Minimalista y en lenguaje llano.** Pocas cosas en pantalla y textos que cualquiera entiende, en español o en inglés.
 - **Sin pagos ni claves de API.** Las fuentes de fotos, el clima y la medición de internet funcionan sin registrarse en nada.
 - **Respeta tu disco.** Solo guarda la foto actual de cada monitor; todo lo demás se descarga y se borra.
 - **Diseño propio.** Cristal líquido en macOS 26, un logo de faro dibujado a mano (disponible en [SVG](docs/images/logo.svg)) y controles propios en lugar de los genéricos del sistema.
@@ -59,9 +59,9 @@ Principios con los que está hecho:
 
 Un **canal** es un tema; una **mezcla** reparte las fotos entre varios canales. Un clic activa un canal; el lápiz (al pasar el cursor) lo edita.
 
-- **Cuatro fuentes sin clave:** [Wallhaven](https://wallhaven.cc) (solo contenido seguro), [Wikimedia Commons](https://commons.wikimedia.org) (solo fotos destacadas), el archivo de [Bing](https://www.bing.com) en UHD y **carpetas locales**.
+- **Siete fuentes sin clave:** [Wallhaven](https://wallhaven.cc) (solo contenido seguro), [Wikimedia Commons](https://commons.wikimedia.org) (solo fotos destacadas), el archivo de [Bing](https://www.bing.com) en UHD, el [Art Institute of Chicago](https://www.artic.edu) (obras de dominio público), las [imágenes de la NASA](https://images.nasa.gov), [Picsum](https://picsum.photos) (fotos al azar) y **carpetas locales**.
 - **Mezcla por niveles:** cada fuente o canal pesa *Poco*, *Normal* o *Mucho*. El sorteo respeta esos pesos de verdad.
-- **Canales de fábrica:** Naturaleza, Bing del día, Tecnología, Ciencia, Autos y una mezcla de los tres últimos.
+- **Canales de fábrica:** Naturaleza, Bing del día, Tecnología, Ciencia, Autos, una mezcla de los tres últimos, Arte, Espacio y Al azar.
 - **Filtros:** resolución mínima respecto a tu pantalla (flexible, alta o exacta), solo fotos horizontales, sin repetir las últimas 50 y una lista de fotos **ocultas para siempre**.
 - **Control total:** volver a la foto anterior, guardar la actual en `Imágenes/faro`, marcar *No me gusta* y un fondo distinto por monitor.
 - **Intervalo:** cada 15 o 30 minutos, 1, 2 o 6 horas, 1 día, o solo a mano.
@@ -81,6 +81,9 @@ Un perfil es un **modo guardado**: con un clic cambia el canal de fondos, cada c
 - **Sistema:** procesador, memoria, almacenamiento, red en vivo y batería (ciclos y salud), con gráficas y un resumen en lenguaje llano ("Tu Mac va tranquilo").
 - **Internet:** mide tu conexión con la herramienta `networkQuality` de macOS, a mano o **automáticamente** cada 30 minutos a 1 día, y guarda un historial con gráfica.
 - **Energía:** mantiene el Mac despierto durante 30 minutos a 8 horas, o sin límite.
+- **Audio:** el volumen y la salida de tu Mac (bocinas, audífonos, AirPlay) a mano, con silencio y un volumen propio para Música y Spotify. macOS no deja cambiar el volumen de otras apps.
+
+<img src="docs/images/audio.png" width="760" alt="Página Audio con la salida, el volumen y el volumen por app">
 
 ### Almacenamiento y limpieza
 
@@ -89,6 +92,7 @@ Encuentra qué ocupa espacio y lo libera **sin tocar tus documentos**.
 - **Limpieza guiada** por categorías seguras: compilaciones de Xcode, símbolos de dispositivos iOS, cachés de apps, registros, Gradle, npm, cachés de herramientas y, marcadas como "Revisa antes", los archivos de Xcode y los emuladores de Android.
 - **Simuladores de iOS:** quita los que ya no funcionan con tu Xcode.
 - **Archivos grandes** (más de 300 MB) y un **explorador de carpetas** con barras de tamaño.
+- **Aviso de poco espacio:** una notificación y una señal en el notch cuando el disco baja de un umbral que eliges (5 a 100 GB); no repite hasta que empeora o se recupera.
 - **Seguro por diseño:** solo borra dentro de una lista blanca de carpetas conocidas, manda a la Papelera por defecto y pide confirmación siempre.
 
 ### Portapapeles con historial
@@ -137,6 +141,12 @@ Un panel negro que cuelga del notch: lleva el cursor arriba al centro de la pant
 - **Clima:** temperatura y estado del cielo de tu ciudad, con [Open-Meteo](https://open-meteo.com).
 - **Calendario:** tu próximo evento de las siguientes 24 horas (apagado por defecto).
 - **Descanso visual:** un aviso para mirar a lo lejos 20 segundos, la regla 20-20-20 (apagado por defecto).
+- **Volumen:** un control del volumen de tu Mac dentro del panel.
+- **Bluetooth:** un aviso al conectarse tus audífonos, teclado, ratón o mando.
+- **Soltar archivos:** arrastra un archivo hacia el notch y suéltalo en la zona que aparece; se guarda en la bandeja.
+- **Poco espacio en disco:** el notch muestra una señal ámbar cuando se acaba el espacio.
+
+<img src="docs/images/notch-soltar.png" width="480" alt="La zona para soltar archivos sobre el notch">
 
 Sin notch, el panel aparece como una cápsula arriba al centro.
 
@@ -145,6 +155,7 @@ Sin notch, el panel aparece como una cápsula arriba al centro.
 - **Datos en vivo en la barra:** procesador, memoria, espacio libre, red, batería y velocidad de internet, a tu elección y con vista previa.
 - **El faro se enciende:** el ícono de la barra, un faro dentro de un círculo, muestra los haces de luz cuando el Mac está en modo despierto.
 - **Cristal líquido** en macOS 26 (con un material translúcido equivalente en versiones anteriores).
+- **Idioma:** español, inglés o el del sistema (*General → Idioma*; faro se reinicia al cambiarlo).
 - **Tus colores:** color de resalte (siete listos y uno libre), tinte del cristal del menú y color de fondo de la ventana.
 
 ## Requisitos
@@ -196,6 +207,8 @@ faro pide solo lo que cada función necesita, y cada permiso es **opcional**:
 | **Automatización: Finder** | Vaciar la Papelera desde la limpieza | Lo haces tú desde Finder |
 | **Automatización: Música y Spotify** | Mostrar lo que suena en el notch | El notch no muestra música |
 | **Calendarios** | Mostrar tu próximo evento en el notch | Ese módulo queda apagado |
+| **Bluetooth** | Avisar en el notch cuando se conecta un dispositivo | Sin aviso de conexión |
+| **Notificaciones** | El aviso de poco espacio en disco | Solo queda la señal en el notch |
 
 ### Qué sale de tu Mac
 
@@ -208,6 +221,9 @@ faro **no tiene telemetría ni cuentas**. Las únicas conexiones que hace son es
 | `www.bing.com` | Fotos del día | Nada personal |
 | `open-meteo.com` | Clima | La ciudad que escribiste |
 | Servidores de Apple (`networkQuality`) | Medir la conexión | Lo normal de una prueba de velocidad |
+| `api.artic.edu` y `www.artic.edu` | Obras del Art Institute of Chicago | El tema que escribiste |
+| `images-api.nasa.gov` y `images-assets.nasa.gov` | Imágenes de la NASA | El tema que escribiste |
+| `picsum.photos` | Fotos al azar | Nada personal |
 | `i.scdn.co` | Carátula de Spotify | Solo mientras suena algo de Spotify |
 
 Todo lo demás —historial del portapapeles, bandeja, ajustes, fotos— **se queda en tu disco**. El portapapeles no guarda lo que los gestores de contraseñas marcan como secreto. Para borrarlo todo, quita la carpeta de datos (abajo).
@@ -233,12 +249,13 @@ faro **no redistribuye imágenes**: las descarga de cada fuente para mostrarlas 
 Sources/faro/
 ├── main.swift, AppDelegate.swift   Arranque (AppKit puro) y menú principal
 ├── Core/                           Motor de fondos, modelos, persistencia, AppController
-├── Sources/                        Fuentes de fotos (Wallhaven, Wikimedia, Bing, carpeta)
-├── Modules/                        Monitor del sistema, internet, despierto
+├── Sources/                        Fuentes de fotos (Wallhaven, Wikimedia, Bing, Art Institute, NASA, Picsum, carpeta)
+├── Modules/                        Monitor del sistema, internet, despierto, audio, aviso de disco
 ├── Storage/                        Limpieza y análisis de disco
 ├── Clipboard/  Shelf/  Cleaning/   Portapapeles, bandeja y limpiar teclado
 ├── Notch/                          Modelo, vista y controlador del panel del notch
-└── UI/                             Páginas, menú, tema y controles propios
+└── UI/                             Páginas, menú, tema, controles propios y `tr()` (idioma)
+Resources/                          Traducciones (`es.lproj`, `en.lproj`), generadas desde `scripts/en.txt`
 ```
 
 La arquitectura, con los porqués de cada decisión, está en [`docs/ARQUITECTURA.md`](docs/ARQUITECTURA.md).
@@ -249,6 +266,7 @@ faro trae modos de prueba, activados con variables de entorno, que no cambian na
 
 | Variable | Qué hace |
 |---|---|
+| `python3 scripts/gen-strings.py` | Genera `Resources/en.lproj/Localizable.strings` desde `scripts/en.txt` (líneas `español => english`) |
 | `python3 scripts/make-logo.py` | Regenera el logo (`docs/images/logo.svg`, `logo-mark.svg`) y el código Swift que lo dibuja |
 | `FARO_SELFTEST=1 .build/release/faro` | Cambia el fondo 8 veces e imprime la fuente de cada foto y el tamaño de la caché |
 | `FARO_SNAPSHOT=<carpeta>` | Dibuja cada pantalla a PNG sin abrir la app |
@@ -283,13 +301,9 @@ Por la idea de una luz que te muestra lo importante desde lejos.
 
 Ideas que no están hechas todavía, sin fechas:
 
-- Aviso en el notch al conectar un dispositivo Bluetooth.
-- Mezclador de audio por aplicación.
-- Más fuentes de fotos (museos con obras de dominio público, la foto del día de la NASA).
-- Soltar archivos sobre el notch.
-- Avisos cuando el disco esté por llenarse.
+- Volumen por aplicación para cualquier app (macOS no lo permite sin un controlador de audio propio).
+- Más idiomas.
 - Integración continua y binarios firmados y notarizados.
-- Interfaz en inglés.
 
 Las propuestas y los fallos se reportan en [Issues](https://github.com/dpulr/faro/issues).
 

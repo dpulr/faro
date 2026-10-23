@@ -82,7 +82,7 @@ final class SpeedTest: ObservableObject {
             process.waitUntilExit()
             guard let json = try JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let dl = json["dl_throughput"] as? Double, let ul = json["ul_throughput"] as? Double
-            else { throw URLError(.notConnectedToInternet, userInfo: [NSLocalizedDescriptionKey: "No hay conexión para medir"]) }
+            else { throw URLError(.notConnectedToInternet, userInfo: [NSLocalizedDescriptionKey: tr("No hay conexión para medir")]) }
             let rtt = (json["base_rtt"] as? Double) ?? 0
             return .success(SpeedResult(date: Date(), downMbps: dl / 1_000_000, upMbps: ul / 1_000_000, latencyMs: rtt))
         } catch {

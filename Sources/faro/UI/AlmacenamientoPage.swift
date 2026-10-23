@@ -6,6 +6,7 @@ import SwiftUI
 struct AlmacenamientoPage: View {
     @EnvironmentObject var storage: StorageModel
     @EnvironmentObject var monitor: SystemMonitor
+    @EnvironmentObject var diskAlert: DiskAlert
 
     enum Tab: String, CaseIterable, Identifiable {
         case limpieza = "Limpieza", grandes = "Archivos grandes", carpetas = "Carpetas"
@@ -27,6 +28,7 @@ struct AlmacenamientoPage: View {
             PageHeader(title: "Almacenamiento",
                        subtitle: "Encuentra qué ocupa espacio y libéralo sin tocar tus documentos.")
             summary
+            alertCard
             Segments(selection: $tab, options: Tab.allCases.map { ($0.rawValue, $0) })
 
             switch tab {
@@ -49,12 +51,44 @@ struct AlmacenamientoPage: View {
                         .font(.system(size: 30, weight: .semibold, design: .rounded))
                     Text("de \(Format.bytes(monitor.diskTotal))").foregroundStyle(.secondary)
                     Spacer()
-                    Text(monitor.health.level == .ok ? "Espacio saludable" : monitor.health.title)
+                    Text(monitor.health.level == .ok ? tr("Espacio saludable") : monitor.health.title)
                         .font(.callout.weight(.medium)).foregroundStyle(tint)
                 }
                 UsageBar(value: monitor.diskUsedFraction, tint: tint)
             }
         }
+    }
+
+    // MARK: Aviso de poco espacio
+
+    private var alertCard: some View {
+        Card(padding: 14) {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Avisarme cuando quede poco espacio").font(.callout.weight(.medium))
+                        Text("Una notificación y una señal en el notch, para no llegar otra vez a quedarte sin disco.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if diskAlert.enabled {
+                        Choice(selection: $diskAlert.thresholdGB,
+                               options: [5, 10, 20, 50, 100].map { (String(format: tr("Menos de %d GB"), $0), $0) })
+                    }
+                    Toggle("", isOn: $diskAlert.enabled).toggleStyle(MiniSwitchStyle()).labelsHidden()
+                }
+                if diskAlert.enabled && diskAlert.notificationsDenied {
+                    HStack(spacing: 8) {
+                        Text("Las notificaciones de faro están desactivadas en el sistema.").font(.caption).foregroundStyle(Theme.warning)
+                        Button("Abrir ajustes") {
+                            if let url = URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension") { NSWorkspace.shared.open(url) }
+                        }
+                        .buttonStyle(.link).font(.caption)
+                    }
+                }
+            }
+        }
+        .onAppear { diskAlert.refreshAuthorization() }
     }
 
     // MARK: Limpieza

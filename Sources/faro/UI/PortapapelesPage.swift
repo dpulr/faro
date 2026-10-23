@@ -171,7 +171,7 @@ struct PortapapelesPage: View {
 
     // MARK: Utilidades
 
-    private func row<Control: View>(_ title: String, _ detail: String,
+    private func row<Control: View>(_ title: LocalizedStringKey, _ detail: LocalizedStringKey,
                                     @ViewBuilder control: () -> Control) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {

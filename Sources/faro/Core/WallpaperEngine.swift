@@ -7,7 +7,7 @@ import Carbon.HIToolbox
 
 enum EngineError: LocalizedError {
     case noImages
-    var errorDescription: String? { "Ninguna fuente del canal devolvió imágenes" }
+    var errorDescription: String? { tr("Ninguna fuente del canal devolvió imágenes") }
 }
 
 @MainActor
@@ -79,7 +79,7 @@ final class WallpaperEngine: ObservableObject {
         busy = true
         defer { busy = false; refreshCacheSize() }
         var failure: Error?
-        for _ in 0..<3 {
+        for _ in 0..<5 {
             do {
                 let screens = NSScreen.screens
                 let count = state.differentPerScreen ? max(screens.count, 1) : 1
@@ -112,7 +112,7 @@ final class WallpaperEngine: ObservableObject {
 
     func hideCurrent() async {
         if let c = current { state.hidden.insert(c.id) }
-        flash("Listo: esa foto no volverá a salir")
+        flash(tr("Listo: esa foto no volverá a salir"))
         await next()
     }
 
@@ -126,13 +126,13 @@ final class WallpaperEngine: ObservableObject {
             .prefix(60)
         let dest = Paths.saved.appendingPathComponent("\(c.source.rawValue)-\(name)-\(Int(Date().timeIntervalSince1970)).jpg")
         try? FileManager.default.copyItem(at: src, to: dest)
-        flash("Guardada en Imágenes/faro")
+        flash(tr("Guardada en Imágenes/faro"))
         NSWorkspace.shared.activateFileViewerSelecting([dest])
     }
 
     func select(channel id: UUID) {
         state.currentChannelID = id
-        if let name = state.channels.first(where: { $0.id == id })?.name { flash("Canal activo: \(name)") }
+        if let name = state.channels.first(where: { $0.id == id })?.name { flash(String(format: tr("Canal activo: %@"), tr(name))) }
         pools.removeAll()
         Task { await next() }
     }
@@ -147,7 +147,7 @@ final class WallpaperEngine: ObservableObject {
     // MARK: Selección
 
     private func pick() async throws -> ImageCandidate {
-        var specs = effectiveSources(of: channel).filter { $0.weight > 0 && ($0.kind == .bing || !$0.query.isEmpty) }
+        var specs = effectiveSources(of: channel).filter { $0.weight > 0 && (!$0.kind.needsQuery || !$0.query.isEmpty) }
         var lastError: Error?
         while !specs.isEmpty {
             let spec = weighted(specs)
@@ -216,7 +216,15 @@ final class WallpaperEngine: ObservableObject {
             if c.url.isFileURL {
                 file = c.url
             } else {
-                if downloads[c.id] == nil { downloads[c.id] = try await Net.download(c.url) }
+                if downloads[c.id] == nil {
+                    let tmp = try await Net.download(c.url)
+                    // Las fuentes que no informan el tamaño (p. ej. la NASA) pueden traer originales diminutos.
+                    if c.width == 0, let w = Imaging.pixelWidth(of: tmp), w < currentFilter().minWidth {
+                        try? FileManager.default.removeItem(at: tmp)
+                        throw ImagingError.tooSmall
+                    }
+                    downloads[c.id] = tmp
+                }
                 file = try Imaging.prepare(downloads[c.id]!, maxPixel: screen.maxPixel)
             }
             try NSWorkspace.shared.setDesktopImageURL(file, for: screen, options: [

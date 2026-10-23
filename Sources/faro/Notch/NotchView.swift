@@ -24,9 +24,11 @@ private struct HeightKey: PreferenceKey {
 /// Panel negro que cuelga del notch: pequeño con "alas" cuando algo está en vivo y desplegado al acercar el cursor.
 struct NotchView: View {
     @ObservedObject var model: NotchModel
+    @ObservedObject var mixer: AudioMixer
     var notchSize: CGSize
     var hasHardwareNotch: Bool
 
+    @State private var dropTargeted = false
     private let spring = Animation.spring(response: 0.4, dampingFraction: 0.82)
 
     var body: some View {
@@ -36,6 +38,12 @@ struct NotchView: View {
                     .frame(width: 470)
                     .background(NotchShape(radius: 32).fill(Color.black))
                     .background(GeometryReader { Color.clear.preference(key: HeightKey.self, value: $0.size.height) })
+                    .transition(.opacity)
+            } else if model.dropActive {
+                dropZone
+                    .transition(.opacity)
+            } else if model.toast != nil {
+                toastBody
                     .transition(.opacity)
             } else if model.hasLive {
                 wings
@@ -47,6 +55,8 @@ struct NotchView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .animation(spring, value: model.expanded)
         .animation(spring, value: model.hasLive)
+        .animation(spring, value: model.dropActive)
+        .animation(spring, value: model.toast)
         .onPreferenceChange(HeightKey.self) { if $0 > 0 { model.expandedHeight = $0 } }
         .environment(\.colorScheme, .dark)
     }
@@ -58,6 +68,8 @@ struct NotchView: View {
             Group {
                 if model.breakRemaining != nil {
                     Image(systemName: "eye").font(.system(size: 14, weight: .medium))
+                } else if model.lowDiskGB != nil {
+                    Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 14, weight: .medium)).foregroundStyle(.orange)
                 } else if let art = model.artwork {
                     Image(nsImage: art).resizable().scaledToFill().frame(width: 24, height: 24)
                         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
@@ -70,6 +82,8 @@ struct NotchView: View {
             Group {
                 if let remaining = model.breakRemaining {
                     Text("\(remaining)").font(.system(size: 14, weight: .semibold, design: .rounded)).monospacedDigit()
+                } else if let gb = model.lowDiskGB {
+                    Text("\(gb) GB").font(.system(size: 12, weight: .semibold, design: .rounded)).monospacedDigit().foregroundStyle(.orange)
                 } else {
                     Image(systemName: "waveform").font(.system(size: 14, weight: .medium))
                         .symbolEffect(.variableColor.iterative.reversing, options: .repeating)
@@ -80,12 +94,47 @@ struct NotchView: View {
         .foregroundStyle(.white)
     }
 
+    // MARK: Aviso y zona para soltar
+
+    private var toastBody: some View {
+        HStack(spacing: 10) {
+            Image(systemName: model.toast?.symbol ?? "bell").font(.system(size: 16, weight: .medium))
+            Text(model.toast?.text ?? "").font(.system(size: 13, weight: .medium)).lineLimit(1)
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 24)
+        .padding(.top, notchSize.height + 4)
+        .padding(.bottom, 14)
+        .frame(minWidth: 280)
+        .background(NotchShape(radius: 26).fill(Color.black))
+    }
+
+    private var dropZone: some View {
+        VStack(spacing: 6) {
+            Image(systemName: dropTargeted ? "tray.and.arrow.down.fill" : "tray.and.arrow.down")
+                .font(.system(size: 24, weight: .light))
+            Text("Suelta aquí para guardar en la bandeja").font(.system(size: 12, weight: .medium))
+        }
+        .foregroundStyle(dropTargeted ? Color.white : Color.white.opacity(0.75))
+        .padding(.horizontal, 30)
+        .padding(.top, notchSize.height + 6)
+        .padding(.bottom, 18)
+        .frame(width: 380)
+        .background(NotchShape(radius: 30).fill(Color.black))
+        .overlay(NotchShape(radius: 30).stroke(Theme.accent.opacity(dropTargeted ? 1 : 0.35), lineWidth: 2))
+        .onDrop(of: [.fileURL], isTargeted: $dropTargeted) { providers in
+            ShelfDrop.load(providers) { urls in model.onFilesDropped?(urls) }
+            return !providers.isEmpty
+        }
+    }
+
     // MARK: Desplegado
 
     private var expandedBody: some View {
         VStack(spacing: 14) {
             if model.breakRemaining != nil { breakRow }
             else if model.showMusic { musicRow }
+            if model.showVolume { volumeRow }
             chips
         }
         .padding(.horizontal, 22)
@@ -111,7 +160,7 @@ struct NotchView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(model.track?.title ?? "Nada sonando").font(.system(size: 14, weight: .semibold)).lineLimit(1)
-                Text(model.track.map { $0.artist.isEmpty ? $0.source : $0.artist } ?? "Abre Música o Spotify")
+                Text(model.track.map { $0.artist.isEmpty ? $0.source : $0.artist } ?? tr("Abre Música o Spotify"))
                     .font(.system(size: 12)).foregroundStyle(.white.opacity(0.6)).lineLimit(1)
             }
             Spacer(minLength: 8)
@@ -123,6 +172,22 @@ struct NotchView: View {
                 }
             }
         }
+    }
+
+    private var volumeRow: some View {
+        HStack(spacing: 12) {
+            Button { mixer.setMuted(!mixer.muted) } label: {
+                Image(systemName: mixer.muted || mixer.volume == 0 ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                    .font(.system(size: 13)).frame(width: 30, height: 30)
+                    .background(Circle().fill(Color.white.opacity(0.1)))
+            }
+            .buttonStyle(.plain)
+            FaroSlider(value: Binding(get: { mixer.volume }, set: { mixer.setVolume($0) }),
+                       tint: .white, track: Color.white.opacity(0.18))
+            Text("\(Int((mixer.volume * 100).rounded()))").font(.system(size: 11, weight: .medium).monospacedDigit())
+                .foregroundStyle(.white.opacity(0.55)).frame(width: 26, alignment: .trailing)
+        }
+        .opacity(mixer.canSetVolume ? 1 : 0.4)
     }
 
     private var breakRow: some View {
@@ -162,6 +227,10 @@ struct NotchView: View {
 
     private var chipItems: [Chip] {
         var out: [Chip] = []
+        if let gb = model.lowDiskGB {
+            out.append(Chip(id: "d", symbol: "internaldrive", text: String(format: tr("Quedan %d GB"), gb),
+                            action: { AppController.shared.openMain(.almacenamiento) }))
+        }
         if model.showWeather, let w = model.weather {
             out.append(Chip(id: "w", symbol: w.symbol, text: "\(w.temperature)° \(w.city)", action: nil))
         }
@@ -169,7 +238,7 @@ struct NotchView: View {
             if let e = model.event {
                 out.append(Chip(id: "c", symbol: "calendar", text: eventLabel(e), action: nil))
             } else if !model.calendarDenied {
-                out.append(Chip(id: "c", symbol: "calendar", text: "Sin eventos", action: nil))
+                out.append(Chip(id: "c", symbol: "calendar", text: tr("Sin eventos"), action: nil))
             }
         }
         if model.eyeBreak, model.breakRemaining == nil, let next = model.nextBreak {

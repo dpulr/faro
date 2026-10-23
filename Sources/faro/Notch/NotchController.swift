@@ -18,6 +18,9 @@ final class NotchController {
     private(set) var hasHardwareNotch = false
     private var panel: NotchPanel?
     private var model: NotchModel?
+    private var mixer: AudioMixer?
+    private var dragBaseline = NSPasteboard(name: .drag).changeCount
+    private var dropHideTicks = 0
     private var timer: Timer?
     private var screen: NSScreen?
     private var hoverTicks = 0
@@ -27,12 +30,13 @@ final class NotchController {
     var window: NSWindow? { panel }
 
     var summary: String {
-        hasHardwareNotch ? "Notch detectado (\(Int(notchSize.width))×\(Int(notchSize.height)) puntos)"
-                         : "Tu pantalla no tiene notch: el panel aparece como una cápsula arriba al centro"
+        hasHardwareNotch ? String(format: tr("Notch detectado (%lld×%lld puntos)"), Int(notchSize.width), Int(notchSize.height))
+                         : tr("Tu pantalla no tiene notch: el panel aparece como una cápsula arriba al centro")
     }
 
-    func start(model: NotchModel) {
+    func start(model: NotchModel, mixer: AudioMixer) {
         self.model = model
+        self.mixer = mixer
         model.start()
         apply()
         observer = NotificationCenter.default.addObserver(
@@ -46,7 +50,7 @@ final class NotchController {
 
     /// Crea o quita el panel según el ajuste y lo ubica en la pantalla con notch (o la principal).
     func apply() {
-        guard let model else { return }
+        guard let model, let mixer else { return }
         guard model.enabled else { panel?.orderOut(nil); panel = nil; return }
         let target = NSScreen.screens.first { $0.safeAreaInsets.top > 0 } ?? NSScreen.main ?? NSScreen.screens[0]
         screen = target
@@ -72,7 +76,7 @@ final class NotchController {
             panel = p
         }
         panel?.setFrame(CGRect(origin: origin, size: size), display: true)
-        panel?.contentView = NSHostingView(rootView: NotchView(model: model, notchSize: notchSize,
+        panel?.contentView = NSHostingView(rootView: NotchView(model: model, mixer: mixer, notchSize: notchSize,
                                                               hasHardwareNotch: hasHardwareNotch))
         panel?.orderFrontRegardless()
     }
@@ -83,7 +87,28 @@ final class NotchController {
         guard let model, model.enabled, let screen else { return }
         let p = NSEvent.mouseLocation
         let top = screen.frame.maxY
+        let buttonDown = NSEvent.pressedMouseButtons & 1 != 0
+
+        // ¿Hay un archivo arrastrándose? El portapapeles de arrastre cambia al empezar un arrastre nuevo.
+        let dragBoard = NSPasteboard(name: .drag)
+        if !buttonDown { dragBaseline = dragBoard.changeCount }
+        let draggingFiles = buttonDown && dragBoard.changeCount != dragBaseline
+            && dragBoard.canReadObject(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true])
+        let dropZone = CGRect(x: screen.frame.midX - 230, y: top - 140, width: 460, height: 140)
+        if draggingFiles && dropZone.contains(p) {
+            dropHideTicks = 0
+            if !model.dropActive { model.dropActive = true; updateMouseTransparency() }
+            return
+        }
+        if model.dropActive {
+            // Se espera un poco tras soltar para no ocultar la zona antes de recibir el archivo.
+            dropHideTicks += 1
+            if dropHideTicks >= 6 { model.dropActive = false; dropHideTicks = 0; updateMouseTransparency() }
+            return
+        }
+
         if !model.expanded {
+            guard !buttonDown else { hoverTicks = 0; return }
             let hot = CGRect(x: screen.frame.midX - notchSize.width / 2 - 24, y: top - notchSize.height - 2,
                              width: notchSize.width + 48, height: notchSize.height + 2)
             if hot.contains(p) { hoverTicks += 1; if hoverTicks >= 2 { setExpanded(true) } } else { hoverTicks = 0 }
@@ -94,12 +119,18 @@ final class NotchController {
         }
     }
 
+    /// El panel solo recibe el ratón cuando está desplegado o mostrando la zona de soltar.
+    private func updateMouseTransparency() {
+        guard let model else { return }
+        panel?.ignoresMouseEvents = !(model.expanded || model.dropActive)
+    }
+
     private func setExpanded(_ on: Bool) {
         guard let model, model.expanded != on else { return }
         hoverTicks = 0
         leaveTicks = 0
         model.expanded = on
-        panel?.ignoresMouseEvents = !on
+        updateMouseTransparency()
         if on { model.pollMusic() }
     }
 }

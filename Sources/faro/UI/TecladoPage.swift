@@ -63,7 +63,7 @@ struct TecladoPage: View {
                         Label("¿Quieres el bloqueo completo y el permiso no se activa?", systemImage: "exclamationmark.circle")
                             .font(.callout.weight(.semibold)).foregroundStyle(Theme.warning)
                         Text("macOS liga el permiso a la firma exacta de la app. Si activaste una versión anterior, el interruptor se ve encendido pero no vale para esta. Se arregla una sola vez:")
-                            .font(.callout).foregroundStyle(.secondary)
+                            .font(.callout).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                         tip("1.circle", "Abre Ajustes del Sistema → Privacidad y seguridad → Accesibilidad.")
                         tip("2.circle", "Selecciona faro en la lista y pulsa el botón «−» para quitarlo.")
                         tip("3.circle", "Vuelve aquí y pulsa «Dar permiso»; cuando macOS lo pida, actívalo.")
@@ -97,14 +97,14 @@ struct TecladoPage: View {
         .onReceive(recheck) { _ in trusted = AXIsProcessTrusted() }
     }
 
-    private func tip(_ symbol: String, _ text: String) -> some View {
+    private func tip(_ symbol: String, _ text: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: symbol).frame(width: 20).foregroundStyle(.secondary)
             Text(text).font(.callout).foregroundStyle(.secondary)
         }
     }
 
-    private func row<Control: View>(_ title: String, _ detail: String, @ViewBuilder control: () -> Control) -> some View {
+    private func row<Control: View>(_ title: LocalizedStringKey, _ detail: LocalizedStringKey, @ViewBuilder control: () -> Control) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title).font(.callout.weight(.medium))

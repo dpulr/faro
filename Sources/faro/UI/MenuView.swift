@@ -134,7 +134,7 @@ struct MenuView: View {
         HStack {
             Menu {
                 ForEach(engine.state.channels) { channel in
-                    Button(channel.name) { engine.select(channel: channel.id) }
+                    Button(tr(channel.name)) { engine.select(channel: channel.id) }
                 }
                 Divider()
                 Button("Editar canales…") { AppController.shared.openMain(.fondos) }
@@ -187,7 +187,7 @@ struct MenuView: View {
                     MiniGauge(value: monitor.memFraction, tint: Theme.usage(monitor.memFraction),
                               title: "Memoria", detail: "\(Int((monitor.memFraction * 100).rounded()))%")
                     MiniGauge(value: monitor.diskUsedFraction, tint: Theme.usage(monitor.diskUsedFraction),
-                              title: "Disco libre", detail: Format.bytes(monitor.diskFree).replacingOccurrences(of: ",00", with: ""))
+                              title: "Disco libre", detail: LocalizedStringKey(Format.bytes(monitor.diskFree).replacingOccurrences(of: ",00", with: "")))
                 }
             }
         }

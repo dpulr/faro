@@ -18,6 +18,9 @@ Los nombres pertenecen a sus respectivos dueños. faro no tiene relación con el
 |---|---|---|
 | [Wallhaven](https://wallhaven.cc) | Fotos de fondo | API pública sin clave; solo se piden resultados de contenido seguro. Cada imagen tiene su propia licencia. |
 | [Wikimedia Commons](https://commons.wikimedia.org) | Fotos destacadas | Cada archivo tiene su licencia (a menudo CC BY o CC BY-SA, con atribución); faro muestra el autor junto a la imagen. |
+| [Art Institute of Chicago](https://api.artic.edu/docs/) | Obras de dominio público | Se piden solo obras marcadas como dominio público y se identifica la app con la cabecera `AIC-User-Agent`, como pide su política de uso. |
+| [NASA Image and Video Library](https://images.nasa.gov) | Imágenes del espacio | Las imágenes de la NASA no tienen derechos de autor en general; revisa el aviso de cada una si las reutilizas. |
+| [Picsum](https://picsum.photos) | Fotos al azar | Fotos de [Unsplash](https://unsplash.com), con el autor en la ficha de cada foto. |
 | [Bing](https://www.bing.com) | Imagen del día | Imágenes de uso personal como fondo; pertenecen a Microsoft y a sus fotógrafos. |
 | [Open-Meteo](https://open-meteo.com) | Clima y geocodificación | Datos meteorológicos de [Open-Meteo.com](https://open-meteo.com/), bajo licencia [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Su uso gratuito es para fines no comerciales. |
 | Servidores de Apple (`networkQuality`) | Medición de internet | Herramienta incluida en macOS. |

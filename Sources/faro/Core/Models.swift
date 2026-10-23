@@ -4,27 +4,32 @@
 import Foundation
 
 enum SourceKind: String, Codable, CaseIterable, Identifiable {
-    case wallhaven, wikimedia, bing, folder
+    case wallhaven, wikimedia, bing, folder, artic, nasa, picsum
 
     var id: String { rawValue }
 
     var label: String {
         switch self {
-        case .wallhaven: return "Wallhaven"
-        case .wikimedia: return "Wikimedia Commons"
-        case .bing: return "Bing del día"
-        case .folder: return "Carpeta local"
+        case .wallhaven: return tr("Wallhaven")
+        case .wikimedia: return tr("Wikimedia Commons")
+        case .bing: return tr("Bing del día")
+        case .folder: return tr("Carpeta local")
+        case .artic: return tr("Art Institute of Chicago")
+        case .nasa: return tr("NASA (imágenes)")
+        case .picsum: return tr("Fotos al azar (Picsum)")
         }
     }
 
-    var needsQuery: Bool { self != .bing }
+    var needsQuery: Bool { self != .bing && self != .picsum }
 
     var queryPlaceholder: String {
         switch self {
-        case .wallhaven: return "tema, ej. mountains"
-        case .wikimedia: return "tema, ej. landscape"
-        case .bing: return ""
+        case .wallhaven: return tr("tema, ej. mountains")
+        case .wikimedia: return tr("tema, ej. landscape")
+        case .bing, .picsum: return ""
         case .folder: return "/ruta/a/la/carpeta"
+        case .artic: return tr("tema, ej. impressionism")
+        case .nasa: return tr("tema, ej. nebula")
         }
     }
 }
@@ -91,23 +96,23 @@ enum MenuBarMetric: String, Codable, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .cpu: return "Procesador"
-        case .memory: return "Memoria"
-        case .disk: return "Espacio libre en disco"
-        case .network: return "Red en vivo"
-        case .battery: return "Batería"
-        case .speed: return "Velocidad de internet"
+        case .cpu: return tr("Procesador")
+        case .memory: return tr("Memoria")
+        case .disk: return tr("Espacio libre en disco")
+        case .network: return tr("Red en vivo")
+        case .battery: return tr("Batería")
+        case .speed: return tr("Velocidad de internet")
         }
     }
 
     var detail: String {
         switch self {
-        case .cpu: return "Cuánto trabaja tu Mac ahora mismo"
-        case .memory: return "Porcentaje de memoria en uso"
-        case .disk: return "Gigabytes que te quedan"
-        case .network: return "Lo que sube y baja por segundo"
-        case .battery: return "Carga actual"
-        case .speed: return "Resultado de la última medición"
+        case .cpu: return tr("Cuánto trabaja tu Mac ahora mismo")
+        case .memory: return tr("Porcentaje de memoria en uso")
+        case .disk: return tr("Gigabytes que te quedan")
+        case .network: return tr("Lo que sube y baja por segundo")
+        case .battery: return tr("Carga actual")
+        case .speed: return tr("Resultado de la última medición")
         }
     }
 
@@ -158,6 +163,7 @@ struct AppState: Codable {
     var profiles: [Profile] = []
     var activeProfileID: UUID?
     var seededProfiles = false
+    var seededExtraChannels = false
 
     init(channels: [Channel], currentChannelID: UUID) {
         self.channels = channels
@@ -182,6 +188,7 @@ struct AppState: Codable {
         profiles = try c.decodeIfPresent([Profile].self, forKey: .profiles) ?? []
         activeProfileID = try c.decodeIfPresent(UUID.self, forKey: .activeProfileID)
         seededProfiles = try c.decodeIfPresent(Bool.self, forKey: .seededProfiles) ?? false
+        seededExtraChannels = try c.decodeIfPresent(Bool.self, forKey: .seededExtraChannels) ?? false
     }
 
     /// Canales temáticos de fábrica y la mezcla que los junta.
@@ -217,6 +224,19 @@ struct AppState: Codable {
         seededCatalog = true
     }
 
+    /// Canales de las fuentes más nuevas (arte, NASA y fotos al azar); se agregan una sola vez sin tocar el canal activo.
+    mutating func seedExtraChannelsIfNeeded() {
+        guard !seededExtraChannels else { return }
+        func src(_ kind: SourceKind, _ query: String, _ weight: Int) -> SourceSpec { SourceSpec(kind: kind, query: query, weight: weight) }
+        let extra = [
+            Channel(name: "Arte", sources: [src(.artic, "landscape", 40), src(.artic, "impressionism", 30), src(.artic, "sea", 20)]),
+            Channel(name: "Espacio", sources: [src(.nasa, "nebula", 40), src(.nasa, "galaxy", 30), src(.nasa, "earth from space", 20)]),
+            Channel(name: "Al azar", sources: [src(.picsum, "", 100)]),
+        ]
+        channels += extra.filter { new in !channels.contains { $0.name == new.name } }
+        seededExtraChannels = true
+    }
+
     /// Crea los perfiles "Trabajo" y "Descanso" (una sola vez) con valores razonables que luego se editan.
     mutating func seedProfilesIfNeeded() {
         guard !seededProfiles, !channels.isEmpty else { return }
@@ -242,6 +262,7 @@ struct AppState: Codable {
         ])
         var state = AppState(channels: [mix, bing], currentChannelID: mix.id)
         state.seedCatalogIfNeeded()
+        state.seedExtraChannelsIfNeeded()
         state.seedProfilesIfNeeded()
         return state
     }

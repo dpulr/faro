@@ -95,11 +95,11 @@ final class StorageModel: ObservableObject {
         folderCache.removeAll()
         if mode == .trash {
             trashedBytes += freed
-            message = "Se movieron \(Format.bytes(freed)) a la Papelera. Vacíala para recuperar el espacio."
+            message = String(format: tr("Se movieron %@ a la Papelera. Vacíala para recuperar el espacio."), Format.bytes(freed))
         } else {
-            message = "Se liberaron \(Format.bytes(freed))."
+            message = String(format: tr("Se liberaron %@."), Format.bytes(freed))
         }
-        if done.count < items.count { message! += " \(items.count - done.count) elementos no se pudieron quitar." }
+        if done.count < items.count { message! += " " + String(format: tr("%lld elementos no se pudieron quitar."), items.count - done.count) }
     }
 
     func emptyTrash() async {
@@ -121,7 +121,7 @@ final class StorageModel: ObservableObject {
             DiskTools.size(of: DiskTools.home.appendingPathComponent("Library/Developer/CoreSimulator"))
         }.value
         simulatorBytes = after
-        message = after < before ? "Se liberaron \(Format.bytes(before - after)) de simuladores." : "No había simuladores sin usar."
+        message = after < before ? String(format: tr("Se liberaron %@ de simuladores."), Format.bytes(before - after)) : tr("No había simuladores sin usar.")
     }
 
     // MARK: Archivos grandes
@@ -136,11 +136,11 @@ final class StorageModel: ObservableObject {
 
     func trashLarge(_ item: CleanItem) async {
         let done = await Task.detached { Cleaner.remove([item.url], mode: .trash, kind: .userFile) }.value
-        guard !done.isEmpty else { message = "No se pudo mover \(item.name) a la Papelera."; return }
+        guard !done.isEmpty else { message = String(format: tr("No se pudo mover %@ a la Papelera."), item.name); return }
         largeFiles.removeAll { $0.id == item.id }
         trashedBytes += item.bytes
         folderCache.removeAll()
-        message = "\(item.name) está en la Papelera. Vacíala para recuperar \(Format.bytes(item.bytes))."
+        message = String(format: tr("%@ está en la Papelera. Vacíala para recuperar %@."), item.name, Format.bytes(item.bytes))
     }
 
     // MARK: Carpetas

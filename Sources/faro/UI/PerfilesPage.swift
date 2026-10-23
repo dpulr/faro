@@ -42,7 +42,7 @@ struct PerfilesPage: View {
                     .background(Circle().fill(active ? Theme.accent : Theme.accent.opacity(0.12)))
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 8) {
-                        Text(profile.name).font(.callout.weight(.semibold))
+                        Text(tr(profile.name)).font(.callout.weight(.semibold))
                         if active { Text("Activo").font(.caption2.weight(.semibold)).foregroundStyle(Theme.accent) }
                         if profile.autoStart { Image(systemName: "clock").font(.caption).foregroundStyle(.secondary) }
                     }
@@ -59,10 +59,10 @@ struct PerfilesPage: View {
 
     private func summary(of profile: Profile) -> String {
         var parts: [String] = []
-        if let name = engine.state.channels.first(where: { $0.id == profile.channelID })?.name { parts.append(name) }
+        if let name = engine.state.channels.first(where: { $0.id == profile.channelID })?.name { parts.append(tr(name)) }
         parts.append(Format.interval(profile.intervalMinutes).lowercased())
-        if profile.keepAwake { parts.append("despierto") }
-        if profile.eyeBreak { parts.append("descanso visual") }
+        if profile.keepAwake { parts.append(tr("despierto")) }
+        if profile.eyeBreak { parts.append(tr("descanso visual")) }
         if profile.autoStart { parts.append(scheduleText(profile)) }
         return parts.joined(separator: " · ")
     }
@@ -75,9 +75,13 @@ struct PerfilesPage: View {
 }
 
 func scheduleText(_ p: Profile) -> String {
-    let names = [(2, "lun"), (3, "mar"), (4, "mié"), (5, "jue"), (6, "vie"), (7, "sáb"), (1, "dom")]
-    let days = p.days.count == 7 ? "todos los días" : names.filter { p.days.contains($0.0) }.map(\.1).joined(separator: " ")
-    return String(format: "%@ a las %d:%02d", days, p.hour, p.minute)
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.locale = Locale(identifier: AppLanguage.activeCode)
+    let symbols = calendar.shortWeekdaySymbols
+    let order = [2, 3, 4, 5, 6, 7, 1]
+    let days = p.days.count == 7 ? tr("todos los días")
+        : order.filter { p.days.contains($0) }.map { symbols[$0 - 1] }.joined(separator: " ")
+    return String(format: tr("%@ a las %d:%02d"), days, p.hour, p.minute)
 }
 
 struct ProfileSheet: View {
@@ -196,7 +200,7 @@ struct ProfileSheet: View {
         dismiss()
     }
 
-    private func row<Control: View>(_ title: String, @ViewBuilder control: () -> Control) -> some View {
+    private func row<Control: View>(_ title: LocalizedStringKey, @ViewBuilder control: () -> Control) -> some View {
         HStack { Text(title).font(.callout); Spacer(); control() }.padding(.vertical, 8)
     }
 }

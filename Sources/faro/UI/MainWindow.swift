@@ -4,23 +4,24 @@
 import SwiftUI
 
 enum Page: String, CaseIterable, Identifiable {
-    case fondos, perfiles, sistema, almacenamiento, internet, portapapeles, energia, teclado, notch, barra, general
+    case fondos, perfiles, sistema, almacenamiento, internet, portapapeles, energia, audio, teclado, notch, barra, general
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
-        case .fondos: return "Fondos"
-        case .perfiles: return "Perfiles"
-        case .sistema: return "Sistema"
-        case .almacenamiento: return "Almacenamiento"
-        case .internet: return "Internet"
-        case .portapapeles: return "Portapapeles"
-        case .energia: return "Energía"
-        case .teclado: return "Limpiar teclado"
-        case .notch: return "Notch"
-        case .barra: return "Barra de menú"
-        case .general: return "General"
+        case .fondos: return tr("Fondos")
+        case .perfiles: return tr("Perfiles")
+        case .sistema: return tr("Sistema")
+        case .almacenamiento: return tr("Almacenamiento")
+        case .internet: return tr("Internet")
+        case .portapapeles: return tr("Portapapeles")
+        case .energia: return tr("Energía")
+        case .audio: return tr("Audio")
+        case .teclado: return tr("Limpiar teclado")
+        case .notch: return tr("Notch")
+        case .barra: return tr("Barra de menú")
+        case .general: return tr("General")
         }
     }
 
@@ -33,6 +34,7 @@ enum Page: String, CaseIterable, Identifiable {
         case .internet: return "wifi"
         case .portapapeles: return "doc.on.clipboard"
         case .energia: return "cup.and.saucer"
+        case .audio: return "speaker.wave.2"
         case .teclado: return "keyboard"
         case .notch: return "rectangle.topthird.inset.filled"
         case .barra: return "menubar.rectangle"
@@ -60,6 +62,7 @@ struct MainWindow: View {
                     case .internet: InternetPage()
                     case .portapapeles: PortapapelesPage()
                     case .energia: EnergiaPage()
+                    case .audio: AudioPage()
                     case .teclado: TecladoPage()
                     case .notch: NotchPage()
                     case .barra: BarraPage()

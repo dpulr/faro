@@ -193,7 +193,7 @@ struct ClipboardPanelView: View {
         }
     }
 
-    private func hint(_ key: String, _ label: String) -> some View {
+    private func hint(_ key: String, _ label: LocalizedStringKey) -> some View {
         HStack(spacing: 4) {
             Text(key).font(.caption2.weight(.semibold).monospaced())
                 .padding(.horizontal, 5).padding(.vertical, 1)
