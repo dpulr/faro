@@ -4,7 +4,7 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { features, more, network, privacy, releaseNotes, timeline, ui } from './src/content.mjs'
+import { features, more, network, privacy, releaseNotes, support, timeline, ui } from './src/content.mjs'
 
 const root = dirname(fileURLToPath(import.meta.url))
 const dist = join(root, 'dist')
@@ -12,6 +12,10 @@ const dist = join(root, 'dist')
 const SITE = process.env.SITE_URL || 'https://faro.conectalab.co'
 const REPO = 'https://github.com/dpulr/faro'
 const REPO_PUBLIC = process.env.SITE_REPO_PUBLIC === '1'
+// Apoyo económico: se activa al publicar con SITE_SPONSORS=1 (GitHub Sponsors) y/o SITE_KOFI_URL=https://ko-fi.com/tu_usuario.
+const SPONSORS_URL = process.env.SITE_SPONSORS === '1' ? 'https://github.com/sponsors/dpulr' : ''
+const KOFI_URL = process.env.SITE_KOFI_URL || ''
+const SUPPORT = Boolean(SPONSORS_URL || KOFI_URL)
 const version = readFileSync(join(root, '../VERSION'), 'utf8').trim()
 
 // Descarga: se publica el .dmg que dejó scripts/release.sh, si existe.
@@ -121,6 +125,7 @@ function footer(lang) {
       <a href="${t.path.home}">${lang === 'es' ? 'Inicio' : 'Home'}</a>
       <a href="${t.path.download}">${t.nav.download}</a>
       ${REPO_PUBLIC ? `<a href="${REPO}">GitHub</a>` : ''}
+      ${SUPPORT ? `<a href="${t.path.home}#apoyo">${support[lang].footer}</a>` : ''}
       <a href="${t.path.privacy}">${t.footer.privacy}</a>
       <a href="https://conectalab.co/${lang === 'es' ? 'contacto' : 'en/contact'}">${t.footer.contact}</a>
     </div>
@@ -243,6 +248,7 @@ ${header(lang, 'home')}
   </div>
 </section>
 
+${SUPPORT ? supportSection(lang) : ''}
 <section class="final">
   <div class="wrap wrap--narrow">
     <img src="/img/logo.svg" alt="" width="72" height="72">
@@ -252,6 +258,21 @@ ${header(lang, 'home')}
   </div>
 </section>
 ${footer(lang)}`
+}
+
+function supportSection(lang) {
+  const s = support[lang]
+  return `<section class="section" id="apoyo">
+  <div class="wrap wrap--narrow support">
+    <h2 class="reveal">${s.title}</h2>
+    <p class="lead reveal">${s.lead}</p>
+    <div class="support__buttons reveal">
+      ${SPONSORS_URL ? `<a class="btn" href="${SPONSORS_URL}" rel="noopener">${s.github}</a>` : ''}
+      ${KOFI_URL ? `<a class="btn btn--ghost" href="${KOFI_URL}" rel="noopener">${s.kofi}</a>` : ''}
+    </div>
+    <p class="muted reveal">${s.note}</p>
+  </div>
+</section>`
 }
 
 function downloadPage(lang) {

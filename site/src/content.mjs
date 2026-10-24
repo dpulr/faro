@@ -513,3 +513,23 @@ export const privacy = {
     contactUrl: 'https://conectalab.co/en/contact',
   },
 }
+
+// Apoyo económico opcional. La sección del sitio solo aparece cuando hay al menos un canal activo (ver build.mjs).
+export const support = {
+  es: {
+    title: 'Apoya faro.',
+    lead: 'faro es gratis y libre, y seguirá siéndolo. Si te sirve y quieres ayudar a mantenerlo y a que sigan llegando mejoras, puedes invitarnos un café.',
+    note: 'No es obligatorio y no desbloquea nada: todas las funciones son para todos.',
+    github: 'Apoyar en GitHub Sponsors',
+    kofi: 'Invitar un café en Ko-fi',
+    footer: 'Apoyar',
+  },
+  en: {
+    title: 'Support faro.',
+    lead: 'faro is free and open, and it will stay that way. If it’s useful to you and you’d like to help keep it going and improving, you can buy us a coffee.',
+    note: 'It’s optional and unlocks nothing: every feature is for everyone.',
+    github: 'Support on GitHub Sponsors',
+    kofi: 'Buy us a coffee on Ko-fi',
+    footer: 'Support',
+  },
+}
