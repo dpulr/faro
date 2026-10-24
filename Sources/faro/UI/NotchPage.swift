@@ -3,11 +3,21 @@
 
 import SwiftUI
 import EventKit
+import UniformTypeIdentifiers
 
 struct NotchPage: View {
     @EnvironmentObject var notch: NotchModel
     @EnvironmentObject var extras: NotchExtras
+    @EnvironmentObject var engine: WallpaperEngine
+    @EnvironmentObject var monitor: SystemMonitor
+    @EnvironmentObject var speed: SpeedTest
     @State private var cityDraft = ""
+    @State private var draggedWidget: NotchWidgetKind?
+    @State private var draggedTool: NotchToolKind?
+    @State private var resizingWidget: NotchWidgetKind?
+    @State private var resizeStartColumns = 1
+    @State private var resizeProposedColumns: Int?
+    @State private var hoveredPreviewWidget: NotchWidgetKind?
 
     private let breakOptions = [20, 30, 45, 60]
 
@@ -32,6 +42,10 @@ struct NotchPage: View {
                 }
             }
 
+            compactCard
+            personalizationCard
+            layoutEditorCard
+
             Card(padding: 4) {
                 VStack(spacing: 0) {
                     row("Cómo se abre", "Al pasar el cursor por el notch, o solo cuando le das un clic.") {
@@ -43,8 +57,9 @@ struct NotchPage: View {
                     }
                     if notch.showMusic {
                         Divider().padding(.horizontal, 12)
-                        row("Letras sincronizadas", "La letra de lo que suena, bajo la pastilla y en el panel. Consulta lrclib.net con el título y el artista de la canción.") {
-                            toggle($notch.lyrics.enabled)
+                        row("Letras sincronizadas", "Elige si se ocultan o si muestran una o dos líneas sincronizadas.") {
+                            Segments(selection: $notch.lyricsDisplay,
+                                     options: NotchLyricsDisplay.allCases.map { ($0.title, $0) })
                         }
                     }
                     Divider().padding(.horizontal, 12)
@@ -103,6 +118,637 @@ struct NotchPage: View {
 
     private func toggle(_ isOn: Binding<Bool>) -> some View {
         Toggle("", isOn: isOn).toggleStyle(MiniSwitchStyle()).labelsHidden()
+    }
+
+    private var personalizationCard: some View {
+        let tint = Binding<Color>(get: { Color(hex: notch.panelTintHex) ?? Theme.accent },
+                                  set: { notch.panelTintHex = $0.hex })
+        return Card(padding: 4) {
+            VStack(spacing: 0) {
+                personalizationPreview.padding(16)
+                Divider().padding(.horizontal, 12)
+                row("Ancho del panel", "Más espacio horizontal sin hacerlo más alto.") {
+                    Segments(selection: $notch.panelWidth, options: NotchPanelWidth.allCases.map { ($0.title, $0) })
+                }
+                Divider().padding(.horizontal, 12)
+                row("Densidad", "Reduce o amplía el espacio vertical entre widgets.") {
+                    Segments(selection: $notch.panelDensity, options: NotchPanelDensity.allCases.map { ($0.title, $0) })
+                }
+                Divider().padding(.horizontal, 12)
+                row("Estilo", "Negro, teñido, cristal translúcido o liquid crystal.") {
+                    MenuChip(text: notch.panelStyle.title) {
+                        ForEach(NotchPanelStyle.allCases) { style in
+                            DropdownRow(title: style.title, selected: style == notch.panelStyle) { notch.panelStyle = style }
+                        }
+                    }
+                }
+                if notch.panelStyle != .black {
+                    Divider().padding(.horizontal, 12)
+                    row("Color y transparencia", "Personaliza el tono y cuánto deja ver el fondo.") {
+                        HStack(spacing: 12) {
+                            ColorPicker("", selection: tint, supportsOpacity: false).labelsHidden()
+                            Slider(value: $notch.panelOpacity, in: 0.15...1).frame(width: 150)
+                            Text("\(Int((notch.panelOpacity * 100).rounded()))%")
+                                .font(.caption.monospacedDigit()).foregroundStyle(.secondary).frame(width: 34)
+                        }
+                    }
+                }
+                Divider().padding(.horizontal, 12)
+                row("Dock de herramientas", "Déjalo en su pestaña o visible al pie de cualquier sección.") {
+                    Segments(selection: $notch.dockPlacement,
+                             options: NotchDockPlacement.allCases.map { ($0.title, $0) })
+                }
+                Divider().padding(.horizontal, 12)
+                row("Tamaño del dock", "Cambia la altura de los accesos sin afectar los widgets.") {
+                    Segments(selection: $notch.dockScale, options: NotchDockScale.allCases.map { ($0.title, $0) })
+                }
+                Divider().padding(.horizontal, 12)
+                row("Indicadores al expandir", "Muestra arriba los mismos iconos y métricas de las alas del notch cerrado.") {
+                    toggle($notch.showExpandedStatus)
+                }
+                Divider().padding(.horizontal, 12)
+                row("Iconos en las pestañas", "Muestra u oculta el símbolo que acompaña a Inicio, Sistema y Herramientas.") {
+                    toggle($notch.showTabIcons)
+                }
+                Divider().padding(.horizontal, 12)
+                row("Fondo de Estado del Mac", "Usa tarjetas sutiles o deja cada métrica integrada con el fondo del notch.") {
+                    toggle($notch.showSystemItemBackgrounds)
+                }
+                Divider().padding(.horizontal, 12)
+                row("Tamaño de Estado del Mac", "Reduce iconos, valores, separaciones y altura de cada métrica.") {
+                    Segments(selection: $notch.systemMetricScale,
+                             options: NotchSystemMetricScale.allCases.map { ($0.title, $0) })
+                }
+                Divider().padding(.horizontal, 12)
+                row("Descripciones del sistema", "Muestra u oculta la explicación debajo del valor de cada métrica.") {
+                    toggle($notch.showSystemDescriptions)
+                }
+                Divider().padding(.horizontal, 12)
+                row("Título Estado del Mac", "Permite omitir el encabezado para ahorrar todavía más altura.") {
+                    toggle($notch.showSystemTitle)
+                }
+                Divider().padding(.horizontal, 12)
+                row("Título de herramientas", "Muestra u oculta el encabezado del dock de herramientas.") {
+                    toggle($notch.showToolsTitle)
+                }
+                Divider().padding(.horizontal, 12)
+                row("Ancho del notch cerrado", "Automático usa solo el espacio que necesitan los iconos; Amplio conserva alas largas.") {
+                    Segments(selection: $notch.collapsedWidthMode,
+                             options: NotchCollapsedWidthMode.allCases.map { ($0.title, $0) })
+                }
+                Divider().padding(.horizontal, 12)
+                row("Forma de las herramientas", "Elige botones rectangulares, circulares o completamente transparentes.") {
+                    Segments(selection: $notch.toolButtonStyle,
+                             options: NotchToolButtonStyle.allCases.map { ($0.title, $0) })
+                }
+            }
+        }
+    }
+
+    private var personalizationPreview: some View {
+        let baseWidth: CGFloat = switch notch.panelWidth { case .compact: 360; case .balanced: 440; case .wide: 560 }
+        let height: CGFloat = switch notch.panelDensity { case .tight: 105; case .balanced: 128; case .roomy: 150 }
+        return VStack(spacing: 8) {
+            Text("Vista previa").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            VStack(spacing: 7) {
+                HStack {
+                    Label("Inicio", systemImage: "sparkles").font(.system(size: 9, weight: .semibold))
+                    Spacer()
+                    Image(systemName: "arrow.up.left.and.arrow.down.right").font(.system(size: 9))
+                }
+                HStack(spacing: 7) {
+                    RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.09)).frame(maxWidth: .infinity)
+                    RoundedRectangle(cornerRadius: 10).fill(Color.white.opacity(0.06)).frame(width: baseWidth * 0.3)
+                }
+            }
+            .foregroundStyle(.white.opacity(0.8)).padding(12)
+            .frame(width: baseWidth, height: height)
+            .background(previewFill, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Color.white.opacity(0.12)))
+            .animation(.spring(response: 0.3, dampingFraction: 0.85), value: notch.panelWidth)
+            .animation(.spring(response: 0.3, dampingFraction: 0.85), value: notch.panelDensity)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private var previewFill: AnyShapeStyle {
+        let tint = Color(hex: notch.panelTintHex) ?? Theme.accent
+        switch notch.panelStyle {
+        case .black: return AnyShapeStyle(Color.black)
+        case .tinted: return AnyShapeStyle(LinearGradient(colors: [tint.opacity(notch.panelOpacity), .black], startPoint: .topLeading, endPoint: .bottomTrailing))
+        case .glass: return AnyShapeStyle(.ultraThinMaterial)
+        case .liquid: return AnyShapeStyle(LinearGradient(colors: [tint.opacity(notch.panelOpacity), Color(red: 0.08, green: 0.12, blue: 0.16), .black], startPoint: .topLeading, endPoint: .bottomTrailing))
+        }
+    }
+
+    private var layoutEditorCard: some View {
+        Card(padding: 4) {
+            VStack(alignment: .leading, spacing: 14) {
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Organizar el notch").font(.title3.weight(.semibold))
+                    Text("Arrastra los widgets para ordenarlos. Usa la manija del borde derecho para darles 1/3, 2/3 o todo el ancho.")
+                        .font(.caption).foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 12).padding(.top, 12)
+
+                layoutLivePreview
+
+                HStack {
+                    Text("WIDGETS · ARRASTRA PARA ORDENAR")
+                        .font(.caption2.weight(.semibold)).tracking(0.8).foregroundStyle(.secondary)
+                    Spacer()
+                    Text("El ancho cambia al soltar")
+                        .font(.caption2).foregroundStyle(.secondary)
+                }
+                .padding(.horizontal, 12)
+
+                Grid(horizontalSpacing: 10, verticalSpacing: 10) {
+                    ForEach(Array(editorWidgetRows.enumerated()), id: \.offset) { _, row in
+                        GridRow {
+                            ForEach(row) { config in
+                                widgetEditorTile(config)
+                                    .gridCellColumns(config.size.columns)
+                            }
+                            if row.reduce(0, { $0 + $1.size.columns }) < 3 {
+                                Color.clear.frame(height: 1)
+                                    .gridCellColumns(3 - row.reduce(0, { $0 + $1.size.columns }))
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 12)
+
+                widgetDetailsEditor
+
+                Divider().padding(.horizontal, 12)
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("DOCK · ARRASTRA PARA ORDENAR")
+                        .font(.caption2.weight(.semibold)).tracking(0.8).foregroundStyle(.secondary)
+                    HStack(spacing: 7) {
+                        ForEach(notch.toolLayout) { config in toolEditorTile(config) }
+                    }
+                }
+                .padding(.horizontal, 12).padding(.bottom, 12)
+            }
+        }
+    }
+
+    private var widgetDetailsEditor: some View {
+        VStack(spacing: 0) {
+            Divider().padding(.horizontal, 12)
+            row("Saludo personalizado", "Escribe un mensaje, añade un emoji y decide si también aparece junto a las pestañas.") {
+                HStack(spacing: 8) {
+                    TextField("👋", text: $notch.greetingEmoji).frame(width: 42)
+                    TextField("Hola Daniel", text: $notch.greetingText).frame(width: 170)
+                    Toggle("En encabezado", isOn: $notch.showGreetingInHeader).toggleStyle(.checkbox)
+                }
+            }
+            Divider().padding(.horizontal, 12)
+            row("Controles visibles", "Elige cuáles aparecen dentro del widget de controles del sistema.") {
+                HStack(spacing: 12) {
+                    Toggle("Volumen", isOn: $notch.showVolumeControl).toggleStyle(.checkbox)
+                    Toggle("Pantalla", isOn: $notch.showDisplayControl).toggleStyle(.checkbox)
+                    Toggle("Teclado", isOn: $notch.showKeyboardControl).toggleStyle(.checkbox)
+                }
+            }
+            Divider().padding(.horizontal, 12)
+            row("Contenido del calendario", "Muestra el próximo evento o una vista del mes que abre Calendario al seleccionarla.") {
+                Segments(selection: Binding(get: { notch.calendarStyle }, set: { style in
+                    notch.calendarStyle = style
+                    if style == .month, let index = notch.widgetLayout.firstIndex(where: { $0.kind == .calendar }) {
+                        notch.widgetLayout[index].height = .double
+                    }
+                }), options: NotchCalendarStyle.allCases.map { ($0.title, $0) })
+            }
+        }
+    }
+
+    private var layoutLivePreview: some View {
+        let width: CGFloat = switch notch.panelWidth { case .compact: 440; case .balanced: 520; case .wide: 620 }
+        return VStack(spacing: 7) {
+            if notch.showExpandedStatus {
+                HStack(spacing: 7) {
+                    Image(systemName: "doc.on.clipboard")
+                    Image(systemName: "cpu")
+                    Text("18%").monospacedDigit()
+                    Spacer()
+                    Image(systemName: "battery.75percent")
+                    Text("74%").monospacedDigit()
+                    Image(systemName: "tray.and.arrow.down")
+                }
+                .font(.system(size: 8, weight: .medium)).foregroundStyle(.white.opacity(0.7))
+                .padding(.horizontal, 9).frame(height: 24)
+                .background(Capsule().fill(Color.white.opacity(0.055)))
+            }
+            HStack(spacing: 5) {
+                previewTab("Inicio", "sparkles", selected: true)
+                previewTab("Sistema", "gauge.with.dots.needle.50percent", selected: false)
+                previewTab("Herramientas", "square.grid.2x2", selected: false)
+                Spacer()
+                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                    .font(.system(size: 8, weight: .semibold)).frame(width: 24, height: 24)
+                    .background(Circle().fill(Color.white.opacity(0.08)))
+            }
+            NotchMatrixLayout(rowHeight: 44, spacing: 6) {
+                ForEach(previewVisibleConfigs) { config in
+                    previewWidget(config)
+                        .overlay(alignment: .bottomTrailing) {
+                            if hoveredPreviewWidget == config.kind || resizingWidget == config.kind {
+                                previewResizeHandle(config)
+                            }
+                        }
+                        .overlay(alignment: .topTrailing) {
+                            if (config.kind == .music || config.kind == .calendar), hoveredPreviewWidget == config.kind {
+                                Button {
+                                    if let index = notch.widgetLayout.firstIndex(where: { $0.kind == config.kind }) {
+                                        withAnimation(.spring(response: 0.28, dampingFraction: 0.9)) {
+                                            notch.widgetLayout[index].height = config.height == .single ? .double : .single
+                                        }
+                                    }
+                                } label: {
+                                    Image(systemName: "arrow.up.and.down")
+                                        .font(.system(size: 7, weight: .bold)).frame(width: 18, height: 18)
+                                        .background(Circle().fill(Color.white.opacity(0.14)))
+                                }
+                                .buttonStyle(.plain).padding(4).help(tr("Cambiar entre una y dos filas"))
+                            }
+                        }
+                        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(draggedWidget == config.kind ? Theme.accent : .clear, lineWidth: 1.5))
+                        .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                        .onHover { inside in hoveredPreviewWidget = inside ? config.kind : nil }
+                        .onDrag {
+                            draggedWidget = config.kind
+                            return NSItemProvider(object: config.kind.rawValue as NSString)
+                        }
+                        .onDrop(of: [UTType.text], isTargeted: nil) { _ in
+                            moveDraggedWidget(before: config.kind); return true
+                        }
+                        .notchMatrixSpan(columns: config.size.columns, rows: config.height == .double ? 2 : 1)
+                }
+            }
+            previewTools
+        }
+        .foregroundStyle(.white)
+        .padding(12)
+        .frame(width: width)
+        .background(previewFill, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 24, style: .continuous).stroke(Color.white.opacity(0.12)))
+        .frame(maxWidth: .infinity)
+        .animation(.spring(response: 0.3, dampingFraction: 0.86), value: notch.widgetLayout)
+    }
+
+    private func previewTab(_ title: String, _ symbol: String, selected: Bool) -> some View {
+        HStack(spacing: 4) {
+            if notch.showTabIcons { Image(systemName: symbol) }
+            Text(LocalizedStringKey(title))
+        }
+        .font(.system(size: 8, weight: .medium))
+        .foregroundStyle(.white.opacity(selected ? 1 : 0.48))
+        .padding(.horizontal, 8).frame(height: 24)
+        .background(Capsule().fill(Color.white.opacity(selected ? 0.11 : 0)))
+    }
+
+    private var previewVisibleConfigs: [NotchWidgetConfig] {
+        notch.widgetLayout.filter { config in
+            guard config.enabled else { return false }
+            if config.kind == .volume { return notch.showVolumeControl || notch.showDisplayControl || notch.showKeyboardControl }
+            if config.kind == .greeting {
+                return !notch.greetingText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || !notch.greetingEmoji.isEmpty
+            }
+            return true
+        }
+    }
+
+    @ViewBuilder private func previewWidget(_ config: NotchWidgetConfig) -> some View {
+        Group {
+            switch config.kind {
+            case .greeting:
+                HStack(spacing: 6) {
+                    Text(notch.greetingEmoji).font(.system(size: 14))
+                    Text(notch.greetingText).font(.system(size: 10, weight: .semibold)).lineLimit(2)
+                    Spacer(minLength: 0)
+                }
+            case .volume:
+                HStack(spacing: 5) {
+                    ForEach(previewControlSymbols, id: \.self) { symbol in
+                        VStack(spacing: 4) {
+                            Image(systemName: symbol).font(.system(size: 8))
+                            Capsule().fill(Color.white.opacity(0.2)).frame(height: 3)
+                        }.frame(maxWidth: .infinity)
+                    }
+                }.frame(height: 38)
+            case .music:
+                previewMusic
+            case .weather:
+                previewInfo(symbol: "cloud.fill", title: "19°", detail: tr("Nublado"), background: false)
+            case .calendar:
+                previewInfo(symbol: "calendar", title: notch.calendarStyle == .month ? tr("Mes completo") : tr("Sin eventos"),
+                            detail: notch.calendarStyle == .month ? Date().formatted(.dateTime.month(.wide)) : tr("En las próximas 24 horas"), background: false)
+            case .timer:
+                previewInfo(symbol: "timer", title: "25:00", detail: tr("Enfoque"), background: false)
+            case .devices:
+                previewInfo(symbol: "airpods", title: "AirPods", detail: "82%", background: false)
+            case .eyeBreak:
+                previewInfo(symbol: "eye", title: tr("Próxima pausa"), detail: tr("En 12 min"), background: false)
+            case .storage:
+                previewInfo(symbol: "internaldrive", title: "128 GB", detail: tr("Espacio libre"), background: false)
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .fill(Color.white.opacity(config.showsBackground ? 0.055 : 0)))
+    }
+
+    private var previewControlSymbols: [String] {
+        var symbols: [String] = []
+        if notch.showVolumeControl { symbols.append("speaker.wave.2.fill") }
+        if notch.showDisplayControl { symbols.append("sun.max.fill") }
+        if notch.showKeyboardControl { symbols.append("light.beacon.max.fill") }
+        return symbols
+    }
+
+    private var previewMusic: some View {
+        HStack(spacing: 7) {
+            Image(systemName: "music.note").font(.system(size: 13)).frame(width: 18)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Nada sonando").font(.system(size: 10, weight: .semibold)).lineLimit(1)
+                if notch.lyricsDisplay == .hidden {
+                    Text("Abre Música o Spotify").font(.system(size: 7)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+                } else {
+                    Text("Una letra sincronizada…").font(.system(size: 6.5, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.68)).lineLimit(1)
+                    if notch.lyricsDisplay == .twoLines {
+                        Text("La siguiente línea…").font(.system(size: 6)).foregroundStyle(.white.opacity(0.35)).lineLimit(1)
+                    }
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 8)
+    }
+
+    private func previewResizeHandle(_ config: NotchWidgetConfig) -> some View {
+        HStack(spacing: 3) {
+            Text("\(resizingWidget == config.kind ? (resizeProposedColumns ?? config.size.columns) : config.size.columns)/3")
+                .font(.system(size: 7, weight: .bold, design: .rounded)).monospacedDigit()
+            Image(systemName: "arrow.left.and.right").font(.system(size: 7, weight: .bold))
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 6).frame(height: 18)
+        .background(Capsule().fill(Theme.accent.opacity(0.9)))
+        .contentShape(Capsule())
+        .padding(4)
+        .gesture(resizeGesture(for: config.kind, threshold: 45))
+        .help(tr("Arrastra para cambiar el ancho"))
+    }
+
+    private func previewInfo(symbol: String, title: String, detail: String, background: Bool) -> some View {
+        HStack(spacing: 7) {
+            Image(systemName: symbol).font(.system(size: 13)).frame(width: 18)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title).font(.system(size: 10, weight: .semibold)).lineLimit(1)
+                Text(detail).font(.system(size: 7)).foregroundStyle(.white.opacity(0.5)).lineLimit(1)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 8).frame(height: 42)
+        .background(RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .fill(Color.white.opacity(background ? 0.055 : 0)))
+    }
+
+    private var previewTools: some View {
+        VStack(alignment: .leading, spacing: notch.showToolsTitle ? 4 : 0) {
+            if notch.showToolsTitle {
+                Text("Herramientas")
+                    .font(.system(size: 8, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.45))
+            }
+            HStack(spacing: 4) {
+                ForEach(notch.toolLayout.filter(\.enabled)) { config in
+                    VStack(spacing: 3) {
+                        Image(systemName: toolSymbol(config.kind)).font(.system(size: 9, weight: .medium))
+                        Text(config.kind.title).font(.system(size: 6)).lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity).frame(height: 32)
+                    .background { previewToolBackground }
+                    .contentShape(Rectangle())
+                    .onDrag {
+                        draggedTool = config.kind
+                        return NSItemProvider(object: config.kind.rawValue as NSString)
+                    }
+                    .onDrop(of: [UTType.text], isTargeted: nil) { _ in
+                        moveDraggedTool(before: config.kind); return true
+                    }
+                }
+            }
+        }
+    }
+
+    @ViewBuilder private var previewToolBackground: some View {
+        switch notch.toolButtonStyle {
+        case .rounded: RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.white.opacity(0.055))
+        case .circle: Circle().fill(Color.white.opacity(0.055)).frame(width: 32, height: 32)
+        case .plain: Color.clear
+        }
+    }
+
+    private var editorWidgetRows: [[NotchWidgetConfig]] {
+        var rows: [[NotchWidgetConfig]] = [], row: [NotchWidgetConfig] = []
+        var used = 0
+        for config in notch.widgetLayout {
+            if used + config.size.columns > 3, !row.isEmpty { rows.append(row); row = []; used = 0 }
+            row.append(config); used += config.size.columns
+            if used == 3 { rows.append(row); row = []; used = 0 }
+        }
+        if !row.isEmpty { rows.append(row) }
+        return rows
+    }
+
+    private func widgetEditorTile(_ config: NotchWidgetConfig) -> some View {
+        let index = notch.widgetLayout.firstIndex(where: { $0.kind == config.kind }) ?? 0
+        return HStack(spacing: 10) {
+            Image(systemName: "line.3.horizontal").font(.caption).foregroundStyle(.secondary)
+            Image(systemName: config.kind.symbol).frame(width: 20).foregroundStyle(config.enabled ? Theme.accent : .secondary)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(config.kind.title).font(.callout.weight(.medium)).lineLimit(1)
+                Text(config.size.title).font(.caption2).foregroundStyle(.secondary).lineLimit(1)
+            }
+            Spacer()
+            Button { notch.widgetLayout[index].enabled.toggle() } label: {
+                Image(systemName: config.enabled ? "eye.fill" : "eye.slash")
+                    .frame(width: 24, height: 24).contentShape(Rectangle())
+            }
+            .buttonStyle(.plain).help(config.enabled ? tr("Ocultar widget") : tr("Mostrar widget"))
+            Button { notch.widgetLayout[index].showsBackground.toggle() } label: {
+                Image(systemName: config.showsBackground ? "rectangle.fill" : "rectangle")
+                    .frame(width: 22, height: 24).contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(config.showsBackground ? Theme.accent : .secondary)
+            .help(config.showsBackground ? tr("Usar fondo transparente") : tr("Mostrar fondo del widget"))
+            if config.kind == .music || config.kind == .calendar {
+                Menu {
+                    ForEach(NotchWidgetHeight.allCases) { height in
+                        Button(height.title) { notch.widgetLayout[index].height = height }
+                    }
+                } label: {
+                    Image(systemName: config.height == .double ? "rectangle.expand.vertical" : "rectangle.compress.vertical")
+                        .frame(width: 22, height: 24)
+                }
+                .menuStyle(.borderlessButton).fixedSize()
+                .help(tr("Altura del widget"))
+            }
+            VStack(spacing: 2) {
+                Text("\(resizingWidget == config.kind ? (resizeProposedColumns ?? config.size.columns) : config.size.columns)/3")
+                    .font(.system(size: 8, weight: .semibold, design: .rounded)).monospacedDigit()
+                Image(systemName: "arrow.left.and.right").font(.system(size: 9, weight: .semibold))
+            }
+                .foregroundStyle(Theme.accent)
+                .frame(width: 26, height: 42)
+                .contentShape(Rectangle())
+                .gesture(resizeGesture(for: config.kind))
+                .help(tr("Arrastra para cambiar el ancho"))
+        }
+        .padding(.leading, 12).padding(.trailing, 5).frame(height: 58)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .fill(config.enabled ? Theme.card : Theme.card.opacity(0.35)))
+        .overlay(RoundedRectangle(cornerRadius: 14, style: .continuous)
+            .stroke(draggedWidget == config.kind ? Theme.accent : Color.primary.opacity(0.08), lineWidth: 1))
+        .opacity(config.enabled ? 1 : 0.55)
+        .contentShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .onDrag {
+            draggedWidget = config.kind
+            return NSItemProvider(object: config.kind.rawValue as NSString)
+        }
+        .onDrop(of: [UTType.text], isTargeted: nil) { _ in
+            moveDraggedWidget(before: config.kind); return true
+        }
+    }
+
+    private func toolEditorTile(_ config: NotchToolConfig) -> some View {
+        let index = notch.toolLayout.firstIndex(where: { $0.kind == config.kind }) ?? 0
+        return VStack(spacing: 5) {
+            Image(systemName: toolSymbol(config.kind)).font(.system(size: 14, weight: .medium))
+            Text(config.kind.title).font(.system(size: 9, weight: .medium)).lineLimit(1)
+        }
+        .foregroundStyle(config.enabled ? Color.primary : Color.secondary)
+        .frame(maxWidth: .infinity).frame(height: 52)
+        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Theme.card.opacity(config.enabled ? 1 : 0.35)))
+        .overlay(alignment: .topTrailing) {
+            Button { notch.toolLayout[index].enabled.toggle() } label: {
+                Image(systemName: config.enabled ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 10)).frame(width: 20, height: 20)
+            }.buttonStyle(.plain).offset(x: 3, y: -3)
+        }
+        .onDrag {
+            draggedTool = config.kind
+            return NSItemProvider(object: config.kind.rawValue as NSString)
+        }
+        .onDrop(of: [UTType.text], isTargeted: nil) { _ in
+            moveDraggedTool(before: config.kind); return true
+        }
+    }
+
+    private func resizeGesture(for kind: NotchWidgetKind, threshold: CGFloat = 80) -> some Gesture {
+        DragGesture(minimumDistance: 2)
+            .onChanged { value in
+                guard let index = notch.widgetLayout.firstIndex(where: { $0.kind == kind }) else { return }
+                if resizingWidget != kind {
+                    resizingWidget = kind
+                    resizeStartColumns = notch.widgetLayout[index].size.columns
+                    resizeProposedColumns = resizeStartColumns
+                }
+                let delta = Int((value.translation.width / threshold).rounded())
+                resizeProposedColumns = min(max(resizeStartColumns + delta, 1), 3)
+            }
+            .onEnded { _ in
+                guard let index = notch.widgetLayout.firstIndex(where: { $0.kind == kind }) else {
+                    resizingWidget = nil; resizeProposedColumns = nil; return
+                }
+                let columns = resizeProposedColumns ?? resizeStartColumns
+                withAnimation(.spring(response: 0.28, dampingFraction: 0.9)) {
+                    notch.widgetLayout[index].size = .columns(columns)
+                }
+                resizingWidget = nil
+                resizeProposedColumns = nil
+            }
+    }
+
+    private func moveDraggedWidget(before destination: NotchWidgetKind) {
+        guard let source = draggedWidget,
+              let from = notch.widgetLayout.firstIndex(where: { $0.kind == source }),
+              let to = notch.widgetLayout.firstIndex(where: { $0.kind == destination }), from != to else { return }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+            let item = notch.widgetLayout.remove(at: from)
+            notch.widgetLayout.insert(item, at: from < to ? to - 1 : to)
+        }
+        draggedWidget = nil
+    }
+
+    private func moveDraggedTool(before destination: NotchToolKind) {
+        guard let source = draggedTool,
+              let from = notch.toolLayout.firstIndex(where: { $0.kind == source }),
+              let to = notch.toolLayout.firstIndex(where: { $0.kind == destination }), from != to else { return }
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+            let item = notch.toolLayout.remove(at: from)
+            notch.toolLayout.insert(item, at: from < to ? to - 1 : to)
+        }
+        draggedTool = nil
+    }
+
+    private func toolSymbol(_ kind: NotchToolKind) -> String {
+        switch kind {
+        case .clipboard: "doc.on.clipboard"; case .shelf: "tray.and.arrow.down"; case .timer: "timer"
+        case .microphone: "mic"; case .eyedropper: "eyedropper"; case .emoji: "face.smiling"; case .awake: "cup.and.saucer"
+        case .keyboard: "keyboard"; case .settings: "slider.horizontal.3"
+        }
+    }
+
+    /// Vista previa y selección de lo que permanece visible alrededor del notch.
+    private var compactCard: some View {
+        Card(padding: 4) {
+            VStack(spacing: 0) {
+                VStack(spacing: 12) {
+                    Text("Vista compacta").font(.callout.weight(.semibold))
+                    HStack(spacing: 5) {
+                        ForEach(MenuBarMetric.allCases.filter { engine.state.notchMetrics.contains($0) }) { metric in
+                            HStack(spacing: 4) {
+                                Image(systemName: metric.symbol).font(.system(size: 10, weight: .medium))
+                                Text(MetricValue.text(metric, monitor: monitor, speed: speed))
+                                    .font(.system(size: 10, weight: .semibold, design: .rounded)).monospacedDigit()
+                            }
+                            .foregroundStyle(.white.opacity(0.9))
+                            .padding(.horizontal, 8).frame(height: 24)
+                            .background(Capsule().fill(Color.white.opacity(0.09)))
+                        }
+                        if engine.state.notchMetrics.isEmpty {
+                            Text("Sin datos fijos").font(.caption).foregroundStyle(.white.opacity(0.55))
+                        }
+                    }
+                    .padding(.horizontal, 12).padding(.vertical, 10)
+                    .background(Capsule().fill(Color.black))
+                }
+                .frame(maxWidth: .infinity).padding(.vertical, 16)
+
+                Divider().padding(.horizontal, 12)
+                row("Botones en las orillas", "Portapapeles y bandeja quedan a un clic cuando no hay una actividad prioritaria.") {
+                    toggle($notch.showCompactControls)
+                }
+                ForEach(MenuBarMetric.allCases) { metric in
+                    Divider().padding(.horizontal, 12)
+                    row(LocalizedStringKey(metric.title), LocalizedStringKey(metric.detail)) {
+                        Toggle("", isOn: Binding(
+                            get: { engine.state.notchMetrics.contains(metric) },
+                            set: { on in
+                                if on { engine.state.notchMetrics.insert(metric) }
+                                else { engine.state.notchMetrics.remove(metric) }
+                            }))
+                            .toggleStyle(MiniSwitchStyle()).labelsHidden()
+                    }
+                }
+            }
+        }
     }
 
     private func minutesChip(_ value: Binding<Int>, _ options: [Int]) -> some View {

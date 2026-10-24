@@ -20,6 +20,7 @@ final class NotchExtras: ObservableObject {
     @Published var eyedropperEnabled: Bool { didSet { save("eyedropperEnabled", eyedropperEnabled) } }
     @Published var privacyEnabled: Bool { didSet { save("privacyIndicator", privacyEnabled); if !privacyEnabled { cameraOn = false; micOn = false } } }
     @Published var capsEnabled: Bool { didSet { save("capsLockHUD", capsEnabled) } }
+    @Published private(set) var eyedropperPicking = false
     @Published private(set) var cameraOn = false
     @Published private(set) var micOn = false
 
@@ -113,12 +114,23 @@ final class NotchExtras: ObservableObject {
     }
 
     func pickColor() {
+        guard !eyedropperPicking else { return }
+        eyedropperPicking = true
         notch?.collapse?()
-        ColorEyedropper.pick { [weak self] hex, color in
-            NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(hex, forType: .string)
-            self?.notch?.showToast(symbol: "eyedropper", text: String(format: tr("%@ copiado"), hex), seconds: 4, swatch: hex)
-            _ = color
+        // Espera a que termine el clic del botón y la animación de cierre antes de iniciar el
+        // seguimiento global de AppKit. En un segundo monitor ambos eventos podían competir.
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 220_000_000)
+            guard let self else { return }
+            let started = ColorEyedropper.pick { [weak self] hex, color in
+                guard let self else { return }
+                self.eyedropperPicking = false
+                guard let hex, color != nil else { return }
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(hex, forType: .string)
+                self.notch?.showToast(symbol: "eyedropper", text: String(format: tr("%@ copiado"), hex), seconds: 4, swatch: hex)
+            }
+            if !started { eyedropperPicking = false }
         }
     }
 

@@ -12,9 +12,29 @@ struct BarraPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             PageHeader(title: "Barra de menú",
-                       subtitle: "Elige qué datos quieres ver siempre, sin abrir nada.")
+                       subtitle: "Úsala junto al notch o apágala por completo para dejar los datos solo arriba al centro.")
+
+            Card {
+                HStack(spacing: 14) {
+                    Image(systemName: "menubar.rectangle")
+                        .font(.system(size: 22))
+                        .foregroundStyle(Theme.accent)
+                        .frame(width: 48, height: 48)
+                        .background(Circle().fill(Theme.accent.opacity(0.12)))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Faro en la barra de menús").font(.title3.weight(.semibold))
+                        Text("Al apagarlo, el notch sigue funcionando de forma independiente.")
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Toggle("", isOn: $engine.state.menuBarEnabled)
+                        .toggleStyle(MiniSwitchStyle())
+                        .labelsHidden()
+                }
+            }
 
             preview
+                .opacity(engine.state.menuBarEnabled ? 1 : 0.35)
 
             Card(padding: 4) {
                 VStack(spacing: 0) {
@@ -24,20 +44,27 @@ struct BarraPage: View {
                     }
                 }
             }
+            .disabled(!engine.state.menuBarEnabled)
 
             Card {
-                Toggle(isOn: $engine.state.menuBarShowIcon) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("Mostrar el ícono de faro").font(.callout.weight(.medium))
-                            Text("Si lo apagas y no eliges datos, el ícono aparece de todos modos.")
-                                .font(.caption).foregroundStyle(.secondary)
-                        }
-                        Spacer()
+                HStack(spacing: 14) {
+                    Image(systemName: "sailboat.fill")
+                        .font(.system(size: 18))
+                        .foregroundStyle(Theme.accent)
+                        .frame(width: 40, height: 40)
+                        .background(Circle().fill(Theme.accent.opacity(0.12)))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Mostrar el ícono de faro").font(.callout.weight(.semibold))
+                        Text("Si lo apagas y no eliges datos, el ícono aparece de todos modos.")
+                            .font(.caption).foregroundStyle(.secondary)
                     }
+                    Spacer()
+                    Toggle("", isOn: $engine.state.menuBarShowIcon)
+                        .toggleStyle(MiniSwitchStyle())
+                        .labelsHidden()
                 }
-                .toggleStyle(MiniSwitchStyle())
             }
+            .disabled(!engine.state.menuBarEnabled)
         }
     }
 
@@ -52,9 +79,10 @@ struct BarraPage: View {
             Spacer()
         }
         .padding(.vertical, 26)
-        .background(RoundedRectangle(cornerRadius: 14).fill(
+        .background(RoundedRectangle(cornerRadius: 20).fill(
             LinearGradient(colors: [Theme.accent.opacity(0.35), Color(red: 0.34, green: 0.48, blue: 0.82).opacity(0.35)],
                            startPoint: .topLeading, endPoint: .bottomTrailing)))
+        .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(Theme.stroke))
     }
 
     private func row(_ metric: MenuBarMetric) -> some View {

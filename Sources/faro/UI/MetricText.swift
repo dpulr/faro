@@ -9,6 +9,7 @@ enum MetricValue {
     static func text(_ metric: MenuBarMetric, monitor: SystemMonitor, speed: SpeedTest) -> String {
         switch metric {
         case .cpu: return "\(Int(monitor.cpu.rounded()))%"
+        case .gpu: return monitor.gpu.map { "\(Int($0.rounded()))%" } ?? "—"
         case .memory: return "\(Int((monitor.memFraction * 100).rounded()))%"
         case .disk: return "\(Int((Double(monitor.diskFree) / 1_000_000_000).rounded())) GB"
         case .network: return "↓\(Format.compactRate(monitor.netDown)) ↑\(Format.compactRate(monitor.netUp))"

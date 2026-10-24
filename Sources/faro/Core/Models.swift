@@ -90,13 +90,14 @@ struct SpeedResult: Codable, Identifiable, Hashable {
 }
 
 enum MenuBarMetric: String, Codable, CaseIterable, Identifiable {
-    case cpu, memory, disk, network, battery, speed
+    case cpu, gpu, memory, disk, network, battery, speed
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .cpu: return tr("Procesador")
+        case .gpu: return tr("Gráficos")
         case .memory: return tr("Memoria")
         case .disk: return tr("Espacio libre en disco")
         case .network: return tr("Red en vivo")
@@ -108,6 +109,7 @@ enum MenuBarMetric: String, Codable, CaseIterable, Identifiable {
     var detail: String {
         switch self {
         case .cpu: return tr("Cuánto trabaja tu Mac ahora mismo")
+        case .gpu: return tr("Uso de la tarjeta gráfica")
         case .memory: return tr("Porcentaje de memoria en uso")
         case .disk: return tr("Gigabytes que te quedan")
         case .network: return tr("Lo que sube y baja por segundo")
@@ -119,6 +121,7 @@ enum MenuBarMetric: String, Codable, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .cpu: return "cpu"
+        case .gpu: return "square.stack.3d.up"
         case .memory: return "memorychip"
         case .disk: return "internaldrive"
         case .network: return "arrow.up.arrow.down"
@@ -158,6 +161,10 @@ struct AppState: Codable {
     var lastChange = Date.distantPast
     var menuBarMetrics: Set<MenuBarMetric> = [.cpu, .memory]
     var menuBarShowIcon = true
+    /// Permite usar faro solo desde el notch, sin reservar espacio en la barra de menús.
+    var menuBarEnabled = true
+    /// Métricas visibles en la versión compacta del notch. Son independientes de la barra.
+    var notchMetrics: Set<MenuBarMetric> = [.cpu, .memory]
     /// Ya se agregaron los canales de tecnología, ciencia y autos (una sola vez).
     var seededCatalog = false
     var profiles: [Profile] = []
@@ -184,6 +191,8 @@ struct AppState: Codable {
         lastChange = try c.decodeIfPresent(Date.self, forKey: .lastChange) ?? .distantPast
         menuBarMetrics = try c.decodeIfPresent(Set<MenuBarMetric>.self, forKey: .menuBarMetrics) ?? [.cpu, .memory]
         menuBarShowIcon = try c.decodeIfPresent(Bool.self, forKey: .menuBarShowIcon) ?? true
+        menuBarEnabled = try c.decodeIfPresent(Bool.self, forKey: .menuBarEnabled) ?? true
+        notchMetrics = try c.decodeIfPresent(Set<MenuBarMetric>.self, forKey: .notchMetrics) ?? menuBarMetrics
         seededCatalog = try c.decodeIfPresent(Bool.self, forKey: .seededCatalog) ?? false
         profiles = try c.decodeIfPresent([Profile].self, forKey: .profiles) ?? []
         activeProfileID = try c.decodeIfPresent(UUID.self, forKey: .activeProfileID)

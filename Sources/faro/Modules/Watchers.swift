@@ -284,16 +284,27 @@ enum PrivacyProbe {
 enum ColorEyedropper {
     /// Abre la lupa del sistema; entrega el color elegido como "#RRGGBB" (no pide permiso de grabación de pantalla).
     @MainActor
-    static func pick(_ completion: @escaping (String, NSColor) -> Void) {
+    @discardableResult
+    static func pick(_ completion: @escaping (String?, NSColor?) -> Void) -> Bool {
+        guard keepAlive == nil else { return false }
         let sampler = NSColorSampler()
         Self.keepAlive = sampler
+        // El botón vive en un NSPanel no activable. Darle la activación a Faro antes de iniciar la
+        // sesión de seguimiento evita que el primer clic se pierda al cruzar a otro monitor.
+        NSApp.activate(ignoringOtherApps: true)
         sampler.show { color in
-            Self.keepAlive = nil
-            guard let color, let rgb = color.usingColorSpace(.sRGB) else { return }
-            let hex = String(format: "#%02X%02X%02X", Int((rgb.redComponent * 255).rounded()),
-                             Int((rgb.greenComponent * 255).rounded()), Int((rgb.blueComponent * 255).rounded()))
-            completion(hex, color)
+            Task { @MainActor in
+                Self.keepAlive = nil
+                guard let color, let rgb = color.usingColorSpace(.sRGB) else {
+                    completion(nil, nil)
+                    return
+                }
+                let hex = String(format: "#%02X%02X%02X", Int((rgb.redComponent * 255).rounded()),
+                                 Int((rgb.greenComponent * 255).rounded()), Int((rgb.blueComponent * 255).rounded()))
+                completion(hex, color)
+            }
         }
+        return true
     }
 
     @MainActor private static var keepAlive: NSColorSampler?

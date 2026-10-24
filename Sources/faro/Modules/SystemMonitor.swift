@@ -8,6 +8,7 @@ import IOKit.ps
 @MainActor
 final class SystemMonitor: ObservableObject {
     @Published var cpu = 0.0
+    @Published var gpu: Double?
     @Published var memUsed: UInt64 = 0
     @Published var memTotal = ProcessInfo.processInfo.physicalMemory
     @Published var diskFree: Int64 = 0
@@ -68,6 +69,7 @@ final class SystemMonitor: ObservableObject {
 
     private func sample() {
         sampleCPU()
+        sampleGPU()
         sampleMemory()
         sampleDisk()
         sampleNetwork()
@@ -100,6 +102,27 @@ final class SystemMonitor: ObservableObject {
             if total > 0 { cpu = (user + sys + nice) / total * 100 }
         }
         prevTicks = now
+    }
+
+    /// IOAccelerator publica el porcentaje agregado tanto en Apple Silicon como en la mayoría de GPU AMD.
+    private func sampleGPU() {
+        var iterator: io_iterator_t = 0
+        guard IOServiceGetMatchingServices(kIOMainPortDefault, IOServiceMatching("IOAccelerator"), &iterator) == KERN_SUCCESS
+        else { gpu = nil; return }
+        defer { IOObjectRelease(iterator) }
+        var samples: [Double] = []
+        var service = IOIteratorNext(iterator)
+        while service != 0 {
+            if let raw = IORegistryEntryCreateCFProperty(service, "PerformanceStatistics" as CFString,
+                                                          kCFAllocatorDefault, 0)?.takeRetainedValue() as? [String: Any] {
+                for key in ["Device Utilization %", "GPU Activity(%)", "GPU Core Utilization"] {
+                    if let value = raw[key] as? NSNumber { samples.append(value.doubleValue); break }
+                }
+            }
+            IOObjectRelease(service)
+            service = IOIteratorNext(iterator)
+        }
+        gpu = samples.max().map { min(max($0, 0), 100) }
     }
 
     private func sampleMemory() {

@@ -8,7 +8,7 @@ import UserNotifications
 
 /// Dueño de todo lo que vive fuera de las ventanas: ícono de la barra, menú propio y ventana principal.
 @MainActor
-final class AppController: NSObject, UNUserNotificationCenterDelegate {
+final class AppController: NSObject, UNUserNotificationCenterDelegate, NSWindowDelegate {
     static let shared = AppController()
 
     let engine = WallpaperEngine()
@@ -29,6 +29,7 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
     private var statusItem: NSStatusItem?
     private var popover: FloatingPanel?
     private var mainWindow: NSWindow?
+    private var appResignObserver: NSObjectProtocol?
     private var resignObserver: NSObjectProtocol?
     private var lastClosed = Date.distantPast
     private var labelSubscription: AnyCancellable?
@@ -60,7 +61,8 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
                                  text: String(format: tr("Guardado en la bandeja (%d)"), self.shelf.items.count))
         }
         extras.start(notch: notch, shelf: shelf, monitor: monitor)
-        NotchController.shared.start(model: notch, mixer: mixer, extras: extras)
+        NotchController.shared.start(model: notch, mixer: mixer, extras: extras, engine: engine,
+                                     monitor: monitor, speed: speed, awake: awake)
         if Bundle.main.bundleIdentifier != nil { UNUserNotificationCenter.current().delegate = self }
         if diskAlert.enabled { diskAlert.requestAuthorization() }
         updates.start()
@@ -99,7 +101,10 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
     var mainWindowVisible: Bool { mainWindow?.isVisible ?? false }
 
     /// Oculta la ventana de escritorio; faro sigue funcionando en la barra de menú.
-    func closeMainWindow() { mainWindow?.orderOut(nil) }
+    func closeMainWindow() {
+        mainWindow?.orderOut(nil)
+        NSApp.setActivationPolicy(.accessory)
+    }
 
     /// Vuelve a abrir faro (a veces macOS solo aplica un permiso nuevo al reiniciar la app).
     func relaunch() {
@@ -158,6 +163,17 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
     func showClipboard() {
         closePopover()
         ClipboardPanelController.shared.show()
+    }
+
+    /// Abre el selector de emojis para la aplicación que ya tenía el foco, como el botón de la Touch Bar.
+    func showEmojiPicker() {
+        closePopover()
+        notch.collapse?()
+        // No depende del atajo configurable de teclado ni del permiso de Accesibilidad.
+        // AppKit se encarga de presentar el visor del sistema incluso desde una app de barra.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.08) {
+            NSApp.orderFrontCharacterPalette(nil)
+        }
     }
 
     // MARK: Notificaciones
@@ -580,6 +596,8 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
 
     /// El ícono con datos en vivo se dibuja como imagen de plantilla para que macOS lo tiñe según el modo claro/oscuro.
     private func updateLabel() {
+        statusItem?.isVisible = engine.state.menuBarEnabled
+        guard engine.state.menuBarEnabled else { return }
         guard let button = statusItem?.button else { return }
         let label = MenuBarLabel(engine: engine, monitor: monitor, speed: speed, awake: awake)
             .font(.system(size: 13, weight: .medium))
@@ -659,9 +677,12 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
             window.title = "faro"
             window.titleVisibility = .hidden
             window.titlebarAppearsTransparent = true
+            window.level = .normal
+            window.collectionBehavior = [.managed, .participatesInCycle]
             window.isOpaque = true
             window.backgroundColor = .windowBackgroundColor
             window.isReleasedWhenClosed = false
+            window.delegate = self
             window.minSize = CGSize(width: 920, height: 640)
             window.contentView = NSHostingView(rootView: MainRoot()
                 .environmentObject(engine).environmentObject(monitor).environmentObject(speed)
@@ -669,9 +690,26 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
                 .environmentObject(cleaning).environmentObject(notch).environmentObject(diskAlert).environmentObject(updates).environmentObject(extras).environmentObject(mixer).environmentObject(appearance))
             window.center()
             mainWindow = window
+            appResignObserver = NotificationCenter.default.addObserver(
+                forName: NSApplication.didResignActiveNotification, object: NSApp, queue: .main
+            ) { [weak self] _ in
+                Task { @MainActor in
+                    guard let window = self?.mainWindow, window.isVisible else { return }
+                    window.orderBack(nil)
+                }
+            }
         }
+        // Una app de barra usa normalmente `.accessory`, pero su ventana de escritorio debe comportarse
+        // como cualquier app nativa: aparecer en el Dock, activar su grupo de ventanas y subir al frente.
+        NSApp.setActivationPolicy(.regular)
+        mainWindow?.level = .normal
         NSApp.activate(ignoringOtherApps: true)
         mainWindow?.makeKeyAndOrderFront(nil)
+    }
+
+    func windowWillClose(_ notification: Notification) {
+        guard notification.object as? NSWindow === mainWindow else { return }
+        NSApp.setActivationPolicy(.accessory)
     }
 }
 

@@ -49,8 +49,11 @@ final class NotchController {
     private var model: NotchModel?
     private var mixer: AudioMixer?
     private var extras: NotchExtras?
+    private var engine: WallpaperEngine?
+    private var monitor: SystemMonitor?
+    private var speed: SpeedTest?
+    private var awake: KeepAwake?
     private var cancellables: Set<AnyCancellable> = []
-    private var dragBaseline = NSPasteboard(name: .drag).changeCount
     private var dropHideTicks = 0
     private var prevButton = false
     private var timer: Timer?
@@ -66,10 +69,15 @@ final class NotchController {
                          : tr("Tu pantalla no tiene notch: el panel aparece como una cápsula arriba al centro")
     }
 
-    func start(model: NotchModel, mixer: AudioMixer, extras: NotchExtras) {
+    func start(model: NotchModel, mixer: AudioMixer, extras: NotchExtras, engine: WallpaperEngine,
+               monitor: SystemMonitor, speed: SpeedTest, awake: KeepAwake) {
         self.model = model
         self.mixer = mixer
         self.extras = extras
+        self.engine = engine
+        self.monitor = monitor
+        self.speed = speed
+        self.awake = awake
         model.$toast.sink { [weak self] _ in DispatchQueue.main.async { self?.updateMouseTransparency() } }.store(in: &cancellables)
         model.collapse = { [weak self] in self?.setExpanded(false) }
         model.start()
@@ -83,21 +91,24 @@ final class NotchController {
         }
     }
 
-    /// Crea o quita el panel según el ajuste y lo ubica en la pantalla con notch (o la principal).
+    /// Crea o quita el panel según el ajuste y lo ubica en la pantalla donde está trabajando el usuario.
     func apply() {
-        guard let model, let mixer, let extras else { return }
+        guard let model, let mixer, let extras, let engine, let monitor, let speed, let awake else { return }
         guard model.enabled else { panel?.orderOut(nil); panel = nil; return }
-        let target = NSScreen.screens.first { $0.safeAreaInsets.top > 0 } ?? NSScreen.main ?? NSScreen.screens[0]
+        let mouse = NSEvent.mouseLocation
+        let target = NSScreen.screens.first { $0.frame.contains(mouse) } ?? NSScreen.main ?? NSScreen.screens[0]
         screen = target
         hasHardwareNotch = target.safeAreaInsets.top > 0
         if hasHardwareNotch {
             let left = target.auxiliaryTopLeftArea?.width ?? 0, right = target.auxiliaryTopRightArea?.width ?? 0
             notchSize = CGSize(width: target.frame.width - left - right, height: target.safeAreaInsets.top)
         } else {
-            notchSize = CGSize(width: 160, height: NSStatusBar.system.thickness)
+            // En una pantalla normal Faro se convierte en una isla flotante pequeña, no en un notch falso ancho.
+            notchSize = CGSize(width: 112, height: 30)
         }
-        let size = CGSize(width: 520, height: 300)
-        let origin = CGPoint(x: target.frame.midX - size.width / 2, y: target.frame.maxY - size.height)
+        let size = CGSize(width: 780, height: 720)
+        let topInset: CGFloat = hasHardwareNotch ? 0 : 8
+        let origin = CGPoint(x: target.frame.midX - size.width / 2, y: target.frame.maxY - topInset - size.height)
         if panel == nil {
             let p = NotchPanel(contentRect: CGRect(origin: origin, size: size),
                                styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
@@ -110,8 +121,10 @@ final class NotchController {
             p.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
             panel = p
         }
+        panel?.hasShadow = false
         panel?.setFrame(CGRect(origin: origin, size: size), display: true)
-        panel?.contentView = NSHostingView(rootView: NotchView(model: model, mixer: mixer, extras: extras, notchSize: notchSize,
+        panel?.contentView = NSHostingView(rootView: NotchView(model: model, mixer: mixer, extras: extras, engine: engine,
+                                                              monitor: monitor, speed: speed, awake: awake, notchSize: notchSize,
                                                               hasHardwareNotch: hasHardwareNotch))
         panel?.orderFrontRegardless()
         installTrigger(on: target)
@@ -119,7 +132,8 @@ final class NotchController {
 
     private func installTrigger(on target: NSScreen) {
         let size = CGSize(width: notchSize.width + 48, height: notchSize.height + 2)
-        let frame = CGRect(x: target.frame.midX - size.width / 2, y: target.frame.maxY - size.height,
+        let topInset: CGFloat = hasHardwareNotch ? 0 : 8
+        let frame = CGRect(x: target.frame.midX - size.width / 2, y: target.frame.maxY - topInset - size.height,
                            width: size.width, height: size.height)
         if trigger == nil {
             let t = NotchPanel(contentRect: frame, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
@@ -157,14 +171,34 @@ final class NotchController {
 
     private func pollMouse() {
         guard let model, model.enabled, let screen else { return }
+        // NSColorSampler controla el cursor globalmente; no mover ni volver a desplegar el panel
+        // mientras la lupa cruza entre pantallas.
+        if extras?.eyedropperPicking == true { return }
         let p = NSEvent.mouseLocation
-        let top = screen.frame.maxY
+        if !model.expanded,
+           let hoveredScreen = NSScreen.screens.first(where: { $0.frame.contains(p) }),
+           !sameDisplay(screen, hoveredScreen) {
+            apply()
+            return
+        }
+        let top = screen.frame.maxY - (hasHardwareNotch ? 0 : 8)
         let buttonDown = NSEvent.pressedMouseButtons & 1 != 0
 
-        // ¿Hay un archivo arrastrándose? El portapapeles de arrastre cambia al empezar un arrastre nuevo.
-        let dragBoard = NSPasteboard(name: .drag)
-        if !buttonDown { dragBaseline = dragBoard.changeCount }
-        let dragging = buttonDown && dragBoard.changeCount != dragBaseline
+        // Cuando está recogido, solo la franja negra recibe eventos. Así los iconos pueden mostrar ayuda
+        // y actuar como botones sin bloquear el resto de la barra de menús con la ventana transparente.
+        if !model.expanded, !model.dropActive, model.toast?.actionLabel == nil {
+            let hasRail = !(engine?.state.notchMetrics.isEmpty ?? true)
+            let compactHeight = notchSize.height + 4
+            let metricCount = engine?.state.notchMetrics.count ?? 0
+            let compactWidth = model.compactPanelWidth(notchWidth: notchSize.width, metricCount: metricCount,
+                                                       hasActivity: model.hasLive || (extras?.hasLive == true))
+            let compact = CGRect(x: screen.frame.midX - compactWidth / 2, y: top - compactHeight,
+                                 width: compactWidth, height: compactHeight)
+            let hasCompactUI = model.showCompactControls || hasRail || model.hasLive || (extras?.hasLive == true)
+            let interactive = hasCompactUI && compact.contains(p)
+            if panel?.ignoresMouseEvents == interactive { panel?.ignoresMouseEvents = !interactive }
+        }
+
         // La ventana disparadora solo atiende al ratón mientras hay un arrastre, para no tapar la barra de menú.
         // No se depende del portapapeles de arrastre (el Dock y otras apps no siempre lo cambian): con el botón
         // pulsado cerca del notch la ventana ya escucha, y solo los archivos la activan.
@@ -190,7 +224,8 @@ final class NotchController {
             } else if hot.contains(p) { hoverTicks += 1; if hoverTicks >= 2 { setExpanded(true) } } else { hoverTicks = 0 }
         } else {
             let height = model.expandedHeight + 14
-            let zone = CGRect(x: screen.frame.midX - 245, y: top - height, width: 490, height: height)
+            let width = model.panelWidth.points + 24
+            let zone = CGRect(x: screen.frame.midX - width / 2, y: top - height, width: width, height: height)
             if zone.contains(p) { leaveTicks = 0 } else { leaveTicks += 1; if leaveTicks >= 4 { setExpanded(false) } }
         }
     }
@@ -208,5 +243,10 @@ final class NotchController {
         model.expanded = on
         updateMouseTransparency()
         if on { model.pollMusic() }
+    }
+
+    private func sameDisplay(_ lhs: NSScreen, _ rhs: NSScreen) -> Bool {
+        let key = NSDeviceDescriptionKey("NSScreenNumber")
+        return lhs.deviceDescription[key] as? NSNumber == rhs.deviceDescription[key] as? NSNumber
     }
 }
