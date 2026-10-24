@@ -7,6 +7,7 @@ import SwiftUI
 @MainActor
 enum Snapshot {
     static func run(_ dir: String) async {
+        NSApp.appearance = NSAppearance(named: .darkAqua) // los textos "primarios" se dibujan claros
         let engine = WallpaperEngine(), monitor = SystemMonitor(), speed = SpeedTest(), awake = KeepAwake()
         let storage = StorageModel()
         let clipboard = ClipboardStore(persistent: false)
@@ -26,6 +27,7 @@ enum Snapshot {
             let frame = CGRect(origin: .zero, size: size ?? host.fittingSize)
             let window = NSWindow(contentRect: frame, styleMask: [.titled, .fullSizeContentView], backing: .buffered, defer: false)
             window.appearance = NSAppearance(named: .darkAqua)
+            host.appearance = NSAppearance(named: .darkAqua)
             window.contentView = host
             host.frame = frame
             host.layoutSubtreeIfNeeded()
@@ -35,6 +37,7 @@ enum Snapshot {
         }
 
         render(MenuView(), name: "menu", size: nil)
+        render(MenuView().environment(\.colorScheme, .dark).background(Color(red: 0.07, green: 0.086, blue: 0.105)), name: "site-menu", size: nil)
         UserDefaults.standard.set("sistema", forKey: "page")
         render(MainWindow(), name: "window", size: CGSize(width: 1020, height: 720))
         func framed<V: View>(_ v: V) -> some View {
@@ -66,6 +69,8 @@ enum Snapshot {
         notchDemo.expanded = true
         render(demoNotch(notchDemo)
             .frame(width: 620, height: 560).background(Color(white: 0.78)), name: "notch-expanded", size: CGSize(width: 620, height: 560))
+        // Para el sitio web: mismos paneles pero sobre fondo transparente (se recortan después).
+        render(demoNotch(notchDemo).frame(width: 760, height: 600).background(Color.clear), name: "site-notch", size: CGSize(width: 760, height: 600))
         notchDemo.expanded = false
         // Música en pausa (antes la carátula se amontonaba junto a los botones) y la isla flotante sin datos en un Mac sin notch.
         let paused = NotchModel(); paused.loadDemo(); paused.showMusic = true
@@ -77,9 +82,15 @@ enum Snapshot {
         render(NotchView(model: idle, mixer: demoMixer, extras: demoExtras, engine: engine, monitor: monitor, speed: speed, awake: awake,
                          notchSize: CGSize(width: 112, height: 30), hasHardwareNotch: false)
             .frame(width: 520, height: 70).background(Color(white: 0.78)), name: "notch-sin-notch", size: CGSize(width: 520, height: 70))
+        render(NotchView(model: idle, mixer: demoMixer, extras: demoExtras, engine: engine, monitor: monitor, speed: speed, awake: awake,
+                         notchSize: CGSize(width: 112, height: 30), hasHardwareNotch: false)
+            .frame(width: 520, height: 70).background(Color.clear), name: "site-isla", size: CGSize(width: 520, height: 70))
         engine.state.notchMetrics = savedMetrics
         render(demoNotch(notchDemo)
             .frame(width: 520, height: 90).background(Color(white: 0.78)), name: "notch-alas", size: CGSize(width: 520, height: 90))
+        render(demoNotch(notchDemo).frame(width: 760, height: 110).background(Color.clear), name: "site-alas", size: CGSize(width: 760, height: 110))
+        let siteToast = NotchModel(); siteToast.showToast(symbol: "arrow.down.circle.fill", text: "Descarga lista: faro-1.7.dmg", seconds: 600, actionLabel: "Mostrar") {}
+        render(demoNotch(siteToast).frame(width: 520, height: 110).background(Color.clear), name: "site-aviso", size: CGSize(width: 520, height: 110))
         let lowDisk = NotchModel(); lowDisk.loadDemo(); lowDisk.lowDiskGB = 7
         render(demoNotch(lowDisk)
             .frame(width: 520, height: 70).background(Color(white: 0.78)), name: "notch-poco-espacio", size: CGSize(width: 520, height: 70))

@@ -31,6 +31,13 @@ if (download.available) {
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 const img = (name, alt, extra = '') => `<img src="/img/${name}" alt="${esc(alt)}"${extra.includes('loading=') ? '' : ' loading="lazy"'} decoding="async"${extra}>`
 
+const brand = {
+  github: '<svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>',
+  kofi: '<svg viewBox="0 0 24 24" width="28" height="28" aria-hidden="true"><path fill="currentColor" d="M11.351 2.715c-2.7 0-4.986.025-6.83.26C2.078 3.285 0 5.154 0 8.61c0 3.506.182 6.13 1.585 8.493 1.584 2.701 4.233 4.182 7.662 4.182h.83c4.209 0 6.494-2.234 7.637-4a9.5 9.5 0 0 0 1.091-2.338C21.792 14.688 24 12.22 24 9.208v-.415c0-3.247-2.13-5.507-5.792-5.87-1.558-.156-2.65-.208-6.857-.208m0 1.947c4.208 0 5.09.052 6.571.182 2.624.311 4.13 1.584 4.13 4v.39c0 2.156-1.792 3.844-3.87 3.844h-.935l-.156.649c-.208 1.013-.597 1.818-1.039 2.546-.909 1.428-2.545 3.064-5.922 3.064h-.805c-2.571 0-4.831-.883-6.078-3.195-1.09-2-1.298-4.155-1.298-7.506 0-2.181.857-3.402 3.012-3.714 1.533-.233 3.559-.26 6.39-.26m6.547 2.287c-.416 0-.65.234-.65.546v2.935c0 .311.234.545.65.545 1.324 0 2.051-.754 2.051-2s-.727-2.026-2.052-2.026m-10.39.182c-1.818 0-3.013 1.48-3.013 3.142 0 1.533.858 2.857 1.949 3.897.727.701 1.87 1.429 2.649 1.896a1.47 1.47 0 0 0 1.507 0c.78-.467 1.922-1.195 2.623-1.896 1.117-1.039 1.974-2.364 1.974-3.897 0-1.662-1.247-3.142-3.039-3.142-1.065 0-1.792.545-2.338 1.298-.493-.753-1.246-1.298-2.312-1.298"/></svg>',
+}
+
+const labLogo = (width, height) => `<span class="lab-logo"><img class="lab-logo__dark" src="/img/conectalab-logo-white.svg" alt="Conecta Lab" width="${width}" height="${height}"><img class="lab-logo__light" src="/img/conectalab-logo-color.svg" alt="" aria-hidden="true" width="${width}" height="${height}"></span>`
+
 const icons = {
   arrow: '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
   down: '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 2.5v8M4.5 7.5 8 11l3.5-3.5M3 13.5h10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -98,7 +105,7 @@ function header(lang, key) {
 <header class="top">
   <a class="brand" href="${home}" aria-label="faro"><img src="/img/logo.svg" alt="" width="36" height="36"><span>faro</span></a>
   <a class="made-by" href="https://conectalab.co${lang === 'en' ? '/en' : ''}" aria-label="${lang === 'es' ? 'Un producto de Conecta Lab' : 'A Conecta Lab product'}">
-    <span>${lang === 'es' ? 'por' : 'by'}</span><img src="/img/conectalab-logo-white.svg" alt="Conecta Lab" width="112" height="18">
+    <span>${lang === 'es' ? 'por' : 'by'}</span>${labLogo(112, 18)}
   </a>
   <nav class="nav" aria-label="${lang === 'es' ? 'Principal' : 'Main'}">
     <a href="${a('funciones')}">${t.nav.features}</a>
@@ -134,7 +141,7 @@ function footer(lang) {
     </div>
     <div class="foot__by">
       <span>${t.footer.by}</span>
-      <a class="lab-lockup" href="https://conectalab.co${lang === 'en' ? '/en' : ''}" aria-label="Conecta Lab"><img src="/img/conectalab-logo-white.svg" alt="Conecta Lab" width="148" height="24"></a>
+      <a class="lab-lockup" href="https://conectalab.co${lang === 'en' ? '/en' : ''}" aria-label="Conecta Lab">${labLogo(148, 24)}</a>
     </div>
   </div>
   <p class="foot__legal">${t.footer.rights} · ${t.footer.license}</p>
@@ -174,6 +181,7 @@ function home(lang) {
   const rows = network.map(([host, why, what]) => `<tr><td data-label="${h.netHead[0]}"><code>${host}</code></td><td data-label="${h.netHead[1]}">${why[lang]}</td><td data-label="${h.netHead[2]}">${what[lang]}</td></tr>`).join('')
   const points = h.buildPoints.map(([title, text]) => `<div class="card reveal"><h4>${title}</h4><p>${text}</p></div>`).join('')
   const tl = timeline[lang].map(([v, text]) => `<li><span class="tl__v">${v}</span><span>${text}</span></li>`).join('')
+  const marquee = [...features[lang].map((f) => f.title.replace(/\.$/, '')), ...more[lang].map(([title]) => title)]
   const featureNav = features[lang].map((f, i) => `<a href="#${f.id}"><span>${String(i + 1).padStart(2, '0')}</span>${f.title.replace(/\.$/, '')}</a>`).join('')
   const customizePoints = h.customizePoints.map((point) => `<li>${icons.arrow}<span>${point}</span></li>`).join('')
 
@@ -194,18 +202,23 @@ ${header(lang, 'home')}
     <p class="hero__note">${h.ctaNote(version)}</p>
   </div>
   <div class="hero__art" data-tilt>
-    <div class="display-stage" aria-hidden="true">
-      <span class="display-stage__camera"></span>
-      <span class="display-stage__status">9:41</span>
+    <div class="scene">
+      <div class="scene__wall" aria-hidden="true"></div>
+      <div class="scene__bar" aria-hidden="true">
+        <span class="scene__brand"><img src="/img/logo.svg" alt="" width="16" height="16">faro</span>
+        <span class="scene__cam"></span>
+        <span class="scene__stats"><i>CPU 24%</i><i>MEM 58%</i><b>9:41</b></span>
+      </div>
+      <div class="scene__notch">${img('hero-notch.png', lang === 'es' ? 'El panel del notch desplegado con música, letra, controles y clima' : 'The notch panel unfolded with music, lyrics, controls and weather', ' fetchpriority="high" loading="eager"')}</div>
+      <div class="scene__alas">${img('hero-aviso.png', lang === 'es' ? 'Aviso en el notch: descarga lista, con botón para mostrarla' : 'Notch notice: download ready, with a button to show it', ' loading="eager"')}</div>
+      <div class="scene__menu">${img('hero-menu.png', lang === 'es' ? 'El menú de faro en la barra de menú' : 'The faro menu from the menu bar', ' loading="eager"')}</div>
     </div>
-    <div class="hero__window">${img('notch-configurar.png', lang === 'es' ? 'Editor visual de widgets de faro' : 'faro visual widget editor', ' fetchpriority="high" loading="eager"')}</div>
-    <div class="hero__island">${img('notch-sin-notch.png', lang === 'es' ? 'Isla flotante de faro en una pantalla sin notch' : 'faro floating island on a display without a notch', ' loading="eager"')}</div>
-    <div class="hero__menu">${img('menu.png', lang === 'es' ? 'El menú de faro en la barra de menú' : 'The faro menu from the menu bar', ' loading="eager"')}</div>
-    <div class="hero__signal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </div>
 </section>
 
 <ul class="facts" aria-label="faro">${h.facts.map((f) => `<li>${f}</li>`).join('')}</ul>
+
+<div class="marquee" aria-hidden="true"><div class="marquee__track">${[0, 1].map(() => `<ul>${marquee.map((m) => `<li>${m}</li>`).join('')}</ul>`).join('')}</div></div>
 
 <section class="section" id="funciones">
   <div class="wrap">
@@ -291,7 +304,7 @@ ${header(lang, 'home')}
 
 <section class="section lab-band">
   <div class="wrap lab-band__inner reveal">
-    <img src="/img/conectalab-logo-white.svg" alt="Conecta Lab" width="244" height="40">
+    ${labLogo(244, 40)}
     <div><h2>${h.labTitle}</h2><p class="lead">${h.labLead}</p></div>
     <a class="btn btn--ghost" href="https://conectalab.co${lang === 'en' ? '/en' : ''}">${h.labCta}${icons.arrow}</a>
   </div>
@@ -311,18 +324,24 @@ ${footer(lang)}`
 
 function supportSection(lang) {
   const s = support[lang]
-  const supportCard = (kind, title, url) => url
-    ? `<a class="support-card support-card--${kind}" href="${url}" rel="noopener"><span class="support-card__icon">${kind === 'github' ? icons.code : '☕'}</span><strong>${title}</strong><span>${icons.arrow}</span></a>`
-    : `<div class="support-card support-card--${kind} support-card--soon"><span class="support-card__icon">${kind === 'github' ? icons.code : '☕'}</span><strong>${title}</strong><small>${s.soon}</small></div>`
+  const button = (kind, title, url) => url
+    ? `<a class="support-btn support-btn--${kind}" href="${url}" rel="noopener">${brand[kind]}<span>${title}</span>${icons.arrow}</a>`
+    : `<div class="support-btn support-btn--${kind} support-btn--soon">${brand[kind]}<span>${title}</span><small>${s.soon}</small></div>`
   return `<section class="section support-section" id="apoyo">
-  <div class="wrap support">
-    <h2 class="reveal">${s.title}</h2>
-    <p class="lead reveal">${s.lead}</p>
-    <div class="support__buttons reveal">
-      ${supportCard('github', s.github, SPONSORS_URL)}
-      ${supportCard('kofi', s.kofi, KOFI_URL)}
+  <div class="wrap">
+    <div class="support-panel reveal">
+      <div class="support-panel__copy">
+        <span class="eyebrow">${s.eyebrow}</span>
+        <h2>${s.title}</h2>
+        <p class="lead">${s.lead}</p>
+        <ul class="support-uses">${s.uses.map((u) => `<li>${icons.arrow}<span>${u}</span></li>`).join('')}</ul>
+      </div>
+      <div class="support-panel__actions">
+        ${button('github', s.github, SPONSORS_URL)}
+        ${button('kofi', s.kofi, KOFI_URL)}
+        <p class="muted">${s.note}</p>
+      </div>
     </div>
-    <p class="muted reveal">${s.note}</p>
   </div>
 </section>`
 }

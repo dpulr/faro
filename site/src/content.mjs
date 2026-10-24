@@ -531,6 +531,8 @@ export const privacy = {
 // Apoyo económico opcional. La sección del sitio solo aparece cuando hay al menos un canal activo (ver build.mjs).
 export const support = {
   es: {
+    eyebrow: 'Apoya el proyecto',
+    uses: ['Firmar y notarizar cada versión con la cuenta de desarrollador de Apple.', 'Probar faro en más Macs y versiones de macOS.', 'Tiempo para nuevas funciones y para atender tus ideas.'],
     title: 'Ayuda a mantener la luz encendida.',
     lead: 'faro es gratis y de código abierto. Estamos preparando dos formas sencillas de apoyar su mantenimiento y las próximas funciones.',
     note: 'Las donaciones serán siempre opcionales y no desbloquearán funciones: faro seguirá siendo para todos.',
@@ -540,6 +542,8 @@ export const support = {
     footer: 'Apoyar',
   },
   en: {
+    eyebrow: 'Support the project',
+    uses: ['Signing and notarizing every release with an Apple developer account.', 'Testing faro on more Macs and macOS versions.', 'Time for new features and for your ideas.'],
     title: 'Help keep the light on.',
     lead: 'faro is free and open source. We are preparing two simple ways to support its maintenance and upcoming features.',
     note: 'Donations will always be optional and unlock nothing: faro will remain for everyone.',
