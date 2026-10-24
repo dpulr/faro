@@ -67,6 +67,17 @@ enum Snapshot {
         render(demoNotch(notchDemo)
             .frame(width: 620, height: 560).background(Color(white: 0.78)), name: "notch-expanded", size: CGSize(width: 620, height: 560))
         notchDemo.expanded = false
+        // Música en pausa (antes la carátula se amontonaba junto a los botones) y la isla flotante sin datos en un Mac sin notch.
+        let paused = NotchModel(); paused.loadDemo(); paused.showMusic = true
+        paused.track = Track(title: "Cavalcade", artist: "Black Midi", source: "Music", playing: false, artworkURL: nil)
+        render(demoNotch(paused).frame(width: 620, height: 90).background(Color(white: 0.78)), name: "notch-pausa", size: CGSize(width: 620, height: 90))
+        let savedMetrics = engine.state.notchMetrics
+        engine.state.notchMetrics = []
+        let idle = NotchModel(); idle.showCompactControls = false
+        render(NotchView(model: idle, mixer: demoMixer, extras: demoExtras, engine: engine, monitor: monitor, speed: speed, awake: awake,
+                         notchSize: CGSize(width: 112, height: 30), hasHardwareNotch: false)
+            .frame(width: 520, height: 70).background(Color(white: 0.78)), name: "notch-sin-notch", size: CGSize(width: 520, height: 70))
+        engine.state.notchMetrics = savedMetrics
         render(demoNotch(notchDemo)
             .frame(width: 520, height: 90).background(Color(white: 0.78)), name: "notch-alas", size: CGSize(width: 520, height: 90))
         let lowDisk = NotchModel(); lowDisk.loadDemo(); lowDisk.lowDiskGB = 7

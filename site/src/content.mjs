@@ -69,9 +69,9 @@ export const features = {
       img: 'notch.png',
       alt: 'El panel del notch desplegado con música, volumen, clima y accesos rápidos',
       title: 'El notch, con algo útil.',
-      lead: 'Un panel que cuelga del notch con lo que suena (y su letra, en tiempo real), el volumen, el clima y tu próximo evento.',
+      lead: 'Un panel que cuelga del notch con lo que suena (y su letra, en tiempo real), el volumen, el clima y tu próximo evento. Tú decides qué widgets van, en qué orden y de qué tamaño.',
       points: [
-        'Se abre al pasar el cursor o solo con un clic, como prefieras.',
+        'Se abre al pasar el cursor o solo con un clic, como prefieras. En un Mac sin notch, una isla flotante hace lo mismo.',
         'Temporizador Pomodoro, silenciar el micrófono, gotero de color y accesos al portapapeles y a la bandeja.',
         'Avisos de batería, descargas, capturas, discos USB, AirPods y cámara o micrófono en uso.',
       ],
@@ -163,9 +163,9 @@ export const features = {
       img: 'notch.png',
       alt: 'The notch panel unfolded with music, volume, weather and quick buttons',
       title: 'The notch, put to use.',
-      lead: 'A panel that hangs from the notch with what’s playing (and its lyrics, in real time), volume, weather and your next event.',
+      lead: 'A panel that hangs from the notch with what’s playing (and its lyrics, in real time), volume, weather and your next event. You choose which widgets go, in what order and what size.',
       points: [
-        'Opens on hover or only on click, whichever you prefer.',
+        'Opens on hover or only on click, whichever you prefer. On a Mac without a notch, a floating island does the same.',
         'Pomodoro timer, mute the microphone, color eyedropper and quick buttons for the clipboard and the shelf.',
         'Notices for battery, downloads, screenshots, USB drives, AirPods and camera or microphone in use.',
       ],
@@ -199,6 +199,7 @@ export const more = {
     ['Mantener despierto', 'Evita que la pantalla se apague, por el tiempo que elijas.'],
     ['Barra de menú viva', 'Procesador, memoria, disco, red o batería, a tu elección.'],
     ['Cristal líquido', 'Con tus colores, en macOS 26.'],
+    ['Cuidar la batería', 'Avisos para desenchufar al 80 %, recordatorio si sigue enchufada y el historial de su salud.'],
     ['Pomodoro', 'Un temporizador en el notch, con la cuenta visible en la pastilla.'],
     ['Silenciar micrófono', 'Un botón o ⌃⌥⌘M silencia el micrófono para todas las apps.'],
     ['Español e inglés', 'Sigue el idioma del sistema, o eliges uno.'],
@@ -209,6 +210,7 @@ export const more = {
     ['Keep awake', 'Stops the screen from sleeping, for as long as you choose.'],
     ['Live menu bar', 'Processor, memory, disk, network or battery, your pick.'],
     ['Liquid glass', 'In your own colors, on macOS 26.'],
+    ['Battery care', 'Notices to unplug at 80%, a reminder if it stays plugged in and a history of its health.'],
     ['Pomodoro', 'A timer in the notch, with the countdown visible on the pill.'],
     ['Mute the microphone', 'A button or ⌃⌥⌘M mutes the microphone for every app.'],
     ['Spanish and English', 'Follows the system language, or you pick one.'],
@@ -229,6 +231,7 @@ export const timeline = {
     ['1.4', 'Aviso de versiones nuevas y política de privacidad.'],
     ['1.5', 'Temporizador, micrófono, baterías, avisos y herramientas en la bandeja.'],
     ['1.6', 'Letras sincronizadas en el notch.'],
+    ['1.7', 'Notch reorganizable, isla flotante sin notch y cuidado de la batería.'],
   ],
   en: [
     ['0.1', 'A prototype that changed the wallpaper using Wallhaven.'],
@@ -242,6 +245,7 @@ export const timeline = {
     ['1.4', 'New-version notices and the privacy policy.'],
     ['1.5', 'Timer, microphone, batteries, notices and shelf tools.'],
     ['1.6', 'Synced lyrics in the notch.'],
+    ['1.7', 'Rearrangeable notch, floating island without a notch and battery care.'],
   ],
 }
 
@@ -291,7 +295,7 @@ export const ui = {
       netHead: ['Servicio', 'Para qué', 'Qué se envía'],
       privacyFoot: 'El historial del portapapeles, la bandeja, los ajustes y las fotos se quedan en tu disco.',
       buildTitle: 'Cómo se hizo.',
-      buildLead: 'faro nació para reemplazar una app de pago que solo cambiaba el fondo de pantalla, y creció hasta reunir las utilidades que suelen repartirse entre diez apps.',
+      buildLead: 'faro nació de querer tener en un solo lugar las utilidades pequeñas que suelen repartirse entre diez apps, y creció con cada idea que hacía falta.',
       buildPoints: [
         ['Nativo, sin dependencias', 'Swift, SwiftUI y AppKit, sin paquetes de terceros: unas 8 000 líneas en 58 archivos.'],
         ['Diseño propio', 'Un logo dibujado a mano y controles propios en lugar de los genéricos del sistema, con cristal líquido en macOS 26.'],
@@ -370,7 +374,7 @@ export const ui = {
       netHead: ['Service', 'What for', 'What is sent'],
       privacyFoot: 'Clipboard history, the shelf, settings and photos stay on your disk.',
       buildTitle: 'How it was made.',
-      buildLead: 'faro started as a replacement for a paid app that only changed the wallpaper, and grew to bring together the utilities usually spread across ten apps.',
+      buildLead: 'faro started from wanting the small utilities usually spread across ten apps in one place, and grew with every idea that was missing.',
       buildPoints: [
         ['Native, no dependencies', 'Swift, SwiftUI and AppKit, with no third-party packages: about 8,000 lines in 58 files.'],
         ['Its own design', 'A hand-drawn logo and custom controls instead of the generic system ones, with liquid glass on macOS 26.'],
@@ -421,8 +425,8 @@ export const ui = {
 
 // Notas cortas de la versión actual: salen en latest.json y la app las muestra al avisar de la actualización.
 export const releaseNotes = {
-  es: 'Letras sincronizadas de lo que suena, bajo la pastilla del notch.',
-  en: 'Synced lyrics for what’s playing, under the notch pill.',
+  es: 'Notch reorganizable, isla flotante en Macs sin notch, cuidado de la batería y mejoras en la música.',
+  en: 'Rearrangeable notch, floating island on Macs without a notch, battery care and music improvements.',
 }
 
 export const privacy = {

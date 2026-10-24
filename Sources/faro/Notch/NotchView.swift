@@ -67,7 +67,7 @@ struct NotchView: View {
             } else if model.toast != nil {
                 toastBody
                     .transition(.opacity)
-            } else if model.hasLive || extras.hasLive || hasCompactContent {
+            } else if model.hasLive || extras.hasLive || hasCompactContent || !hasHardwareNotch {
                 collapsedBody
                     .frame(width: collapsedPanelWidth)
                     .background(NotchSurfaceShape(radius: hasHardwareNotch ? 14 : 18,
@@ -176,7 +176,7 @@ struct NotchView: View {
         } else if model.lowDiskGB != nil {
             Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 14, weight: .medium))
                 .foregroundStyle(.orange).help(tr("Poco espacio en disco"))
-        } else if let art = model.artwork {
+        } else if model.showMusic, model.track?.playing == true, let art = model.artwork {
             Image(nsImage: art).resizable().scaledToFill().frame(width: 22, height: 22)
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous)).help(tr("Música"))
         }
@@ -607,6 +607,15 @@ struct NotchView: View {
             }
         }
         .padding(hasTwoLyrics ? 3 : (hasLyrics ? 5 : 10))
+        // Un toque en la carátula o en el título abre la app desde la que suena (los botones siguen siendo botones).
+        .overlay(alignment: .leading) {
+            Color.clear
+                .frame(width: artworkSize + 14 + 170, height: artworkSize)
+                .padding(.leading, hasTwoLyrics ? 3 : (hasLyrics ? 5 : 10))
+                .contentShape(Rectangle())
+                .onTapGesture { model.openPlayer() }
+                .help(model.track.map { String(format: tr("Abrir %@"), $0.source) } ?? "")
+        }
     }
 
     /// La línea actual se integra discretamente bajo la canción sin aumentar la tarjeta.

@@ -307,6 +307,24 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate, NSWindowD
         check("avisos de batería (llena y baja, sin repetir)", ok)
         (alerts.fullEnabled, alerts.fullLevel, alerts.lowEnabled) = saved
 
+        // Batería enchufada de más e historial de salud
+        let historyFile = tmp.appendingPathComponent("battery.json")
+        let guardian = BatteryAlerts(historyFile: historyFile)
+        let savedPlugged = (guardian.pluggedEnabled, guardian.pluggedHours)
+        guardian.pluggedEnabled = true; guardian.pluggedHours = 3
+        let plugStart = Date()
+        let plugSteps: [(Int, Bool, TimeInterval, BatteryAlerts.Event?)] = [(100, true, 0, nil), (100, true, 2 * 3600, nil), (100, true, 3 * 3600 + 5, .pluggedLong(3)),
+                                                                           (100, true, 4 * 3600, nil), (60, false, 5 * 3600, nil), (100, true, 5 * 3600 + 60, nil), (100, true, 8.5 * 3600 + 120, .pluggedLong(3))]
+        let plugOK = plugSteps.allSatisfy { guardian.evaluatePlugged(percent: $0.0, onAC: $0.1, now: plugStart.addingTimeInterval($0.2)) == $0.3 }
+        check("aviso de enchufada de más (una vez por conexión)", plugOK)
+        (guardian.pluggedEnabled, guardian.pluggedHours) = savedPlugged
+        guardian.record(cycles: 100, health: 93, now: plugStart)
+        guardian.record(cycles: 101, health: 93, now: plugStart.addingTimeInterval(60))
+        guardian.record(cycles: 102, health: 92, now: plugStart.addingTimeInterval(86_400 + 60))
+        let reloaded = BatteryAlerts(historyFile: historyFile)
+        check("historial de salud (un punto por día, se guarda)", guardian.history.count == 2 && reloaded.history == guardian.history && reloaded.history.last?.health == 92,
+              "\(reloaded.history.map { "\($0.day): \($0.health)%" }.joined(separator: ", "))")
+
         // Micrófono
         let mic = MicMute()
         if mic.available {

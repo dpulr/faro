@@ -463,6 +463,18 @@ final class NotchModel: ObservableObject {
         }
     }
 
+    /// Trae al frente la app desde la que suena la música (Música o Spotify) y recoge el panel.
+    func openPlayer() {
+        guard let source = track?.source else { return }
+        let bundle = source == "Music" ? "com.apple.Music" : "com.spotify.client"
+        if let running = NSRunningApplication.runningApplications(withBundleIdentifier: bundle).first {
+            running.activate()
+        } else if let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundle) {
+            NSWorkspace.shared.openApplication(at: url, configuration: NSWorkspace.OpenConfiguration())
+        }
+        collapse?()
+    }
+
     func musicCommand(_ command: String) {
         guard let app = track?.source else { return }
         _ = run("tell application \"\(app)\" to \(command)")

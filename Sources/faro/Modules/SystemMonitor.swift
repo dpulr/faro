@@ -17,6 +17,8 @@ final class SystemMonitor: ObservableObject {
     @Published var netUp = 0.0
     @Published var batteryPercent: Int?
     @Published var batteryCharging = false
+    /// Conectado a la corriente (aunque ya no esté cargando, p. ej. al 100 %).
+    @Published var onAC = false
     @Published var batteryCycles: Int?
     @Published var batteryHealth: Int?
     @Published var hasBattery = false
@@ -180,6 +182,7 @@ final class SystemMonitor: ObservableObject {
         hasBattery = true
         batteryPercent = desc[kIOPSCurrentCapacityKey] as? Int
         batteryCharging = (desc[kIOPSIsChargingKey] as? Bool) ?? false
+        onAC = (desc[kIOPSPowerSourceStateKey] as? String) == kIOPSACPowerValue
 
         let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSmartBattery"))
         if service != 0 {

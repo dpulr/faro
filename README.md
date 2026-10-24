@@ -80,7 +80,7 @@ Un perfil es un **modo guardado**: con un clic cambia el canal de fondos, cada c
 
 - **Sistema:** procesador, memoria, almacenamiento, red en vivo y batería (ciclos y salud), con gráficas y un resumen en lenguaje llano ("Tu Mac va tranquilo").
 - **Internet:** mide tu conexión con la herramienta `networkQuality` de macOS, a mano o **automáticamente** cada 30 minutos a 1 día, y guarda un historial con gráfica.
-- **Energía:** mantiene el Mac despierto durante 30 minutos a 8 horas, o sin límite.
+- **Energía:** mantiene el Mac despierto durante 30 minutos a 8 horas, o sin límite. Y **cuida la batería**: avisa al 80 % para desenchufar, recuerda si sigue enchufada y guarda el historial de su salud.
 - **Audio:** el volumen y la salida de tu Mac (bocinas, audífonos, AirPlay) a mano, con silencio y un volumen propio para Música y Spotify. macOS no deja cambiar el volumen de otras apps.
 
 <img src="docs/images/audio.png" width="760" alt="Página Audio con la salida, el volumen y el volumen por app">
@@ -145,6 +145,7 @@ Un panel negro que cuelga del notch: lleva el cursor arriba al centro de la pant
 - **Volumen:** un control del volumen de tu Mac dentro del panel.
 - **Bluetooth:** un aviso al conectarse tus audífonos, teclado, ratón o mando.
 - **Soltar archivos:** arrastra un archivo hacia el notch y suéltalo en la zona que aparece; se guarda en la bandeja.
+- **Notch a tu medida:** widgets que activas, ordenas y redimensionas, pestañas, dock de herramientas y varios estilos. En un Mac sin notch, una isla flotante hace lo mismo.
 - **Temporizador:** Pomodoro o temporizador simple, con la cuenta visible en la pastilla.
 - **Silenciar el micrófono** con un botón o `⌃⌥⌘M`, **batería de AirPods y otros dispositivos**, **gotero de color**.
 - **Avisos:** batería llena o baja, descarga terminada, captura de pantalla (va a la bandeja), disco USB conectado (con botón para expulsar), cámara o micrófono en uso y Bloq Mayús.
@@ -334,4 +335,4 @@ Copyright © 2026 Daniel Pulgarín.
 
 faro es un proyecto independiente. **No tiene relación** con Apple, Spotify, FARO Technologies, Wallhaven, Wikimedia, Microsoft ni con ninguna de las apps mencionadas; los nombres pertenecen a sus dueños.
 
-Inspiración (ideas, no código): **Irvue** (fondos por canales), **Sapphire** (el notch como espacio útil) y **CopyClip** (historial del portapapeles). Los datos, las fuentes y las licencias de terceros están en [`CREDITS.md`](CREDITS.md).
+Inspiración: muchas apps y utilidades del ecosistema Mac (ideas, no código). Los datos, las fuentes y las licencias de terceros están en [`CREDITS.md`](CREDITS.md).

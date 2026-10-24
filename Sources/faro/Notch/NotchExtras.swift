@@ -67,10 +67,11 @@ final class NotchExtras: ObservableObject {
         downloads.onFinished = { [weak self] url in self?.downloadFinished(url) }
         screenshots.onScreenshot = { [weak self] url in self?.screenshotTaken(url) }
         volumes.onMount = { [weak self] name, url in self?.volumeMounted(name, url) }
-        Publishers.CombineLatest(monitor.$batteryPercent, monitor.$batteryCharging)
-            .sink { [weak self] percent, charging in
+        Publishers.CombineLatest3(monitor.$batteryPercent, monitor.$batteryCharging, monitor.$onAC)
+            .sink { [weak self, weak monitor] percent, charging, onAC in
                 guard let self, let percent else { return }
-                self.batteryReading(percent: percent, charging: charging)
+                self.batteryReading(percent: percent, charging: charging, onAC: onAC)
+                self.battery.record(cycles: monitor?.batteryCycles, health: monitor?.batteryHealth)
             }
             .store(in: &cancellables)
         downloads.start()
@@ -157,8 +158,11 @@ final class NotchExtras: ObservableObject {
         }
     }
 
-    func batteryReading(percent: Int, charging: Bool) {
-        switch battery.evaluate(percent: percent, charging: charging) {
+    func batteryReading(percent: Int, charging: Bool, onAC: Bool = false) {
+        let event = battery.evaluate(percent: percent, charging: charging) ?? battery.evaluatePlugged(percent: percent, onAC: onAC)
+        switch event {
+        case .pluggedLong(let hours):
+            notch?.showToast(symbol: "powerplug.fill", text: String(format: tr("Lleva %lld h enchufada al tope: desenchufar cuida la batería"), hours), seconds: 8)
         case .full(let level):
             notch?.showToast(symbol: "battery.100percent.bolt", text: String(format: tr("Batería al %lld %%: ya puedes desenchufar"), level), seconds: 6)
         case .low(let level):

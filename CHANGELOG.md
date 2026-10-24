@@ -2,6 +2,19 @@
 
 Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen [SemVer](https://semver.org/lang/es/).
 
+## [1.7.0] — 2026-10-24
+
+### Novedades
+- **Notch reorganizable:** widgets (saludo, temporizador, música, controles del sistema, clima, calendario, dispositivos, descanso visual y almacenamiento) que se activan, se ordenan por prioridad y se redimensionan a 1/3, 2/3 o todo el ancho; pestañas Inicio, Sistema y Herramientas; dock de herramientas configurable (historial, bandeja, temporizador, micrófono, color, emoji, despierto, teclado y ajustes); estilos negro, teñido, cristal y liquid crystal; vista compacta con datos fijos y botones en las orillas; faro puede usarse solo desde el notch, sin ícono en la barra de menús.
+- **Gráficos** (uso de la GPU) como dato para la barra de menú y el notch.
+- **Cuidar la batería** (en *Energía*): preajuste «Proteger al 80%», aviso al nivel elegido, recordatorio si la Mac pasa horas enchufada con la batería casi llena e historial de salud día a día. faro avisa para desenchufar; no puede limitar la carga por sí mismo (si tu macOS lo incluye, el límite real está en Ajustes del Sistema → Batería).
+- **Música:** un toque en la carátula o el título del widget abre la app desde la que suena.
+- **Mac sin notch:** una isla flotante siempre visible arriba al centro, que se abre igual que el notch.
+- **Instalador:** el `.dmg` lleva el ícono de faro.
+
+### Arreglos
+- Con la música en pausa, la carátula ya no se amontona junto a los botones de la pastilla.
+
 ## [1.6.0] — 2026-10-24
 
 ### Novedades

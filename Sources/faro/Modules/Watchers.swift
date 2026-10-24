@@ -5,28 +5,57 @@ import AppKit
 import CoreAudio
 import CoreMediaIO
 
-// MARK: - Batería llena y baja
+// MARK: - Batería: llena, baja, enchufada de más y salud
 
-/// Decide cuándo avisar de que la carga llegó al nivel elegido (para desenchufar) o de que queda poca.
+/// Decide cuándo avisar de que la carga llegó al nivel elegido (para desenchufar), de que queda poca o de que
+/// la Mac lleva horas enchufada al tope; y guarda la salud de la batería día a día.
 @MainActor
 final class BatteryAlerts: ObservableObject {
-    enum Event: Equatable { case full(Int), low(Int) }
+    enum Event: Equatable { case full(Int), low(Int), pluggedLong(Int) }
+
+    /// Un punto del historial: un día, con los ciclos y la salud que tenía la batería.
+    struct HealthPoint: Codable, Equatable, Identifiable {
+        var day: String   // aaaa-mm-dd
+        var cycles: Int
+        var health: Int
+        var id: String { day }
+    }
 
     @Published var fullEnabled: Bool { didSet { save("batteryFullEnabled", fullEnabled) } }
     @Published var fullLevel: Int { didSet { save("batteryFullLevel", fullLevel); firedFull = false } }
     @Published var lowEnabled: Bool { didSet { save("batteryLowEnabled", lowEnabled) } }
+    /// Avisa si la Mac sigue enchufada con la batería casi llena durante varias horas.
+    @Published var pluggedEnabled: Bool { didSet { save("batteryPluggedEnabled", pluggedEnabled); pluggedSince = nil; firedPlugged = false } }
+    @Published var pluggedHours: Int { didSet { save("batteryPluggedHours", pluggedHours); firedPlugged = false } }
+    @Published private(set) var history: [HealthPoint] = []
 
     static let lowLevels = [20, 10]
     private var firedFull = false
     private var firedLow: Set<Int> = []
+    private var pluggedSince: Date?
+    private var firedPlugged = false
+    private let historyFile: URL?
 
     private func save(_ key: String, _ value: Any) { UserDefaults.standard.set(value, forKey: key) }
 
-    init() {
+    init(historyFile: URL? = Paths.support.appendingPathComponent("battery.json")) {
+        self.historyFile = historyFile
         let d = UserDefaults.standard
         fullEnabled = d.object(forKey: "batteryFullEnabled") as? Bool ?? true
         fullLevel = d.integer(forKey: "batteryFullLevel") == 0 ? 100 : d.integer(forKey: "batteryFullLevel")
         lowEnabled = d.object(forKey: "batteryLowEnabled") as? Bool ?? true
+        pluggedEnabled = d.object(forKey: "batteryPluggedEnabled") as? Bool ?? true
+        pluggedHours = d.integer(forKey: "batteryPluggedHours") == 0 ? 3 : d.integer(forKey: "batteryPluggedHours")
+        if let historyFile, let data = try? Data(contentsOf: historyFile) {
+            history = (try? JSONDecoder().decode([HealthPoint].self, from: data)) ?? []
+        }
+    }
+
+    /// El preajuste de "proteger la batería": avisar al 80 %.
+    var protecting: Bool { fullEnabled && fullLevel == 80 }
+
+    func protect(_ on: Bool) {
+        if on { fullEnabled = true; fullLevel = 80 } else { fullLevel = 100 }
     }
 
     /// Devuelve el aviso que toca (si toca) para esta lectura. Cada aviso sale una sola vez por carga o descarga.
@@ -46,6 +75,33 @@ final class BatteryAlerts: ObservableObject {
             return .low(percent)
         }
         return nil
+    }
+
+    /// Enchufada y casi llena durante `pluggedHours`: avisa una vez por conexión.
+    func evaluatePlugged(percent: Int, onAC: Bool, now: Date = Date()) -> Event? {
+        guard pluggedEnabled, onAC, percent >= 95 else { pluggedSince = nil; firedPlugged = false; return nil }
+        if pluggedSince == nil { pluggedSince = now }
+        guard !firedPlugged, let since = pluggedSince, now.timeIntervalSince(since) >= Double(pluggedHours) * 3600 else { return nil }
+        firedPlugged = true
+        return .pluggedLong(pluggedHours)
+    }
+
+    /// Anota la salud de hoy (una vez al día) y conserva un año.
+    func record(cycles: Int?, health: Int?, now: Date = Date()) {
+        guard let cycles, let health else { return }
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        let day = formatter.string(from: now)
+        let point = HealthPoint(day: day, cycles: cycles, health: health)
+        if let index = history.firstIndex(where: { $0.day == day }) {
+            guard history[index] != point else { return }
+            history[index] = point
+        } else {
+            history.append(point)
+        }
+        history = Array(history.suffix(365))
+        if let historyFile, let data = try? JSONEncoder().encode(history) { try? data.write(to: historyFile, options: .atomic) }
     }
 }
 
