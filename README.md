@@ -138,7 +138,7 @@ Bloquea las teclas un momento para limpiarlas sin escribir nada por accidente. L
 
 Un panel negro que cuelga del notch: lleva el cursor arriba al centro de la pantalla y se despliega. Mientras suena música o corre un descanso, aparecen detalles a los lados **sin desplegarlo**.
 
-- **Música:** lo que suena en Música o Spotify, con carátula y controles.
+- **Música:** lo que suena en Música o Spotify, con carátula y controles, y **letras sincronizadas** ([LRCLIB](https://lrclib.net)) bajo la pastilla.
 - **Clima:** temperatura y estado del cielo de tu ciudad, con [Open-Meteo](https://open-meteo.com).
 - **Calendario:** tu próximo evento de las siguientes 24 horas (apagado por defecto).
 - **Descanso visual:** un aviso para mirar a lo lejos 20 segundos, la regla 20-20-20 (apagado por defecto).
@@ -232,6 +232,7 @@ faro **no tiene telemetría ni cuentas**. Las únicas conexiones que hace son es
 | `images-api.nasa.gov` y `images-assets.nasa.gov` | Imágenes de la NASA | El tema que escribiste |
 | `picsum.photos` | Fotos al azar | Nada personal |
 | `faro-conectalab.web.app` | Avisar de versiones nuevas (un archivo público, una vez al día; se apaga en *General*) | Nada personal |
+| `lrclib.net` | Letras sincronizadas (se apaga en *Notch*) | El título y el artista de la canción que suena |
 | `i.scdn.co` | Carátula de Spotify | Solo mientras suena algo de Spotify |
 
 Todo lo demás —historial del portapapeles, bandeja, ajustes, fotos— **se queda en tu disco**. El portapapeles no guarda lo que los gestores de contraseñas marcan como secreto. Para borrarlo todo, quita la carpeta de datos (abajo).

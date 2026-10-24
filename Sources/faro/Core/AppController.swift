@@ -362,6 +362,24 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
             check("comprimir y descomprimir", false, "falló")
         }
 
+        // Letras sincronizadas: lógica pura y una consulta real a LRCLIB.
+        let lrc = "[00:05.00] Primera línea\n[00:10.50][01:00.00] Estribillo\n[00:15.00]\n[00:20,00] Última"
+        let parsed = LyricsProvider.parse(lrc: lrc)
+        check("letras: leer LRC (con marcas repetidas)", parsed.count == 5 && parsed[2].time == 15 && parsed.last?.time == 60, "\(parsed.count) líneas")
+        let l1 = LyricsProvider.lines(in: parsed, at: 11), l2 = LyricsProvider.lines(in: parsed, at: 16), l0 = LyricsProvider.lines(in: parsed, at: 1)
+        check("letras: línea que suena y la siguiente", l1.0 == "Estribillo" && l1.1 == "Última" && l2.0 == nil && l2.1 == "Última" && l0.0 == nil && l0.1 == "Primera línea",
+              "t=11 → \(l1.0 ?? "-"), t=16 (pausa) → \(l2.0 ?? "-")")
+        check("letras: limpiar el título", LyricsProvider.cleaned("Song - Remastered 2011") == "Song" && LyricsProvider.cleaned("Song (feat. X) [Live]") == "Song")
+        let fetched = await LyricsProvider.fetch(title: "Never Gonna Give You Up", artist: "Rick Astley")
+        check("letras: LRCLIB devuelve la letra de una canción conocida", fetched.count > 20, "\(fetched.count) líneas; primera: \(fetched.first(where: { !$0.text.isEmpty })?.text ?? "-")")
+        let provider = LyricsProvider()
+        let savedLyrics = provider.enabled
+        provider.enabled = true
+        provider.sync(title: "Never Gonna Give You Up", artist: "Rick Astley", position: 45, playing: false)
+        for _ in 0..<20 where provider.line == nil { try? await Task.sleep(nanoseconds: 500_000_000) }
+        check("letras: el proveedor muestra la línea del segundo 45", provider.line != nil, provider.line ?? "(ninguna)")
+        provider.reset(); provider.enabled = savedLyrics
+
         // Capturas de pantalla: carpeta temporal; un archivo con la marca de captura entra, uno sin marca no.
         let shotsDir = tmp.appendingPathComponent("Capturas", isDirectory: true)
         try? manager.createDirectory(at: shotsDir, withIntermediateDirectories: true)

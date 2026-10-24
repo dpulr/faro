@@ -55,10 +55,11 @@ enum Snapshot {
         let demoExtras = NotchExtras()
         let notchDemo = NotchModel()
         notchDemo.loadDemo()
+        notchDemo.lyrics.loadDemo()
         notchDemo.showCalendar = false
         notchDemo.expanded = true
         render(NotchView(model: notchDemo, mixer: AudioMixer(), extras: demoExtras, notchSize: CGSize(width: 220, height: 38), hasHardwareNotch: true)
-            .frame(width: 520, height: 290).background(Color(white: 0.78)), name: "notch-expanded", size: CGSize(width: 520, height: 290))
+            .frame(width: 520, height: 340).background(Color(white: 0.78)), name: "notch-expanded", size: CGSize(width: 520, height: 340))
         notchDemo.expanded = false
         render(NotchView(model: notchDemo, mixer: AudioMixer(), extras: demoExtras, notchSize: CGSize(width: 220, height: 38), hasHardwareNotch: true)
             .frame(width: 520, height: 60).background(Color(white: 0.78)), name: "notch-alas", size: CGSize(width: 520, height: 60))

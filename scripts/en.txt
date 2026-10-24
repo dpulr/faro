@@ -575,3 +575,5 @@ Cámara y micrófono en uso => Camera and microphone in use
 Un punto verde o naranja junto al notch cuando una app los usa. => A green or orange dot next to the notch when an app uses them.
 Bloq Mayús => Caps Lock
 Un aviso breve cada vez que lo activas o desactivas. => A brief notice each time you turn it on or off.
+Letras sincronizadas => Synced lyrics
+La letra de lo que suena, bajo la pastilla y en el panel. Consulta lrclib.net con el título y el artista de la canción. => The lyrics of what's playing, under the pill and in the panel. It queries lrclib.net with the song's title and artist.

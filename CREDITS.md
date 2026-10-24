@@ -22,6 +22,7 @@ Los nombres pertenecen a sus respectivos dueños. faro no tiene relación con el
 | [NASA Image and Video Library](https://images.nasa.gov) | Imágenes del espacio | Las imágenes de la NASA no tienen derechos de autor en general; revisa el aviso de cada una si las reutilizas. |
 | [Picsum](https://picsum.photos) | Fotos al azar | Fotos de [Unsplash](https://unsplash.com), con el autor en la ficha de cada foto. |
 | [Bing](https://www.bing.com) | Imagen del día | Imágenes de uso personal como fondo; pertenecen a Microsoft y a sus fotógrafos. |
+| [LRCLIB](https://lrclib.net) | Letras sincronizadas | Servicio gratuito y abierto; cada letra pertenece a sus autores y se muestra solo para acompañar lo que suena. |
 | [Open-Meteo](https://open-meteo.com) | Clima y geocodificación | Datos meteorológicos de [Open-Meteo.com](https://open-meteo.com/), bajo licencia [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Su uso gratuito es para fines no comerciales. |
 | Servidores de Apple (`networkQuality`) | Medición de internet | Herramienta incluida en macOS. |
 

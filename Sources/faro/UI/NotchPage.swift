@@ -41,6 +41,12 @@ struct NotchPage: View {
                     row("Música", "Lo que suena en Música o Spotify, con controles. macOS te pide permiso la primera vez.") {
                         Toggle("", isOn: $notch.showMusic).toggleStyle(MiniSwitchStyle()).labelsHidden()
                     }
+                    if notch.showMusic {
+                        Divider().padding(.horizontal, 12)
+                        row("Letras sincronizadas", "La letra de lo que suena, bajo la pastilla y en el panel. Consulta lrclib.net con el título y el artista de la canción.") {
+                            toggle($notch.lyrics.enabled)
+                        }
+                    }
                     Divider().padding(.horizontal, 12)
                     row("Calendario", notch.calendarDenied
                         ? "Sin permiso: actívalo en Ajustes del Sistema → Privacidad y seguridad → Calendarios."

@@ -69,7 +69,7 @@ export const features = {
       img: 'notch.png',
       alt: 'El panel del notch desplegado con música, volumen, clima y accesos rápidos',
       title: 'El notch, con algo útil.',
-      lead: 'Un panel que cuelga del notch con lo que suena, el volumen, el clima y tu próximo evento.',
+      lead: 'Un panel que cuelga del notch con lo que suena (y su letra, en tiempo real), el volumen, el clima y tu próximo evento.',
       points: [
         'Se abre al pasar el cursor o solo con un clic, como prefieras.',
         'Temporizador Pomodoro, silenciar el micrófono, gotero de color y accesos al portapapeles y a la bandeja.',
@@ -163,7 +163,7 @@ export const features = {
       img: 'notch.png',
       alt: 'The notch panel unfolded with music, volume, weather and quick buttons',
       title: 'The notch, put to use.',
-      lead: 'A panel that hangs from the notch with what’s playing, volume, weather and your next event.',
+      lead: 'A panel that hangs from the notch with what’s playing (and its lyrics, in real time), volume, weather and your next event.',
       points: [
         'Opens on hover or only on click, whichever you prefer.',
         'Pomodoro timer, mute the microphone, color eyedropper and quick buttons for the clipboard and the shelf.',
@@ -228,6 +228,7 @@ export const timeline = {
     ['1.3', 'Accesos rápidos en el notch y abrir con un clic.'],
     ['1.4', 'Aviso de versiones nuevas y política de privacidad.'],
     ['1.5', 'Temporizador, micrófono, baterías, avisos y herramientas en la bandeja.'],
+    ['1.6', 'Letras sincronizadas en el notch.'],
   ],
   en: [
     ['0.1', 'A prototype that changed the wallpaper using Wallhaven.'],
@@ -240,6 +241,7 @@ export const timeline = {
     ['1.3', 'Quick buttons in the notch and open on click.'],
     ['1.4', 'New-version notices and the privacy policy.'],
     ['1.5', 'Timer, microphone, batteries, notices and shelf tools.'],
+    ['1.6', 'Synced lyrics in the notch.'],
   ],
 }
 
@@ -247,6 +249,7 @@ export const network = [
   ['wallhaven.cc', { es: 'Buscar fotos', en: 'Search photos' }, { es: 'El tema y la resolución mínima', en: 'The topic and minimum resolution' }],
   ['commons.wikimedia.org', { es: 'Buscar y bajar fotos', en: 'Search and download photos' }, { es: 'El tema', en: 'The topic' }],
   ['www.bing.com', { es: 'Foto del día', en: 'Photo of the day' }, { es: 'Nada personal', en: 'Nothing personal' }],
+  ['lrclib.net', { es: 'Letras sincronizadas', en: 'Synced lyrics' }, { es: 'El título y el artista de la canción que suena', en: 'The title and artist of the playing song' }],
   ['api.artic.edu', { es: 'Obras de arte', en: 'Artworks' }, { es: 'El tema', en: 'The topic' }],
   ['images-api.nasa.gov', { es: 'Imágenes del espacio', en: 'Space images' }, { es: 'El tema', en: 'The topic' }],
   ['picsum.photos', { es: 'Fotos al azar', en: 'Random photos' }, { es: 'Nada personal', en: 'Nothing personal' }],
@@ -418,8 +421,8 @@ export const ui = {
 
 // Notas cortas de la versión actual: salen en latest.json y la app las muestra al avisar de la actualización.
 export const releaseNotes = {
-  es: 'Temporizador, silenciar el micrófono, batería de dispositivos, más avisos en el notch y conversión de imágenes y zip en la bandeja.',
-  en: 'Timer, mute microphone, device battery, more notch notices, and image conversion and zip in the shelf.',
+  es: 'Letras sincronizadas de lo que suena, bajo la pastilla del notch.',
+  en: 'Synced lyrics for what’s playing, under the notch pill.',
 }
 
 export const privacy = {
@@ -443,6 +446,7 @@ export const privacy = {
       ['A qué servidores se conecta', [
         'Solo cuando usas la función: los servicios de fotos (Wallhaven, Wikimedia Commons, Bing, Art Institute of Chicago, NASA y Picsum), Open-Meteo para el clima y la prueba de velocidad de Apple (<code>networkQuality</code>). Cada uno recibe lo mínimo para responder, como el tema que escribiste o la ciudad.',
         'Para avisarte de versiones nuevas, faro pide una vez al día el archivo público <code>latest.json</code> de este sitio. No envía identificadores ni datos de tu Mac; como cualquier petición web, el servidor ve tu dirección IP y el nombre y la versión de la app. Puedes apagarlo en General.',
+        'Si activas las letras sincronizadas (puedes apagarlas en Notch), faro envía a lrclib.net el título y el artista de la canción que suena.',
         'Si usas Spotify, la carátula se baja de <code>i.scdn.co</code> mientras suena algo.',
         'Estos servicios tienen sus propias políticas de privacidad.',
       ]],
@@ -483,6 +487,7 @@ export const privacy = {
       ['Which servers it connects to', [
         'Only when you use the feature: the photo services (Wallhaven, Wikimedia Commons, Bing, Art Institute of Chicago, NASA and Picsum), Open-Meteo for weather and Apple’s speed test (<code>networkQuality</code>). Each receives the minimum needed to answer, such as the topic you typed or the city.',
         'To tell you about new versions, faro requests the public <code>latest.json</code> file from this site once a day. It sends no identifiers or data from your Mac; like any web request, the server sees your IP address and the app’s name and version. You can turn it off in General.',
+        'If you turn on synced lyrics (you can turn them off in Notch), faro sends the title and artist of the playing song to lrclib.net.',
         'If you use Spotify, the album art is downloaded from <code>i.scdn.co</code> while something plays.',
         'These services have their own privacy policies.',
       ]],

@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Daniel Pulgarín
 
 import AppKit
+import Combine
 import EventKit
 import SwiftUI
 
@@ -41,7 +42,7 @@ struct WeatherInfo: Equatable {
 final class NotchModel: ObservableObject {
     // MARK: Ajustes (se guardan solos)
     @Published var enabled: Bool { didSet { save("notchEnabled", enabled) } }
-    @Published var showMusic: Bool { didSet { save("notchMusic", showMusic); if !showMusic { track = nil } } }
+    @Published var showMusic: Bool { didSet { save("notchMusic", showMusic); if !showMusic { track = nil; lyrics.reset() } } }
     @Published var showCalendar: Bool { didSet { save("notchCalendar", showCalendar); refreshCalendar() } }
     @Published var showWeather: Bool { didSet { save("notchWeather", showWeather); Task { await refreshWeather() } } }
     @Published var eyeBreak: Bool { didSet { save("notchEyeBreak", eyeBreak); scheduleBreak() } }
@@ -83,6 +84,9 @@ final class NotchModel: ObservableObject {
     /// Lo llama la zona de soltar con los archivos recibidos.
     var onFilesDropped: (([URL]) -> Void)?
 
+    /// Letras sincronizadas de lo que suena.
+    var lyrics = LyricsProvider()
+    private var lyricsObserver: AnyCancellable?
     private var timer: Timer?
     private var toastTask: Task<Void, Never>?
     private let bluetooth = BluetoothWatcher()
@@ -109,6 +113,7 @@ final class NotchModel: ObservableObject {
         let zone = TimeZone.current.identifier.split(separator: "/").last.map(String.init)?
             .replacingOccurrences(of: "_", with: " ") ?? "Bogota"
         city = d.string(forKey: "notchCity") ?? zone
+        lyricsObserver = lyrics.objectWillChange.sink { [weak self] _ in DispatchQueue.main.async { self?.objectWillChange.send() } }
     }
 
     /// Datos de muestra para vistas previas y pruebas (no se guardan).
@@ -195,7 +200,7 @@ final class NotchModel: ObservableObject {
             let script = """
             tell application "\(app)"
                 if player state is stopped then return {"", "", "stopped", ""}
-                return {name of current track, artist of current track, (player state as string)\(urlPart)\(app == "Spotify" ? "" : ", \"\"")}
+                return {name of current track, artist of current track, (player state as string)\(urlPart)\(app == "Spotify" ? "" : ", \"\""), player position}
             end tell
             """
             guard let result = run(script), result.numberOfItems >= 3,
@@ -206,6 +211,8 @@ final class NotchModel: ObservableObject {
                                 playing: state == "playing", artworkURL: url)
             if state == "playing" || track == nil || track?.source == app {
                 if current != track { track = current; loadArtwork(for: current) }
+                let position = Double((result.atIndex(5)?.stringValue ?? "").replacingOccurrences(of: ",", with: ".")) ?? 0
+                lyrics.sync(title: current.title, artist: current.artist, position: position, playing: state == "playing")
                 if state == "playing" { return }
             }
         }
@@ -213,6 +220,7 @@ final class NotchModel: ObservableObject {
             withBundleIdentifier: t.source == "Music" ? "com.apple.Music" : "com.spotify.client").isEmpty {
             track = nil
             artwork = nil
+            lyrics.reset()
         }
     }
 

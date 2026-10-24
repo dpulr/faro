@@ -2,6 +2,11 @@
 
 Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen [SemVer](https://semver.org/lang/es/).
 
+## [1.6.0] — 2026-10-24
+
+### Novedades
+- **Letras sincronizadas** de lo que suena en Música o Spotify, con [LRCLIB](https://lrclib.net) (gratis, sin clave). La línea que suena cuelga bajo la pastilla del notch y, con el panel desplegado, se ven la actual y la siguiente. Se apagan en *Notch → Letras sincronizadas*. Consulta lrclib.net con el título y el artista de la canción; el resultado se recuerda mientras faro está abierto.
+
 ## [1.5.0] — 2026-10-24
 
 ### Novedades en el notch

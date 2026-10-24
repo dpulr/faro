@@ -47,10 +47,20 @@ struct NotchView: View {
                 toastBody
                     .transition(.opacity)
             } else if model.hasLive || extras.hasLive {
-                wings
-                    .frame(width: notchSize.width + 104, height: notchSize.height)
-                    .background(NotchShape(radius: 14).fill(Color.black))
-                    .transition(.opacity)
+                VStack(spacing: 0) {
+                    wings.frame(width: notchSize.width + 104, height: notchSize.height)
+                    if let lyric = collapsedLyric {
+                        Text(lyric).font(.system(size: 12, weight: .medium)).lineLimit(1)
+                            .foregroundStyle(.white.opacity(0.9))
+                            .frame(maxWidth: notchSize.width + 150).padding(.horizontal, 10)
+                            .padding(.top, 2).padding(.bottom, 9)
+                            .id(lyric)
+                            .transition(.opacity)
+                    }
+                }
+                .background(NotchShape(radius: collapsedLyric == nil ? 14 : 20).fill(Color.black))
+                .animation(.easeInOut(duration: 0.25), value: collapsedLyric)
+                .transition(.opacity)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
@@ -60,6 +70,12 @@ struct NotchView: View {
         .animation(spring, value: model.toast)
         .onPreferenceChange(HeightKey.self) { if $0 > 0 { model.expandedHeight = $0 } }
         .environment(\.colorScheme, .dark)
+    }
+
+    /// Línea de la letra que cuelga bajo la pastilla mientras suena una canción con letra.
+    private var collapsedLyric: String? {
+        guard model.showMusic, model.track?.playing == true, model.lyrics.enabled else { return nil }
+        return model.lyrics.line
     }
 
     // MARK: Alas (colapsado con algo en vivo)
@@ -161,6 +177,7 @@ struct NotchView: View {
             if extras.timer.enabled, extras.timer.active { timerRow }
             if model.breakRemaining != nil { breakRow }
             else if model.showMusic { musicRow }
+            if model.showMusic, model.lyrics.enabled, let line = model.lyrics.line { lyricsRow(line) }
             if model.showVolume { volumeRow }
             chips
             actionsRow
@@ -200,6 +217,20 @@ struct NotchView: View {
                 }
             }
         }
+    }
+
+    /// La línea que suena y la siguiente, en pequeño.
+    private func lyricsRow(_ line: String) -> some View {
+        VStack(spacing: 3) {
+            Text(line).font(.system(size: 15, weight: .semibold)).lineLimit(2).multilineTextAlignment(.center)
+            if let next = model.lyrics.next {
+                Text(next).font(.system(size: 12)).foregroundStyle(.white.opacity(0.45)).lineLimit(1)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .id(line)
+        .transition(.opacity)
+        .animation(.easeInOut(duration: 0.25), value: line)
     }
 
     private var volumeRow: some View {
