@@ -241,6 +241,7 @@ export const network = [
   ['images-api.nasa.gov', { es: 'Imágenes del espacio', en: 'Space images' }, { es: 'El tema', en: 'The topic' }],
   ['picsum.photos', { es: 'Fotos al azar', en: 'Random photos' }, { es: 'Nada personal', en: 'Nothing personal' }],
   ['open-meteo.com', { es: 'Clima', en: 'Weather' }, { es: 'La ciudad', en: 'The city' }],
+  ['faro-conectalab.web.app', { es: 'Avisar de versiones nuevas', en: 'New-version notices' }, { es: 'Nada personal (un archivo público, una vez al día)', en: 'Nothing personal (one public file, once a day)' }],
   ['Apple (networkQuality)', { es: 'Medir tu conexión', en: 'Measure your connection' }, { es: 'Una prueba de velocidad normal', en: 'A normal speed test' }],
 ]
 
@@ -320,8 +321,9 @@ export const ui = {
       license: 'Licencia AGPL-3.0-or-later',
       rights: '© 2026 Daniel Pulgarín · Conecta Lab',
       contact: 'Contacto',
+      privacy: 'Privacidad',
     },
-    path: { home: '/', download: '/descargar' },
+    path: { home: '/', download: '/descargar', privacy: '/privacidad' },
   },
   en: {
     lang: 'en',
@@ -398,7 +400,95 @@ export const ui = {
       license: 'AGPL-3.0-or-later license',
       rights: '© 2026 Daniel Pulgarín · Conecta Lab',
       contact: 'Contact',
+      privacy: 'Privacy',
     },
-    path: { home: '/en/', download: '/en/download' },
+    path: { home: '/en/', download: '/en/download', privacy: '/en/privacy' },
+  },
+}
+
+// Notas cortas de la versión actual: salen en latest.json y la app las muestra al avisar de la actualización.
+export const releaseNotes = {
+  es: 'Avisa cuando hay una versión nueva y estrena la política de privacidad.',
+  en: 'Tells you when a new version is out, and adds the privacy policy.',
+}
+
+export const privacy = {
+  es: {
+    title: 'Política de privacidad · faro',
+    description: 'Qué datos guarda faro, a qué servidores se conecta y qué permisos usa. Sin cuentas, sin telemetría y sin cookies de seguimiento.',
+    h1: 'Política de privacidad.',
+    updated: 'Última actualización: 23 de octubre de 2026.',
+    intro: 'faro es una app para macOS que funciona en tu Mac. No tiene cuentas, no tiene telemetría y no envía tu información a ningún servidor propio. Esta página explica qué guarda, a dónde se conecta y qué permisos usa. Cubre la app y este sitio.',
+    sections: [
+      ['Lo que se queda en tu Mac', [
+        'Tus ajustes, canales, perfiles e historial de fotos (<code>~/Library/Application Support/faro</code>).',
+        'El historial del portapapeles, con texto e imágenes, y la bandeja de archivos (que guarda referencias, no copias).',
+        'La foto actual de cada monitor (<code>~/Library/Caches/faro</code>) y las fotos que guardes tú en <code>~/Pictures/faro</code>.',
+        'Las mediciones de internet y la apariencia. Nada de esto sale de tu Mac.',
+      ]],
+      ['Portapapeles', [
+        'faro ignora lo que los gestores de contraseñas marcan como secreto y lo que copies desde las apps que excluyas.',
+        'Puedes pausar el historial, borrarlo y fijar lo importante. Lo fijado no se borra solo.',
+      ]],
+      ['A qué servidores se conecta', [
+        'Solo cuando usas la función: los servicios de fotos (Wallhaven, Wikimedia Commons, Bing, Art Institute of Chicago, NASA y Picsum), Open-Meteo para el clima y la prueba de velocidad de Apple (<code>networkQuality</code>). Cada uno recibe lo mínimo para responder, como el tema que escribiste o la ciudad.',
+        'Para avisarte de versiones nuevas, faro pide una vez al día el archivo público <code>latest.json</code> de este sitio. No envía identificadores ni datos de tu Mac; como cualquier petición web, el servidor ve tu dirección IP y el nombre y la versión de la app. Puedes apagarlo en General.',
+        'Si usas Spotify, la carátula se baja de <code>i.scdn.co</code> mientras suena algo.',
+        'Estos servicios tienen sus propias políticas de privacidad.',
+      ]],
+      ['Permisos de macOS', [
+        'Todos son opcionales y se piden la primera vez que usas la función: Accesibilidad (bloqueo completo del teclado y pegado automático), Automatización (Finder, Música y Spotify), Calendarios, Bluetooth y Notificaciones.',
+        'Si no concedes un permiso, esa función no funciona y el resto sigue igual. Puedes quitarlos cuando quieras en Ajustes del Sistema → Privacidad y seguridad.',
+      ]],
+      ['Este sitio', [
+        'No usa analítica, publicidad ni cookies de seguimiento. Solo guarda en tu navegador, si lo permite, la elección de tema claro u oscuro.',
+        'Está alojado en Firebase Hosting (Google), que puede registrar datos técnicos de las visitas, como la dirección IP, para operar el servicio.',
+      ]],
+      ['Tus derechos y contacto', [
+        'Como faro no guarda tus datos fuera de tu Mac, para borrarlos basta con quitar las carpetas de arriba. Si tienes preguntas sobre esta política, escríbenos desde la página de contacto de Conecta Lab.',
+        'Si la política cambia, esta página lo reflejará con una nueva fecha.',
+      ]],
+    ],
+    contact: 'Contacto de Conecta Lab',
+    contactUrl: 'https://conectalab.co/contacto',
+  },
+  en: {
+    title: 'Privacy policy · faro',
+    description: 'What data faro stores, which servers it connects to and which permissions it uses. No accounts, no telemetry and no tracking cookies.',
+    h1: 'Privacy policy.',
+    updated: 'Last updated: October 23, 2026.',
+    intro: 'faro is a macOS app that runs on your Mac. It has no accounts, no telemetry and sends your information to no server of its own. This page explains what it stores, where it connects and which permissions it uses. It covers the app and this website.',
+    sections: [
+      ['What stays on your Mac', [
+        'Your settings, channels, profiles and photo history (<code>~/Library/Application Support/faro</code>).',
+        'The clipboard history, with text and images, and the file shelf (which stores references, not copies).',
+        'The current photo of each display (<code>~/Library/Caches/faro</code>) and the photos you save yourself in <code>~/Pictures/faro</code>.',
+        'Internet measurements and appearance. None of this leaves your Mac.',
+      ]],
+      ['Clipboard', [
+        'faro ignores what password managers mark as secret and anything copied from apps you exclude.',
+        'You can pause the history, clear it and pin what matters. Pinned items are not deleted automatically.',
+      ]],
+      ['Which servers it connects to', [
+        'Only when you use the feature: the photo services (Wallhaven, Wikimedia Commons, Bing, Art Institute of Chicago, NASA and Picsum), Open-Meteo for weather and Apple’s speed test (<code>networkQuality</code>). Each receives the minimum needed to answer, such as the topic you typed or the city.',
+        'To tell you about new versions, faro requests the public <code>latest.json</code> file from this site once a day. It sends no identifiers or data from your Mac; like any web request, the server sees your IP address and the app’s name and version. You can turn it off in General.',
+        'If you use Spotify, the album art is downloaded from <code>i.scdn.co</code> while something plays.',
+        'These services have their own privacy policies.',
+      ]],
+      ['macOS permissions', [
+        'All are optional and asked the first time you use the feature: Accessibility (full keyboard lock and auto-paste), Automation (Finder, Music and Spotify), Calendars, Bluetooth and Notifications.',
+        'If you don’t grant a permission, that feature doesn’t work and everything else stays the same. You can remove them any time in System Settings → Privacy & Security.',
+      ]],
+      ['This website', [
+        'It uses no analytics, advertising or tracking cookies. It only stores in your browser, if allowed, your choice of light or dark theme.',
+        'It is hosted on Firebase Hosting (Google), which may log technical visit data, such as the IP address, to operate the service.',
+      ]],
+      ['Your rights and contact', [
+        'Since faro doesn’t keep your data outside your Mac, deleting it is as simple as removing the folders above. If you have questions about this policy, write to us from Conecta Lab’s contact page.',
+        'If the policy changes, this page will reflect it with a new date.',
+      ]],
+    ],
+    contact: 'Conecta Lab contact',
+    contactUrl: 'https://conectalab.co/en/contact',
   },
 }

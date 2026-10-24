@@ -21,7 +21,7 @@ enum Snapshot {
         func render<V: View>(_ view: V, name: String, size: CGSize?) {
             let host = NSHostingView(rootView: view
                 .environmentObject(engine).environmentObject(monitor)
-                .environmentObject(speed).environmentObject(awake).environmentObject(storage).environmentObject(clipboard).environmentObject(CleaningMode()).environmentObject(NotchModel()).environmentObject(DiskAlert()).environmentObject(AudioMixer())
+                .environmentObject(speed).environmentObject(awake).environmentObject(storage).environmentObject(clipboard).environmentObject(CleaningMode()).environmentObject(NotchModel()).environmentObject(DiskAlert()).environmentObject(UpdateChecker()).environmentObject(AudioMixer())
                 .environmentObject(Appearance.shared).tint(Appearance.shared.accent))
             let frame = CGRect(origin: .zero, size: size ?? host.fittingSize)
             let window = NSWindow(contentRect: frame, styleMask: [.titled, .fullSizeContentView], backing: .buffered, defer: false)

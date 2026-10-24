@@ -20,6 +20,7 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
     let cleaning = CleaningMode()
     let notch = NotchModel()
     let diskAlert = DiskAlert()
+    let updates = UpdateChecker()
     let mixer = AudioMixer()
     let shelf = ShelfStore(file: Paths.support.appendingPathComponent("shelf.json"), registerShortcut: true)
     let appearance = Appearance.shared
@@ -60,6 +61,7 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
         NotchController.shared.start(model: notch, mixer: mixer)
         if Bundle.main.bundleIdentifier != nil { UNUserNotificationCenter.current().delegate = self }
         if diskAlert.enabled { diskAlert.requestAuthorization() }
+        updates.start()
         diskSubscription = monitor.$diskFree
             .removeDuplicates { abs($0 - $1) < 100_000_000 } // cambios de menos de 0,1 GB no cuentan
             .sink { [weak self] free in
@@ -170,6 +172,27 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
 
     /// Con `FARO_DEBUG_FEATURES=1`: ejercita el aviso de disco, el mezclador, el aviso de Bluetooth y soltar sobre el notch.
     func debugFeatures() async {
+        // 0) Aviso de versiones nuevas: contra un servidor local (FARO_TEST_FEED=http://localhost:PUERTO).
+        if let base = ProcessInfo.processInfo.environment["FARO_TEST_FEED"] {
+            for (path, current, expected) in [("/nueva/latest.json", "1.0.0", "disponible"), ("/igual/latest.json", "9.9.9", "al día"),
+                                              ("/vieja/latest.json", "9.9.9", "al día"), ("/no-existe/latest.json", "1.0.0", "falló"),
+                                              ("/nueva/latest.json", "1.10.0", "al día")] { // 1.10 es posterior a 1.5: compara número a número
+                let checker = UpdateChecker(current: current)
+                checker.silent = true
+                checker.feed = URL(string: base + path)!
+                await checker.check(manual: true)
+                let got: String
+                switch checker.state {
+                case .available(let release): got = "disponible (\(release.version): \(release.notes))"
+                case .upToDate: got = "al día"
+                case .failed: got = "falló"
+                default: got = "otro"
+                }
+                print("actualizaciones | \(path) con versión \(current) → \(got) (esperado: \(expected)) \(got.hasPrefix(expected) ? "✓" : "✗")")
+            }
+            print("actualizaciones | 1.10 > 1.9: \(UpdateChecker.isNewer("1.10", than: "1.9") ? "✓" : "✗") | 1.9 > 1.10: \(!UpdateChecker.isNewer("1.9", than: "1.10") ? "✓" : "✗") | 1.4.0 = 1.4: \(!UpdateChecker.isNewer("1.4.0", than: "1.4") ? "✓" : "✗")")
+        }
+
         // 1) Aviso de poco espacio: la decisión de avisar (sin tocar tu ajuste: se restaura).
         let (savedOn, savedGB) = (diskAlert.enabled, diskAlert.thresholdGB)
         diskAlert.enabled = true; diskAlert.thresholdGB = 20
@@ -486,7 +509,7 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
             window.contentView = NSHostingView(rootView: MainRoot()
                 .environmentObject(engine).environmentObject(monitor).environmentObject(speed)
                 .environmentObject(awake).environmentObject(storage).environmentObject(clipboard)
-                .environmentObject(cleaning).environmentObject(notch).environmentObject(diskAlert).environmentObject(mixer).environmentObject(appearance))
+                .environmentObject(cleaning).environmentObject(notch).environmentObject(diskAlert).environmentObject(updates).environmentObject(mixer).environmentObject(appearance))
             window.center()
             mainWindow = window
         }

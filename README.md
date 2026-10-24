@@ -226,6 +226,7 @@ faro **no tiene telemetría ni cuentas**. Las únicas conexiones que hace son es
 | `api.artic.edu` y `www.artic.edu` | Obras del Art Institute of Chicago | El tema que escribiste |
 | `images-api.nasa.gov` y `images-assets.nasa.gov` | Imágenes de la NASA | El tema que escribiste |
 | `picsum.photos` | Fotos al azar | Nada personal |
+| `faro-conectalab.web.app` | Avisar de versiones nuevas (un archivo público, una vez al día; se apaga en *General*) | Nada personal |
 | `i.scdn.co` | Carátula de Spotify | Solo mientras suena algo de Spotify |
 
 Todo lo demás —historial del portapapeles, bandeja, ajustes, fotos— **se queda en tu disco**. El portapapeles no guarda lo que los gestores de contraseñas marcan como secreto. Para borrarlo todo, quita la carpeta de datos (abajo).

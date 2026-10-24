@@ -183,3 +183,8 @@ tr:last-child td { border-bottom: 0; }
   .js .reveal { opacity: 1; transform: none; transition: none; }
   .btn { transition: none; }
 }
+
+.dl--left { text-align: left; padding-bottom: 50px; }
+.dl--left h1 { font-size: clamp(36px, 4.6vw, 54px); }
+.dl--left .lead { margin: 18px 0 0; }
+.dl--left .hero__note { margin-top: 18px; }

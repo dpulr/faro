@@ -7,6 +7,7 @@ import ServiceManagement
 struct GeneralPage: View {
     @EnvironmentObject var engine: WallpaperEngine
     @EnvironmentObject var appearance: Appearance
+    @EnvironmentObject var updates: UpdateChecker
     @State private var launchAtLogin = SMAppService.mainApp.status == .enabled
 
     private let shortcuts: [(String, String)] = [
@@ -79,6 +80,8 @@ struct GeneralPage: View {
                 }
             }
 
+            updatesCard
+
             aboutCard
         }
     }
@@ -99,6 +102,51 @@ struct GeneralPage: View {
                     Button("Código fuente") { open("https://github.com/dpulr/faro") }.buttonStyle(PillButtonStyle())
                 }
             }
+        }
+    }
+
+    /// Versión actual, búsqueda manual y aviso automático de versiones nuevas.
+    private var updatesCard: some View {
+        Card {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(updateTitle).font(.callout.weight(.medium))
+                        Text(updateDetail).font(.caption).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if case .available(let release) = updates.state {
+                        Button("Descargar") { NSWorkspace.shared.open(release.url) }.buttonStyle(PillButtonStyle())
+                    } else {
+                        Button(updates.state == .checking ? "Buscando…" : "Buscar ahora") { Task { await updates.check(manual: true) } }
+                            .buttonStyle(PillButtonStyle(prominent: false)).disabled(updates.state == .checking)
+                    }
+                }
+                Divider()
+                setting("Avisarme de versiones nuevas", "Una consulta al día al sitio de faro; no envía nada tuyo y nunca instala solo.") {
+                    Toggle("", isOn: $updates.automatic).toggleStyle(MiniSwitchStyle()).labelsHidden()
+                }
+            }
+        }
+    }
+
+    private var updateTitle: String {
+        switch updates.state {
+        case .available(let release): return String(format: tr("faro %@ está disponible"), release.version)
+        case .upToDate: return tr("faro está al día")
+        case .failed: return tr("No se pudo buscar")
+        default: return String(format: tr("Versión %@"), updates.current)
+        }
+    }
+
+    private var updateDetail: String {
+        switch updates.state {
+        case .available(let release): return release.notes.isEmpty ? String(format: tr("Tienes la %@."), updates.current) : release.notes
+        case .failed: return tr("Revisa tu conexión e inténtalo de nuevo.")
+        case .upToDate: return String(format: tr("Versión %@"), updates.current)
+        default:
+            guard let last = updates.lastCheck else { return tr("Todavía no se ha buscado.") }
+            return String(format: tr("Última búsqueda: %@"), Format.relative(last))
         }
     }
 

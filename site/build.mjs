@@ -4,18 +4,19 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { features, more, network, timeline, ui } from './src/content.mjs'
+import { features, more, network, privacy, releaseNotes, timeline, ui } from './src/content.mjs'
 
 const root = dirname(fileURLToPath(import.meta.url))
 const dist = join(root, 'dist')
-const SITE = 'https://faro.conectalab.co'
+// SITE_URL permite publicar con otra dirección mientras el dominio propio no esté conectado.
+const SITE = process.env.SITE_URL || 'https://faro.conectalab.co'
 const REPO = 'https://github.com/dpulr/faro'
 const REPO_PUBLIC = process.env.SITE_REPO_PUBLIC === '1'
 const version = readFileSync(join(root, '../VERSION'), 'utf8').trim()
 
 // Descarga: se publica el .dmg que dejó scripts/release.sh, si existe.
 const dmgSource = join(root, `../build/faro-${version}.dmg`)
-const download = { available: existsSync(dmgSource), file: `faro-${version}.dmg` }
+const download = { available: existsSync(dmgSource) && process.env.SITE_NO_DMG !== '1', file: `faro-${version}.dmg` }
 if (download.available) {
   const stat = statSync(dmgSource)
   download.size = `${(stat.size / 1048576).toFixed(1)} MB`
@@ -120,6 +121,7 @@ function footer(lang) {
       <a href="${t.path.home}">${lang === 'es' ? 'Inicio' : 'Home'}</a>
       <a href="${t.path.download}">${t.nav.download}</a>
       ${REPO_PUBLIC ? `<a href="${REPO}">GitHub</a>` : ''}
+      <a href="${t.path.privacy}">${t.footer.privacy}</a>
       <a href="https://conectalab.co/${lang === 'es' ? 'contacto' : 'en/contact'}">${t.footer.contact}</a>
     </div>
     <div class="foot__by">
@@ -301,6 +303,27 @@ ${header(lang, 'download')}
 ${footer(lang)}`
 }
 
+function privacyPage(lang) {
+  const p = privacy[lang]
+  const body = p.sections.map(([title, items]) => `<h3>${title}</h3><ul>${items.map((i) => `<li>${i}</li>`).join('')}</ul>`).join('')
+  return `${head(lang, 'privacy', { title: p.title, description: p.description })}
+${header(lang, 'privacy')}
+<section class="dl dl--left">
+  <div class="wrap wrap--narrow">
+    <h1>${p.h1}</h1>
+    <p class="lead">${p.intro}</p>
+    <p class="hero__note">${p.updated}</p>
+  </div>
+</section>
+<section class="section section--tint dl__body">
+  <div class="wrap wrap--narrow prose">
+    ${body}
+    <p><a class="link" href="${p.contactUrl}">${icons.arrow} ${p.contact}</a></p>
+  </div>
+</section>
+${footer(lang)}`
+}
+
 function notFound() {
   return `${head('es', 'home', { title: 'No encontrado · faro', description: ui.es.home.description }).replace('<head>', '<head>\n<meta name="robots" content="noindex">')}
 ${header('es', 'home')}
@@ -324,16 +347,25 @@ write('index.html', home('es'))
 write('en/index.html', home('en'))
 write('descargar/index.html', downloadPage('es'))
 write('en/download/index.html', downloadPage('en'))
+write('privacidad/index.html', privacyPage('es'))
+write('en/privacy/index.html', privacyPage('en'))
 write('404.html', notFound())
 
+mkdirSync(join(dist, 'download'), { recursive: true })
 if (download.available) {
-  mkdirSync(join(dist, 'download'), { recursive: true })
   cpSync(dmgSource, join(dist, 'download', download.file))
   cpSync(dmgSource, join(dist, 'download', 'faro.dmg'))
-  writeFileSync(join(dist, 'download', 'latest.json'), JSON.stringify({ version, file: download.file, size: download.size, sha256: download.sha, date: download.date }, null, 2))
 }
+// latest.json lo consulta la app para avisar de versiones nuevas (no es ejecutable: Spark lo admite).
+writeFileSync(join(dist, 'download', 'latest.json'), JSON.stringify({
+  version,
+  date: new Date().toISOString().slice(0, 10),
+  page: { es: pageUrl('es', 'download'), en: pageUrl('en', 'download') },
+  notes: releaseNotes,
+  ...(download.available ? { file: download.file, size: download.size, sha256: download.sha } : {}),
+}, null, 2) + '\n')
 
-const urls = ['es', 'en'].flatMap((l) => ['home', 'download'].map((k) => pageUrl(l, k)))
+const urls = ['es', 'en'].flatMap((l) => ['home', 'download', 'privacy'].map((k) => pageUrl(l, k)))
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n')}\n</urlset>\n`)
 write('robots.txt', `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`)
 

@@ -2,6 +2,12 @@
 
 Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen [SemVer](https://semver.org/lang/es/).
 
+## [1.4.0] — 2026-10-24
+
+### Novedades
+- **Aviso de versiones nuevas.** faro consulta una vez al día el archivo público `latest.json` del sitio y, si hay una versión más reciente, lo avisa con una notificación y en *General* (con un botón para descargarla). No envía datos tuyos y nunca instala nada solo. Se puede apagar y también buscar a mano.
+- **Política de privacidad** en el sitio de faro, en español y en inglés.
+
 ## [1.3.0] — 2026-10-23
 
 ### Novedades
