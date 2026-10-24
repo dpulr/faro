@@ -6,6 +6,7 @@ import EventKit
 
 struct NotchPage: View {
     @EnvironmentObject var notch: NotchModel
+    @EnvironmentObject var extras: NotchExtras
     @State private var cityDraft = ""
 
     private let breakOptions = [20, 30, 45, 60]
@@ -78,6 +79,9 @@ struct NotchPage: View {
                 }
             }
 
+            toolsCard
+            alertsCard
+
             Card {
                 VStack(alignment: .leading, spacing: 10) {
                     Text("Cómo se usa").font(.callout.weight(.semibold))
@@ -89,6 +93,97 @@ struct NotchPage: View {
             }
         }
         .onAppear { cityDraft = notch.city }
+    }
+
+    private func toggle(_ isOn: Binding<Bool>) -> some View {
+        Toggle("", isOn: isOn).toggleStyle(MiniSwitchStyle()).labelsHidden()
+    }
+
+    private func minutesChip(_ value: Binding<Int>, _ options: [Int]) -> some View {
+        MenuChip(text: String(format: tr("%lld min"), value.wrappedValue)) {
+            ForEach(options, id: \.self) { m in
+                DropdownRow(title: String(format: tr("%lld min"), m), selected: m == value.wrappedValue) { value.wrappedValue = m }
+            }
+        }
+    }
+
+    /// Botones y módulos que se usan a mano desde el panel desplegado.
+    private var toolsCard: some View {
+        Card(padding: 4) {
+            VStack(spacing: 0) {
+                row("Temporizador", "Un Pomodoro (enfoque y descanso) o un temporizador simple. La cuenta se ve con el notch recogido.") {
+                    HStack(spacing: 10) {
+                        if extras.timer.enabled {
+                            Segments(selection: $extras.timer.pomodoro, options: [("Pomodoro", true), ("Simple", false)])
+                        }
+                        toggle($extras.timer.enabled)
+                    }
+                }
+                if extras.timer.enabled {
+                    Divider().padding(.horizontal, 12)
+                    row("Duración", extras.timer.pomodoro ? "Cuánto dura el enfoque y cuánto el descanso." : "Cuánto dura el temporizador.") {
+                        HStack(spacing: 8) {
+                            if extras.timer.pomodoro {
+                                minutesChip($extras.timer.focusMinutes, [15, 20, 25, 30, 45, 50, 60])
+                                minutesChip($extras.timer.restMinutes, [3, 5, 10, 15])
+                            } else {
+                                minutesChip($extras.timer.simpleMinutes, [5, 10, 15, 30, 45, 60, 90])
+                            }
+                        }
+                    }
+                }
+                Divider().padding(.horizontal, 12)
+                row("Silenciar el micrófono", extras.mic.available
+                    ? "Un botón en el panel (y ⌃⌥⌘M) silencia el micrófono para todas las apps de videollamada."
+                    : "El micrófono actual no deja controlar su volumen desde el Mac.") {
+                    toggle($extras.mic.enabled)
+                }
+                Divider().padding(.horizontal, 12)
+                row("Gotero de color", "Toma el color de cualquier punto de la pantalla y copia su código.") {
+                    toggle($extras.eyedropperEnabled)
+                }
+                Divider().padding(.horizontal, 12)
+                row("Batería de dispositivos", "La carga de tus AirPods (con el estuche), teclado, ratón y trackpad Bluetooth, junto al clima.") {
+                    toggle($extras.devices.enabled)
+                }
+            }
+        }
+    }
+
+    /// Avisos que salen solos del notch.
+    private var alertsCard: some View {
+        Card(padding: 4) {
+            VStack(spacing: 0) {
+                row("Batería llena", "Un aviso cuando la carga llega al nivel que elijas, para desenchufar.") {
+                    HStack(spacing: 10) {
+                        if extras.battery.fullEnabled {
+                            MenuChip(text: "\(extras.battery.fullLevel)%") {
+                                ForEach([80, 85, 90, 95, 100], id: \.self) { level in
+                                    DropdownRow(title: "\(level)%", selected: level == extras.battery.fullLevel) { extras.battery.fullLevel = level }
+                                }
+                            }
+                        }
+                        toggle($extras.battery.fullEnabled)
+                    }
+                }
+                Divider().padding(.horizontal, 12)
+                row("Batería baja", "Un aviso cuando queda poca carga (20 y 10 por ciento) y no estás cargando.") { toggle($extras.battery.lowEnabled) }
+                Divider().padding(.horizontal, 12)
+                row("Descargas terminadas", "Un aviso con botón para mostrar el archivo cuando termina una descarga. macOS pide permiso para ver la carpeta Descargas.") {
+                    toggle($extras.downloads.enabled)
+                }
+                Divider().padding(.horizontal, 12)
+                row("Capturas a la bandeja", "Cada captura de pantalla nueva entra sola a la bandeja de archivos. macOS pide permiso para ver la carpeta donde se guardan.") {
+                    toggle($extras.screenshots.enabled)
+                }
+                Divider().padding(.horizontal, 12)
+                row("Discos USB", "Un aviso con botón para expulsar al conectar una memoria o un disco.") { toggle($extras.volumes.enabled) }
+                Divider().padding(.horizontal, 12)
+                row("Cámara y micrófono en uso", "Un punto verde o naranja junto al notch cuando una app los usa.") { toggle($extras.privacyEnabled) }
+                Divider().padding(.horizontal, 12)
+                row("Bloq Mayús", "Un aviso breve cada vez que lo activas o desactivas.") { toggle($extras.capsEnabled) }
+            }
+        }
     }
 
     private func commitCity() {

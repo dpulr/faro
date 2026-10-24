@@ -2,6 +2,24 @@
 
 Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen [SemVer](https://semver.org/lang/es/).
 
+## [1.5.0] — 2026-10-24
+
+### Novedades en el notch
+- **Temporizador:** un Pomodoro (enfoque y descanso, con duraciones a tu gusto) o un temporizador simple. La cuenta se ve en la pastilla con el notch recogido, con pausa, saltar y reiniciar en el panel.
+- **Silenciar el micrófono** para todas las apps con un botón del panel o con `⌃⌥⌘M`.
+- **Batería de dispositivos:** la carga de tus AirPods (con el estuche), teclado, ratón y trackpad Bluetooth, junto al clima.
+- **Batería llena y baja:** avisa al llegar al nivel que elijas (80 a 100) para desenchufar, y al 20 y al 10 por ciento cuando no cargas.
+- **Descargas terminadas:** un aviso con botón *Mostrar* cuando termina una descarga en Descargas (apagado por defecto).
+- **Capturas de pantalla a la bandeja:** cada captura nueva entra sola a la bandeja (apagado por defecto).
+- **Discos USB:** un aviso con botón *Expulsar* al conectar una memoria o un disco.
+- **Cámara y micrófono en uso:** un punto verde o naranja junto al notch cuando una app los usa.
+- **Bloq Mayús:** un aviso breve al activarlo o desactivarlo.
+- **Gotero de color:** toma el color de cualquier punto de la pantalla y copia su código.
+- Los avisos del notch ahora pueden llevar un botón de acción.
+
+### Novedades en la bandeja
+- **Convertir imágenes** (PNG, JPEG, HEIC, TIFF) y **comprimir o descomprimir zip**, sin conexión, desde el menú de cada archivo.
+
 ## [1.4.0] — 2026-10-24
 
 ### Novedades

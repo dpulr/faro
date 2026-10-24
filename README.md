@@ -114,6 +114,7 @@ Un panel flotante para llevar archivos de una app a otra. Se abre con `⌃⌥⌘
 
 - **Arrastra dentro y fuera:** también puedes soltar archivos directamente sobre el ícono de faro en la barra de menú.
 - **No gasta disco:** guarda referencias a los archivos, no copias.
+- **Convertir imágenes** (PNG, JPEG, HEIC, TIFF) y **comprimir o descomprimir zip** desde el menú de cada archivo, sin conexión.
 - **AirDrop** de un archivo o de toda la bandeja, doble clic para abrir y clic derecho para mostrar en Finder.
 
 ### Limpiar teclado
@@ -144,6 +145,9 @@ Un panel negro que cuelga del notch: lleva el cursor arriba al centro de la pant
 - **Volumen:** un control del volumen de tu Mac dentro del panel.
 - **Bluetooth:** un aviso al conectarse tus audífonos, teclado, ratón o mando.
 - **Soltar archivos:** arrastra un archivo hacia el notch y suéltalo en la zona que aparece; se guarda en la bandeja.
+- **Temporizador:** Pomodoro o temporizador simple, con la cuenta visible en la pastilla.
+- **Silenciar el micrófono** con un botón o `⌃⌥⌘M`, **batería de AirPods y otros dispositivos**, **gotero de color**.
+- **Avisos:** batería llena o baja, descarga terminada, captura de pantalla (va a la bandeja), disco USB conectado (con botón para expulsar), cámara o micrófono en uso y Bloq Mayús.
 - **Cómo se abre:** al pasar el cursor o solo con un clic (*Notch → Cómo se abre*).
 - **Accesos rápidos:** dos botones abren el portapapeles y la bandeja.
 - **Poco espacio en disco:** el notch muestra una señal ámbar cuando se acaba el espacio.
@@ -210,7 +214,8 @@ faro pide solo lo que cada función necesita, y cada permiso es **opcional**:
 | **Automatización: Música y Spotify** | Mostrar lo que suena en el notch | El notch no muestra música |
 | **Calendarios** | Mostrar tu próximo evento en el notch | Ese módulo queda apagado |
 | **Bluetooth** | Avisar en el notch cuando se conecta un dispositivo | Sin aviso de conexión |
-| **Notificaciones** | El aviso de poco espacio en disco | Solo queda la señal en el notch |
+| **Notificaciones** | El aviso de poco espacio en disco y el de versiones nuevas | Solo queda la señal en el notch |
+| **Carpetas Descargas y Escritorio** | Los avisos de descarga terminada y de capturas de pantalla (ambos apagados por defecto) | Esos avisos no funcionan |
 
 ### Qué sale de tu Mac
 

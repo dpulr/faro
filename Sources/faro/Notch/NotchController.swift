@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Daniel Pulgarín
 
 import AppKit
+import Combine
 import SwiftUI
 
 final class NotchPanel: NSPanel {
@@ -47,6 +48,8 @@ final class NotchController {
     private var trigger: NotchPanel?
     private var model: NotchModel?
     private var mixer: AudioMixer?
+    private var extras: NotchExtras?
+    private var cancellables: Set<AnyCancellable> = []
     private var dragBaseline = NSPasteboard(name: .drag).changeCount
     private var dropHideTicks = 0
     private var prevButton = false
@@ -63,9 +66,11 @@ final class NotchController {
                          : tr("Tu pantalla no tiene notch: el panel aparece como una cápsula arriba al centro")
     }
 
-    func start(model: NotchModel, mixer: AudioMixer) {
+    func start(model: NotchModel, mixer: AudioMixer, extras: NotchExtras) {
         self.model = model
         self.mixer = mixer
+        self.extras = extras
+        model.$toast.sink { [weak self] _ in DispatchQueue.main.async { self?.updateMouseTransparency() } }.store(in: &cancellables)
         model.collapse = { [weak self] in self?.setExpanded(false) }
         model.start()
         apply()
@@ -80,7 +85,7 @@ final class NotchController {
 
     /// Crea o quita el panel según el ajuste y lo ubica en la pantalla con notch (o la principal).
     func apply() {
-        guard let model, let mixer else { return }
+        guard let model, let mixer, let extras else { return }
         guard model.enabled else { panel?.orderOut(nil); panel = nil; return }
         let target = NSScreen.screens.first { $0.safeAreaInsets.top > 0 } ?? NSScreen.main ?? NSScreen.screens[0]
         screen = target
@@ -106,7 +111,7 @@ final class NotchController {
             panel = p
         }
         panel?.setFrame(CGRect(origin: origin, size: size), display: true)
-        panel?.contentView = NSHostingView(rootView: NotchView(model: model, mixer: mixer, notchSize: notchSize,
+        panel?.contentView = NSHostingView(rootView: NotchView(model: model, mixer: mixer, extras: extras, notchSize: notchSize,
                                                               hasHardwareNotch: hasHardwareNotch))
         panel?.orderFrontRegardless()
         installTrigger(on: target)
@@ -193,7 +198,7 @@ final class NotchController {
     /// El panel solo recibe el ratón cuando está desplegado o mostrando la zona de soltar.
     private func updateMouseTransparency() {
         guard let model else { return }
-        panel?.ignoresMouseEvents = !(model.expanded || model.dropActive)
+        panel?.ignoresMouseEvents = !(model.expanded || model.dropActive || model.toast?.actionLabel != nil)
     }
 
     private func setExpanded(_ on: Bool) {

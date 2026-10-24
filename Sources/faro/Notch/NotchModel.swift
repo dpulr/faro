@@ -16,6 +16,10 @@ struct Track: Equatable {
 struct Toast: Equatable {
     var symbol: String
     var text: String
+    /// Texto del botón de acción (p. ej. "Expulsar"); la acción vive en `NotchModel.toastAction`.
+    var actionLabel: String?
+    /// Color de muestra en hexadecimal (gotero).
+    var swatch: String?
 }
 
 struct EventInfo: Equatable {
@@ -70,6 +74,10 @@ final class NotchModel: ObservableObject {
     @Published var toast: Toast?
     /// Hay un archivo arrastrándose cerca del notch: se muestra la zona para soltarlo.
     @Published var dropActive = false
+    /// Lo que hace el botón del aviso actual.
+    var toastAction: (() -> Void)?
+    /// Se llama al conectarse un dispositivo Bluetooth (para refrescar su batería).
+    var onBluetoothConnect: (() -> Void)?
     /// Recoge el panel desplegado (lo asigna el controlador).
     var collapse: (() -> Void)?
     /// Lo llama la zona de soltar con los archivos recibidos.
@@ -117,7 +125,10 @@ final class NotchModel: ObservableObject {
     func start() {
         guard timer == nil else { return }
         bluetooth.onConnect = { [weak self] name, symbol in
-            Task { @MainActor in self?.showToast(symbol: symbol, text: String(format: tr("%@ conectado"), name)) }
+            Task { @MainActor in
+                self?.showToast(symbol: symbol, text: String(format: tr("%@ conectado"), name))
+                self?.onBluetoothConnect?()
+            }
         }
         if showBluetooth { bluetooth.start() }
         scheduleBreak()
@@ -139,12 +150,14 @@ final class NotchModel: ObservableObject {
     }
 
     /// Muestra un aviso colgando del notch unos segundos.
-    func showToast(symbol: String, text: String, seconds: Double = 3.5) {
-        toast = Toast(symbol: symbol, text: text)
+    func showToast(symbol: String, text: String, seconds: Double = 3.5, actionLabel: String? = nil,
+                   swatch: String? = nil, action: (() -> Void)? = nil) {
+        toast = Toast(symbol: symbol, text: text, actionLabel: actionLabel, swatch: swatch)
+        toastAction = action
         toastTask?.cancel()
         toastTask = Task {
             try? await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
-            if !Task.isCancelled { toast = nil }
+            if !Task.isCancelled { toast = nil; toastAction = nil }
         }
     }
 

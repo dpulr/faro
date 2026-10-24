@@ -25,6 +25,7 @@ private struct HeightKey: PreferenceKey {
 struct NotchView: View {
     @ObservedObject var model: NotchModel
     @ObservedObject var mixer: AudioMixer
+    @ObservedObject var extras: NotchExtras
     var notchSize: CGSize
     var hasHardwareNotch: Bool
 
@@ -45,7 +46,7 @@ struct NotchView: View {
             } else if model.toast != nil {
                 toastBody
                     .transition(.opacity)
-            } else if model.hasLive {
+            } else if model.hasLive || extras.hasLive {
                 wings
                     .frame(width: notchSize.width + 104, height: notchSize.height)
                     .background(NotchShape(radius: 14).fill(Color.black))
@@ -54,7 +55,7 @@ struct NotchView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .animation(spring, value: model.expanded)
-        .animation(spring, value: model.hasLive)
+        .animation(spring, value: model.hasLive || extras.hasLive)
         .animation(spring, value: model.dropActive)
         .animation(spring, value: model.toast)
         .onPreferenceChange(HeightKey.self) { if $0 > 0 { model.expandedHeight = $0 } }
@@ -66,8 +67,14 @@ struct NotchView: View {
     private var wings: some View {
         HStack(spacing: 0) {
             Group {
-                if model.breakRemaining != nil {
+                if extras.cameraOn {
+                    Image(systemName: "video.fill").font(.system(size: 14, weight: .medium)).foregroundStyle(.green)
+                } else if extras.micOn {
+                    Image(systemName: "mic.fill").font(.system(size: 14, weight: .medium)).foregroundStyle(.orange)
+                } else if model.breakRemaining != nil {
                     Image(systemName: "eye").font(.system(size: 14, weight: .medium))
+                } else if extras.timer.active, !(model.showMusic && model.track?.playing == true) {
+                    Image(systemName: extras.timer.phase == .rest ? "cup.and.saucer.fill" : "timer").font(.system(size: 14, weight: .medium))
                 } else if model.lowDiskGB != nil {
                     Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 14, weight: .medium)).foregroundStyle(.orange)
                 } else if let art = model.artwork {
@@ -80,7 +87,10 @@ struct NotchView: View {
             .frame(width: 52)
             Spacer(minLength: 0)
             Group {
-                if let remaining = model.breakRemaining {
+                if extras.timer.active {
+                    Text(extras.timer.clock).font(.system(size: 13, weight: .semibold, design: .rounded)).monospacedDigit()
+                        .foregroundStyle(extras.timer.running ? Color.white : Color.white.opacity(0.5))
+                } else if let remaining = model.breakRemaining {
                     Text("\(remaining)").font(.system(size: 14, weight: .semibold, design: .rounded)).monospacedDigit()
                 } else if let gb = model.lowDiskGB {
                     Text("\(gb) GB").font(.system(size: 12, weight: .semibold, design: .rounded)).monospacedDigit().foregroundStyle(.orange)
@@ -98,8 +108,24 @@ struct NotchView: View {
 
     private var toastBody: some View {
         HStack(spacing: 10) {
-            Image(systemName: model.toast?.symbol ?? "bell").font(.system(size: 16, weight: .medium))
+            if let hex = model.toast?.swatch, let color = Color(hex: hex) {
+                Circle().fill(color).frame(width: 18, height: 18).overlay(Circle().stroke(Color.white.opacity(0.4), lineWidth: 1))
+            } else {
+                Image(systemName: model.toast?.symbol ?? "bell").font(.system(size: 16, weight: .medium))
+            }
             Text(model.toast?.text ?? "").font(.system(size: 13, weight: .medium)).lineLimit(1)
+            if let label = model.toast?.actionLabel {
+                Button {
+                    let action = model.toastAction
+                    model.toast = nil
+                    action?()
+                } label: {
+                    Text(label).font(.system(size: 12, weight: .semibold))
+                        .padding(.horizontal, 12).padding(.vertical, 5)
+                        .background(Capsule().fill(Color.white.opacity(0.16)))
+                }
+                .buttonStyle(.plain)
+            }
         }
         .foregroundStyle(.white)
         .padding(.horizontal, 24)
@@ -132,10 +158,12 @@ struct NotchView: View {
 
     private var expandedBody: some View {
         VStack(spacing: 14) {
+            if extras.timer.enabled, extras.timer.active { timerRow }
             if model.breakRemaining != nil { breakRow }
             else if model.showMusic { musicRow }
             if model.showVolume { volumeRow }
             chips
+            actionsRow
         }
         .padding(.horizontal, 22)
         .padding(.top, notchSize.height + 4)
@@ -203,23 +231,66 @@ struct NotchView: View {
         }
     }
 
-    private func control(_ symbol: String, size: CGFloat = 32, action: @escaping () -> Void) -> some View {
+    private func control(_ symbol: String, size: CGFloat = 32, tint: Color? = nil, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol).font(.system(size: size > 36 ? 15 : 12, weight: .semibold))
+                .foregroundStyle(tint ?? .white)
                 .frame(width: size, height: size)
                 .background(Circle().fill(Color.white.opacity(size > 36 ? 0.18 : 0.08)))
         }
         .buttonStyle(.plain)
     }
 
+    /// Datos en una línea: clima, evento, descanso, baterías de dispositivos.
     private var chips: some View {
         let items = chipItems
-        return HStack(spacing: 8) {
-            ForEach(items, id: \.id) { chip($0) }
-            control("doc.on.clipboard") { model.collapse?(); AppController.shared.showClipboard() }
+        return Group {
+            if !items.isEmpty { HStack(spacing: 8) { ForEach(items, id: \.id) { chip($0) } } }
+        }
+    }
+
+    /// Botones redondos de acceso rápido.
+    private var actionsRow: some View {
+        HStack(spacing: 10) {
+            control("doc.on.clipboard", size: 34) { model.collapse?(); AppController.shared.showClipboard() }
                 .help(tr("Portapapeles"))
-            control("tray.and.arrow.down") { model.collapse?(); AppController.shared.showShelf() }
+            control("tray.and.arrow.down", size: 34) { model.collapse?(); AppController.shared.showShelf() }
                 .help(tr("Bandeja"))
+            if extras.timer.enabled, !extras.timer.active {
+                control(extras.timer.active ? (extras.timer.running ? "pause.fill" : "play.fill") : "timer", size: 34) { extras.timer.tap() }
+                    .help(extras.timer.pomodoro ? tr("Pomodoro") : tr("Temporizador"))
+            }
+            if extras.mic.enabled, extras.mic.available {
+                control(extras.mic.muted ? "mic.slash.fill" : "mic.fill", size: 34, tint: extras.mic.muted ? .red : nil) { extras.toggleMic() }
+                    .help(extras.mic.muted ? tr("Activar el micrófono") : tr("Silenciar el micrófono"))
+            }
+            if extras.eyedropperEnabled {
+                control("eyedropper", size: 34) { extras.pickColor() }
+                    .help(tr("Gotero de color"))
+            }
+        }
+    }
+
+    private var timerRow: some View {
+        let timer = extras.timer
+        return HStack(spacing: 14) {
+            ZStack {
+                Circle().stroke(Color.white.opacity(0.14), lineWidth: 4)
+                Circle().trim(from: 0, to: timer.progress).stroke(Color.white, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                Image(systemName: timer.phase == .rest ? "cup.and.saucer.fill" : "timer").font(.system(size: 14))
+            }
+            .frame(width: 44, height: 44)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(timer.clock).font(.system(size: 24, weight: .light, design: .rounded)).monospacedDigit()
+                Text(timer.title).font(.system(size: 12)).foregroundStyle(.white.opacity(0.6))
+            }
+            Spacer()
+            HStack(spacing: 6) {
+                control(timer.running ? "pause.fill" : "play.fill") { timer.tap() }
+                if timer.pomodoro { control("forward.end.fill") { timer.skip() } }
+                control("xmark") { timer.reset() }
+            }
         }
     }
 
@@ -239,6 +310,12 @@ struct NotchView: View {
                 out.append(Chip(id: "c", symbol: "calendar", text: eventLabel(e), action: nil))
             } else if !model.calendarDenied {
                 out.append(Chip(id: "c", symbol: "calendar", text: tr("Sin eventos"), action: nil))
+            }
+        }
+        if extras.devices.enabled {
+            for device in extras.devices.devices.prefix(2) {
+                let short = device.name.components(separatedBy: " de ").first ?? device.name
+                out.append(Chip(id: "b-\(device.id)", symbol: device.symbol, text: "\(short) \(device.percent)%", action: nil))
             }
         }
         if model.eyeBreak, model.breakRemaining == nil, let next = model.nextBreak {

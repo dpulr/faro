@@ -60,6 +60,7 @@ export const features = {
       points: [
         'Guarda referencias, no copias: no gasta disco.',
         'AirDrop de un archivo o de toda la bandeja.',
+        'Convierte imágenes (PNG, JPEG, HEIC, TIFF) y comprime o descomprime zip, sin conexión.',
         'También puedes soltar sobre el ícono de la barra de menú o sobre el notch.',
       ],
     },
@@ -71,10 +72,10 @@ export const features = {
       lead: 'Un panel que cuelga del notch con lo que suena, el volumen, el clima y tu próximo evento.',
       points: [
         'Se abre al pasar el cursor o solo con un clic, como prefieras.',
-        'Avisa cuando se conectan tus audífonos o tu teclado Bluetooth.',
-        'Descanso visual 20-20-20 y accesos rápidos al portapapeles y a la bandeja.',
+        'Temporizador Pomodoro, silenciar el micrófono, gotero de color y accesos al portapapeles y a la bandeja.',
+        'Avisos de batería, descargas, capturas, discos USB, AirPods y cámara o micrófono en uso.',
       ],
-      extra: ['notch-bluetooth.png', 'notch-soltar.png'],
+      extra: ['notch-temporizador.png', 'notch-usb.png'],
     },
     {
       id: 'teclado',
@@ -153,6 +154,7 @@ export const features = {
       points: [
         'It stores references, not copies: it uses no disk space.',
         'AirDrop one file or the whole shelf.',
+        'Convert images (PNG, JPEG, HEIC, TIFF) and zip or unzip, offline.',
         'You can also drop onto the menu bar icon or onto the notch.',
       ],
     },
@@ -164,10 +166,10 @@ export const features = {
       lead: 'A panel that hangs from the notch with what’s playing, volume, weather and your next event.',
       points: [
         'Opens on hover or only on click, whichever you prefer.',
-        'Tells you when your headphones or Bluetooth keyboard connect.',
-        '20-20-20 eye break and quick buttons for the clipboard and the shelf.',
+        'Pomodoro timer, mute the microphone, color eyedropper and quick buttons for the clipboard and the shelf.',
+        'Notices for battery, downloads, screenshots, USB drives, AirPods and camera or microphone in use.',
       ],
-      extra: ['notch-bluetooth.png', 'notch-soltar.png'],
+      extra: ['notch-temporizador.png', 'notch-usb.png'],
     },
     {
       id: 'teclado',
@@ -197,6 +199,8 @@ export const more = {
     ['Mantener despierto', 'Evita que la pantalla se apague, por el tiempo que elijas.'],
     ['Barra de menú viva', 'Procesador, memoria, disco, red o batería, a tu elección.'],
     ['Cristal líquido', 'Con tus colores, en macOS 26.'],
+    ['Pomodoro', 'Un temporizador en el notch, con la cuenta visible en la pastilla.'],
+    ['Silenciar micrófono', 'Un botón o ⌃⌥⌘M silencia el micrófono para todas las apps.'],
     ['Español e inglés', 'Sigue el idioma del sistema, o eliges uno.'],
     ['Atajos globales', 'Cambia de foto, guarda o abre paneles sin usar el ratón.'],
   ],
@@ -205,6 +209,8 @@ export const more = {
     ['Keep awake', 'Stops the screen from sleeping, for as long as you choose.'],
     ['Live menu bar', 'Processor, memory, disk, network or battery, your pick.'],
     ['Liquid glass', 'In your own colors, on macOS 26.'],
+    ['Pomodoro', 'A timer in the notch, with the countdown visible on the pill.'],
+    ['Mute the microphone', 'A button or ⌃⌥⌘M mutes the microphone for every app.'],
     ['Spanish and English', 'Follows the system language, or you pick one.'],
     ['Global shortcuts', 'Change photo, save or open panels without the mouse.'],
   ],
@@ -220,6 +226,8 @@ export const timeline = {
     ['1.0', 'Nace faro: nombre, logo y licencia libre.'],
     ['1.2', 'Interfaz en inglés, audio, Bluetooth y más fuentes de fotos.'],
     ['1.3', 'Accesos rápidos en el notch y abrir con un clic.'],
+    ['1.4', 'Aviso de versiones nuevas y política de privacidad.'],
+    ['1.5', 'Temporizador, micrófono, baterías, avisos y herramientas en la bandeja.'],
   ],
   en: [
     ['0.1', 'A prototype that changed the wallpaper using Wallhaven.'],
@@ -230,6 +238,8 @@ export const timeline = {
     ['1.0', 'faro is born: name, logo and a free license.'],
     ['1.2', 'English interface, audio, Bluetooth and more photo sources.'],
     ['1.3', 'Quick buttons in the notch and open on click.'],
+    ['1.4', 'New-version notices and the privacy policy.'],
+    ['1.5', 'Timer, microphone, batteries, notices and shelf tools.'],
   ],
 }
 
@@ -305,7 +315,7 @@ export const ui = {
       installTitle: 'Instalación',
       install: ['Abre el archivo .dmg que descargaste.', 'Arrastra faro a la carpeta Aplicaciones.', 'Ábrelo desde Aplicaciones. faro aparece en la barra de menú.'],
       permsTitle: 'Permisos',
-      perms: 'Cada permiso es opcional y macOS lo pide la primera vez que usas la función: Accesibilidad (bloqueo completo del teclado y pegado automático), Automatización (Finder, Música y Spotify), Calendarios, Bluetooth y Notificaciones.',
+      perms: 'Cada permiso es opcional y macOS lo pide la primera vez que usas la función: Accesibilidad (bloqueo completo del teclado y pegado automático), Automatización (Finder, Música y Spotify), Calendarios, Bluetooth, Notificaciones y las carpetas Descargas y Escritorio (solo para los avisos de descargas y capturas, apagados por defecto).',
       verifyTitle: 'Verifica la descarga',
       verifyLead: 'La suma SHA-256 del archivo debe ser esta:',
       verifyCmd: 'Para comprobarla en la Terminal:',
@@ -384,7 +394,7 @@ export const ui = {
       installTitle: 'Installation',
       install: ['Open the .dmg file you downloaded.', 'Drag faro to the Applications folder.', 'Open it from Applications. faro appears in the menu bar.'],
       permsTitle: 'Permissions',
-      perms: 'Every permission is optional and macOS asks the first time you use the feature: Accessibility (full keyboard lock and auto-paste), Automation (Finder, Music and Spotify), Calendars, Bluetooth and Notifications.',
+      perms: 'Every permission is optional and macOS asks the first time you use the feature: Accessibility (full keyboard lock and auto-paste), Automation (Finder, Music and Spotify), Calendars, Bluetooth, Notifications and the Downloads and Desktop folders (only for download and screenshot notices, off by default).',
       verifyTitle: 'Verify the download',
       verifyLead: 'The file’s SHA-256 checksum should be:',
       verifyCmd: 'To check it in Terminal:',
@@ -408,8 +418,8 @@ export const ui = {
 
 // Notas cortas de la versión actual: salen en latest.json y la app las muestra al avisar de la actualización.
 export const releaseNotes = {
-  es: 'Avisa cuando hay una versión nueva y estrena la política de privacidad.',
-  en: 'Tells you when a new version is out, and adds the privacy policy.',
+  es: 'Temporizador, silenciar el micrófono, batería de dispositivos, más avisos en el notch y conversión de imágenes y zip en la bandeja.',
+  en: 'Timer, mute microphone, device battery, more notch notices, and image conversion and zip in the shelf.',
 }
 
 export const privacy = {
@@ -437,7 +447,8 @@ export const privacy = {
         'Estos servicios tienen sus propias políticas de privacidad.',
       ]],
       ['Permisos de macOS', [
-        'Todos son opcionales y se piden la primera vez que usas la función: Accesibilidad (bloqueo completo del teclado y pegado automático), Automatización (Finder, Música y Spotify), Calendarios, Bluetooth y Notificaciones.',
+        'Todos son opcionales y se piden la primera vez que usas la función: Accesibilidad (bloqueo completo del teclado y pegado automático), Automatización (Finder, Música y Spotify), Calendarios, Bluetooth, Notificaciones y las carpetas Descargas y Escritorio (para los avisos de descargas y capturas, apagados por defecto).',
+        'El indicador de cámara y micrófono solo dice si están en uso: faro no los abre ni graba nada.',
         'Si no concedes un permiso, esa función no funciona y el resto sigue igual. Puedes quitarlos cuando quieras en Ajustes del Sistema → Privacidad y seguridad.',
       ]],
       ['Este sitio', [
@@ -476,7 +487,8 @@ export const privacy = {
         'These services have their own privacy policies.',
       ]],
       ['macOS permissions', [
-        'All are optional and asked the first time you use the feature: Accessibility (full keyboard lock and auto-paste), Automation (Finder, Music and Spotify), Calendars, Bluetooth and Notifications.',
+        'All are optional and asked the first time you use the feature: Accessibility (full keyboard lock and auto-paste), Automation (Finder, Music and Spotify), Calendars, Bluetooth, Notifications and the Downloads and Desktop folders (for download and screenshot notices, off by default).',
+        'The camera and microphone indicator only says whether they’re in use: faro never opens them or records anything.',
         'If you don’t grant a permission, that feature doesn’t work and everything else stays the same. You can remove them any time in System Settings → Privacy & Security.',
       ]],
       ['This website', [

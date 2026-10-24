@@ -26,6 +26,20 @@ final class BluetoothWatcher: NSObject {
         DispatchQueue.main.async { [weak self] in self?.onConnect?(name, symbol) }
     }
 
+    /// Igual, pero con el tipo que informa `system_profiler` ("Keyboard", "Mouse", "Headphones"…).
+    static func symbol(for name: String, minor: String?) -> String {
+        let byName = symbol(for: name, major: 0)
+        if byName != "wave.3.right" { return byName }
+        switch (minor ?? "").lowercased() {
+        case "keyboard": return "keyboard"
+        case "mouse", "magic trackpad", "trackpad": return "computermouse"
+        case "headphones", "headset": return "headphones"
+        case "gamepad": return "gamecontroller"
+        case "speaker": return "hifispeaker"
+        default: return byName
+        }
+    }
+
     /// Elige un ícono por el nombre y, si no basta, por la clase del dispositivo.
     static func symbol(for name: String, major: BluetoothDeviceClassMajor) -> String {
         let n = name.lowercased()

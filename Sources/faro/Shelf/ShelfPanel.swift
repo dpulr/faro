@@ -202,6 +202,22 @@ private struct ShelfTile: View {
             Button("Mostrar en Finder") { store.reveal(item) }
             Button("Enviar por AirDrop") { store.airDrop([item]) }
             Divider()
+            if let url = store.resolve(item) {
+                if ShelfTools.isImage(url) {
+                    Menu("Convertir imagen a") {
+                        ForEach(ShelfTools.ImageFormat.allCases, id: \.self) { format in
+                            Button(format.label) { store.convert(item, to: format) }
+                        }
+                    }
+                }
+                if ShelfTools.isArchive(url) {
+                    Button("Descomprimir") { store.unzip(item) }
+                } else {
+                    Button("Comprimir en zip") { store.zip([item]) }
+                }
+                if store.items.count > 1 { Button("Comprimir toda la bandeja en zip") { store.zip(store.items) } }
+                Divider()
+            }
             Button("Quitar de la bandeja") { store.remove(item.id) }
         }
     }

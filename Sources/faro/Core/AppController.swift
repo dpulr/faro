@@ -21,6 +21,7 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
     let notch = NotchModel()
     let diskAlert = DiskAlert()
     let updates = UpdateChecker()
+    let extras = NotchExtras()
     let mixer = AudioMixer()
     let shelf = ShelfStore(file: Paths.support.appendingPathComponent("shelf.json"), registerShortcut: true)
     let appearance = Appearance.shared
@@ -58,7 +59,8 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
             self.notch.showToast(symbol: "tray.and.arrow.down.fill",
                                  text: String(format: tr("Guardado en la bandeja (%d)"), self.shelf.items.count))
         }
-        NotchController.shared.start(model: notch, mixer: mixer)
+        extras.start(notch: notch, shelf: shelf, monitor: monitor)
+        NotchController.shared.start(model: notch, mixer: mixer, extras: extras)
         if Bundle.main.bundleIdentifier != nil { UNUserNotificationCenter.current().delegate = self }
         if diskAlert.enabled { diskAlert.requestAuthorization() }
         updates.start()
@@ -244,7 +246,144 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
         try? FileManager.default.removeItem(at: temp)
         notch.toast = nil
         print("soltar sobre el notch | bandeja restaurada: \(shelf.items.count == before ? "✓" : "✗")")
+        await debugModules()
         exit(0)
+    }
+
+    /// Prueba los módulos de bolsillo del notch (temporizador, baterías, micrófono, descargas, zip, capturas…).
+    func debugModules() async {
+        func check(_ name: String, _ ok: Bool, _ detail: String = "") { print("módulos | \(name): \(ok ? "✓" : "✗") \(detail)") }
+        let manager = FileManager.default
+        let tmp = manager.temporaryDirectory.appendingPathComponent("faro-modtest-\(UUID().uuidString)", isDirectory: true)
+        try? manager.createDirectory(at: tmp, withIntermediateDirectories: true)
+        defer { try? manager.removeItem(at: tmp) }
+
+        // Temporizador
+        let timer = FocusTimer()
+        var events: [String] = []
+        timer.onEvent = { _, text in events.append(text) }
+        let t0 = Date()
+        timer.begin(.focus, minutes: 25, now: t0)
+        timer.tick(now: t0.addingTimeInterval(60))
+        check("temporizador cuenta", timer.remaining == 24 * 60 && timer.running, "restan \(timer.clock)")
+        timer.pause(now: t0.addingTimeInterval(120))
+        let paused = timer.remaining
+        timer.tick(now: t0.addingTimeInterval(600))
+        check("temporizador en pausa no avanza", timer.remaining == paused && !timer.running, "\(timer.clock)")
+        timer.resume(now: t0.addingTimeInterval(600))
+        timer.tick(now: t0.addingTimeInterval(600 + Double(paused) + 1))
+        check("pomodoro pasa de enfoque a descanso", timer.phase == .rest && timer.completed == 1 && events.count == 1, events.first ?? "")
+        timer.skip()
+        check("saltar el descanso lo deja libre", timer.phase == .idle)
+        timer.begin(.timer, minutes: 1, now: t0)
+        timer.tick(now: t0.addingTimeInterval(61))
+        check("temporizador simple termina", timer.phase == .idle && events.count == 3, events.last ?? "")
+        timer.reset()
+
+        // Avisos de batería
+        let alerts = BatteryAlerts()
+        let saved = (alerts.fullEnabled, alerts.fullLevel, alerts.lowEnabled)
+        alerts.fullEnabled = true; alerts.fullLevel = 100; alerts.lowEnabled = true
+        let steps: [(Int, Bool, BatteryAlerts.Event?)] = [(60, false, nil), (19, false, .low(19)), (18, false, nil), (9, false, .low(9)),
+                                                          (50, true, nil), (99, true, nil), (100, true, .full(100)), (100, true, nil),
+                                                          (60, false, nil), (19, false, .low(19))]
+        let ok = steps.allSatisfy { alerts.evaluate(percent: $0.0, charging: $0.1) == $0.2 }
+        check("avisos de batería (llena y baja, sin repetir)", ok)
+        (alerts.fullEnabled, alerts.fullLevel, alerts.lowEnabled) = saved
+
+        // Micrófono
+        let mic = MicMute()
+        if mic.available {
+            let before = mic.muted
+            let muteOK = mic.setMuted(true), mutedNow = mic.muted
+            let unmuteOK = mic.setMuted(false), mutedAfter = mic.muted
+            if before { _ = mic.setMuted(true) }
+            check("silenciar y reactivar el micrófono", muteOK && mutedNow && unmuteOK && !mutedAfter, "estado inicial: \(before ? "silenciado" : "activo")")
+        } else {
+            check("micrófono controlable", true, "(este micrófono no deja controlar el volumen: se oculta el botón)")
+        }
+
+        // Batería de dispositivos (formato de system_profiler)
+        let sample = Data("""
+        {"SPBluetoothDataType":[{"device_connected":[
+          {"AirPods Pro de Ana":{"device_batteryLevelLeft":"80%","device_batteryLevelRight":"72%","device_batteryLevelCase":"55%","device_minorType":"Headphones"}},
+          {"Magic Keyboard":{"device_batteryLevelMain":"91%","device_minorType":"Keyboard"}},
+          {"Altavoz":{"device_minorType":"Speaker"}}]}]}
+        """.utf8)
+        let devices = DeviceBattery.parse(sample)
+        check("batería de dispositivos", devices.count == 2 && devices.first(where: { $0.name.contains("AirPods") })?.percent == 72
+              && devices.first(where: { $0.name.contains("Keyboard") })?.percent == 91 && devices.first?.detail?.contains("55") == true,
+              devices.map { "\($0.name) \($0.percent)%" }.joined(separator: ", "))
+
+        // Descargas terminadas
+        let downloadsDir = tmp.appendingPathComponent("Descargas", isDirectory: true)
+        try? manager.createDirectory(at: downloadsDir, withIntermediateDirectories: true)
+        let watcher = DownloadWatcher(directory: downloadsDir)
+        let savedDownloads = UserDefaults.standard.object(forKey: "downloadAlerts")
+        watcher.enabled = true
+        var finished: [String] = []
+        watcher.onFinished = { finished.append($0.lastPathComponent) }
+        try? await Task.sleep(nanoseconds: 500_000_000)
+        let partial = downloadsDir.appendingPathComponent("informe.pdf.crdownload")
+        try? Data(repeating: 1, count: 2048).write(to: partial)
+        try? await Task.sleep(nanoseconds: 1_500_000_000)
+        let early = finished.isEmpty
+        try? manager.moveItem(at: partial, to: downloadsDir.appendingPathComponent("informe.pdf"))
+        for _ in 0..<12 where finished.isEmpty { try? await Task.sleep(nanoseconds: 500_000_000) }
+        check("descarga terminada", early && finished == ["informe.pdf"], "aviso: \(finished.first ?? "ninguno") (sin aviso mientras era .crdownload: \(early))")
+        watcher.stop()
+        if let savedDownloads { UserDefaults.standard.set(savedDownloads, forKey: "downloadAlerts") } else { UserDefaults.standard.removeObject(forKey: "downloadAlerts") }
+
+        // Discos USB
+        check("el disco del sistema no se ofrece para expulsar", VolumeWatcher.ejectableName(URL(fileURLWithPath: "/")) == nil)
+
+        // Cámara y micrófono en uso, Bloq Mayús
+        print("módulos | cámara en uso: \(PrivacyProbe.cameraInUse()) | micrófono en uso: \(PrivacyProbe.microphoneInUse()) | Bloq Mayús: \(CGEventSource.flagsState(.combinedSessionState).contains(.maskAlphaShift))")
+
+        // Bandeja: convertir y comprimir
+        let png = tmp.appendingPathComponent("foto.png")
+        let image = NSImage(size: NSSize(width: 64, height: 48), flipped: false) { rect in NSColor.systemTeal.setFill(); rect.fill(); return true }
+        if let tiff = image.tiffRepresentation, let rep = NSBitmapImageRep(data: tiff), let data = rep.representation(using: .png, properties: [:]) {
+            try? data.write(to: png)
+        }
+        for format in ShelfTools.ImageFormat.allCases {
+            let out = try? ShelfTools.convert(png, to: format)
+            let size = out.flatMap { try? manager.attributesOfItem(atPath: $0.path)[.size] as? Int } ?? 0
+            check("convertir a \(format.label)", size > 0, out?.lastPathComponent ?? "falló")
+            if let out { try? manager.removeItem(at: out) }
+        }
+        let text = tmp.appendingPathComponent("nota.txt")
+        try? "hola".write(to: text, atomically: true, encoding: .utf8)
+        if let archive = try? ShelfTools.zip([png, text]), let folder = try? ShelfTools.unzip(archive) {
+            let inside = (try? manager.subpathsOfDirectory(atPath: folder.path)) ?? []
+            check("comprimir y descomprimir", inside.contains { $0.hasSuffix("foto.png") } && inside.contains { $0.hasSuffix("nota.txt") }, "\(archive.lastPathComponent) → \(inside.count) elementos")
+            try? manager.removeItem(at: archive); try? manager.removeItem(at: folder)
+        } else {
+            check("comprimir y descomprimir", false, "falló")
+        }
+
+        // Capturas de pantalla: carpeta temporal; un archivo con la marca de captura entra, uno sin marca no.
+        let shotsDir = tmp.appendingPathComponent("Capturas", isDirectory: true)
+        try? manager.createDirectory(at: shotsDir, withIntermediateDirectories: true)
+        let shots = ScreenshotWatcher(directory: shotsDir)
+        let savedShots = UserDefaults.standard.object(forKey: "screenshotShelf")
+        shots.enabled = true
+        var got: [String] = []
+        shots.onScreenshot = { got.append($0.lastPathComponent) }
+        try? await Task.sleep(nanoseconds: 500_000_000)
+        let plain = shotsDir.appendingPathComponent("foto-normal.png"), marked = shotsDir.appendingPathComponent("Captura 1.png")
+        try? manager.copyItem(at: png, to: plain)
+        try? manager.copyItem(at: png, to: marked)
+        let marker = Process()
+        marker.executableURL = URL(fileURLWithPath: "/usr/bin/xattr")
+        marker.arguments = ["-w", "-x", "com.apple.metadata:kMDItemIsScreenCapture",
+                            "62706c697374303009080000000000000101000000000000000100000000000000000000000000000009", marked.path]
+        try? marker.run(); marker.waitUntilExit()
+        for _ in 0..<12 where got.isEmpty { try? await Task.sleep(nanoseconds: 500_000_000) }
+        try? await Task.sleep(nanoseconds: 1_500_000_000)
+        check("captura de pantalla detectada (y la foto normal no)", got == ["Captura 1.png"], got.joined(separator: ", "))
+        shots.stop()
+        if let savedShots { UserDefaults.standard.set(savedShots, forKey: "screenshotShelf") } else { UserDefaults.standard.removeObject(forKey: "screenshotShelf") }
     }
 
     /// Con `FARO_DEBUG_SOURCES=1`: pide lotes a cada fuente nueva y descarga y reduce una foto de cada una.
@@ -509,7 +648,7 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate {
             window.contentView = NSHostingView(rootView: MainRoot()
                 .environmentObject(engine).environmentObject(monitor).environmentObject(speed)
                 .environmentObject(awake).environmentObject(storage).environmentObject(clipboard)
-                .environmentObject(cleaning).environmentObject(notch).environmentObject(diskAlert).environmentObject(updates).environmentObject(mixer).environmentObject(appearance))
+                .environmentObject(cleaning).environmentObject(notch).environmentObject(diskAlert).environmentObject(updates).environmentObject(extras).environmentObject(mixer).environmentObject(appearance))
             window.center()
             mainWindow = window
         }
