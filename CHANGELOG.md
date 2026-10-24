@@ -7,7 +7,7 @@ Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a 
 ### Novedades
 - **Mascota en el notch.** Un personaje pequeño, dibujado en vectores, que vive en la pastilla y en la cabecera del panel. Sigue el cursor con la mirada y reacciona: **baila** mientras suena música, **se pone azul** cuando se conecta un dispositivo Bluetooth, saca **corazones** si la tocas, hace **fiesta** cuando termina el temporizador y se pone **triste** con la batería baja.
 - **Solo está activa cuando la usas:** despierta al acercar el cursor o abrir el notch y, tras 30 s sin tocarlo (configurable de 15 s a 2 min), se duerme. Dormida es una imagen fija: no se anima ni sigue el cursor.
-- **Personalizable** en *Notch → Mascota*: forma (gota, frijol, nube, cubo o sol), color (ocho colores o uno libre), ojos (ovalados, redondos, anchos, puntos o estrellas), accesorio (antena, moño o audífonos), cachetes, tiempo para dormir y una vista previa de cada ánimo.
+- **Personalizable** en su propia página, *Mascota*, en la barra lateral: forma (gota, frijol, nube, cubo o sol), color (ocho colores o uno libre), ojos (ovalados, redondos, anchos, puntos o estrellas), accesorio (antena, moño o audífonos), cachetes, tiempo para dormir y y botones para probar cada reacción en la mascota real del notch.
 
 ## [1.7.0] — 2026-10-24
 

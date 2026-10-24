@@ -127,6 +127,7 @@ enum Snapshot {
             .padding(24).background(Color.black), name: "mascota-personalizada", size: CGSize(width: 420, height: 150))
         (mm.shape, mm.accessory, mm.colorHex) = savedLook // las capturas no tocan tus ajustes
         render(framed(NotchPage()), name: "page-notch", size: nil)
+        render(framed(MascotaPage().environmentObject(notchDemo)), name: "page-mascota", size: nil)
         render(framed(AudioPage()), name: "page-audio", size: nil)
         render(framed(TecladoPage()), name: "page-teclado", size: nil)
         render(CleaningOverlay(mode: CleaningMode()), name: "cleaning-overlay", size: CGSize(width: 900, height: 560))

@@ -4,7 +4,7 @@
 import SwiftUI
 
 enum Page: String, CaseIterable, Identifiable {
-    case fondos, perfiles, sistema, almacenamiento, internet, portapapeles, energia, audio, teclado, notch, barra, general
+    case fondos, perfiles, sistema, almacenamiento, internet, portapapeles, energia, audio, teclado, notch, mascota, barra, general
 
     var id: String { rawValue }
 
@@ -20,6 +20,7 @@ enum Page: String, CaseIterable, Identifiable {
         case .audio: return tr("Audio")
         case .teclado: return tr("Limpiar teclado")
         case .notch: return tr("Notch")
+        case .mascota: return tr("Mascota")
         case .barra: return tr("Barra de menú")
         case .general: return tr("General")
         }
@@ -37,6 +38,7 @@ enum Page: String, CaseIterable, Identifiable {
         case .audio: return "speaker.wave.2"
         case .teclado: return "keyboard"
         case .notch: return "rectangle.topthird.inset.filled"
+        case .mascota: return "face.smiling"
         case .barra: return "menubar.rectangle"
         case .general: return "gearshape"
         }
@@ -65,6 +67,7 @@ struct MainWindow: View {
                     case .audio: AudioPage()
                     case .teclado: TecladoPage()
                     case .notch: NotchPage()
+                    case .mascota: MascotaPage()
                     case .barra: BarraPage()
                     case .general: GeneralPage()
                     }
