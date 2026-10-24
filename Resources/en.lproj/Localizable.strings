@@ -600,6 +600,12 @@
 "Faro en la barra de menús" = "Faro in the menu bar";
 "Título de herramientas" = "Tools title";
 "Muestra u oculta el encabezado del dock de herramientas." = "Show or hide the tool dock heading.";
+"Ocultas" = "Hidden";
+"Una línea" = "One line";
+"Dos líneas" = "Two lines";
+"Elige si se ocultan o si muestran una o dos líneas sincronizadas." = "Choose whether synced lyrics are hidden or shown in one or two lines.";
+"Una letra sincronizada…" = "A synced lyric…";
+"La siguiente línea…" = "The next line…";
 "Una fila" = "One row";
 "Dos filas" = "Two rows";
 "Mes completo" = "Full month";

@@ -11,11 +11,10 @@ const dist = join(root, 'dist')
 // SITE_URL permite publicar con otra dirección mientras el dominio propio no esté conectado.
 const SITE = process.env.SITE_URL || 'https://faro.conectalab.co'
 const REPO = 'https://github.com/dpulr/faro'
-const REPO_PUBLIC = process.env.SITE_REPO_PUBLIC === '1'
-// Apoyo económico: se activa al publicar con SITE_SPONSORS=1 (GitHub Sponsors) y/o SITE_KOFI_URL=https://ko-fi.com/tu_usuario.
+const REPO_PUBLIC = process.env.SITE_REPO_PUBLIC !== '0'
+// Los espacios de apoyo se muestran como "próximamente" hasta que se configure cada enlace.
 const SPONSORS_URL = process.env.SITE_SPONSORS === '1' ? 'https://github.com/sponsors/dpulr' : ''
 const KOFI_URL = process.env.SITE_KOFI_URL || ''
-const SUPPORT = Boolean(SPONSORS_URL || KOFI_URL)
 const version = readFileSync(join(root, '../VERSION'), 'utf8').trim()
 
 // Descarga: se publica el .dmg que dejó scripts/release.sh, si existe.
@@ -30,7 +29,7 @@ if (download.available) {
 }
 
 const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-const img = (name, alt, extra = '') => `<img src="/img/${name}" alt="${esc(alt)}" loading="lazy" decoding="async"${extra}>`
+const img = (name, alt, extra = '') => `<img src="/img/${name}" alt="${esc(alt)}"${extra.includes('loading=') ? '' : ' loading="lazy"'} decoding="async"${extra}>`
 
 const icons = {
   arrow: '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M3 8h9M8.5 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -73,7 +72,7 @@ function head(lang, key, meta) {
 <meta property="og:title" content="${esc(meta.title)}">
 <meta property="og:description" content="${esc(meta.description)}">
 <meta property="og:url" content="${url}">
-<meta property="og:image" content="${SITE}/img/fondos.png">
+<meta property="og:image" content="${SITE}/img/notch-configurar.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0d1217">
 <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
@@ -95,8 +94,12 @@ function header(lang, key) {
   const a = (id) => (key === 'home' ? `#${id}` : `${home}#${id}`)
   return `<body>
 <a class="skip" href="#main">${lang === 'es' ? 'Saltar al contenido' : 'Skip to content'}</a>
+<div class="scroll-progress" aria-hidden="true"><span></span></div>
 <header class="top">
-  <a class="brand" href="${home}" aria-label="faro"><img src="/img/logo.svg" alt="" width="34" height="34"><span>faro</span></a>
+  <a class="brand" href="${home}" aria-label="faro"><img src="/img/logo.svg" alt="" width="36" height="36"><span>faro</span></a>
+  <a class="made-by" href="https://conectalab.co${lang === 'en' ? '/en' : ''}" aria-label="${lang === 'es' ? 'Un producto de Conecta Lab' : 'A Conecta Lab product'}">
+    <span>${lang === 'es' ? 'por' : 'by'}</span><img src="/img/conectalab-logo-white.svg" alt="Conecta Lab" width="112" height="18">
+  </a>
   <nav class="nav" aria-label="${lang === 'es' ? 'Principal' : 'Main'}">
     <a href="${a('funciones')}">${t.nav.features}</a>
     <a href="${a('como-funciona')}">${t.nav.how}</a>
@@ -124,14 +127,14 @@ function footer(lang) {
     <div class="foot__links">
       <a href="${t.path.home}">${lang === 'es' ? 'Inicio' : 'Home'}</a>
       <a href="${t.path.download}">${t.nav.download}</a>
-      ${REPO_PUBLIC ? `<a href="${REPO}">GitHub</a>` : ''}
-      ${SUPPORT ? `<a href="${t.path.home}#apoyo">${support[lang].footer}</a>` : ''}
+      <a href="${REPO}">GitHub</a>
+      <a href="${t.path.home}#apoyo">${support[lang].footer}</a>
       <a href="${t.path.privacy}">${t.footer.privacy}</a>
       <a href="https://conectalab.co/${lang === 'es' ? 'contacto' : 'en/contact'}">${t.footer.contact}</a>
     </div>
     <div class="foot__by">
       <span>${t.footer.by}</span>
-      <a href="https://conectalab.co${lang === 'en' ? '/en' : ''}" aria-label="Conecta Lab"><img src="/img/conectalab-mark.svg" alt="" width="22" height="22"> Conecta Lab</a>
+      <a class="lab-lockup" href="https://conectalab.co${lang === 'en' ? '/en' : ''}" aria-label="Conecta Lab"><img src="/img/conectalab-logo-white.svg" alt="Conecta Lab" width="148" height="24"></a>
     </div>
   </div>
   <p class="foot__legal">${t.footer.rights} · ${t.footer.license}</p>
@@ -155,7 +158,7 @@ function home(lang) {
 
   const featureBlocks = features[lang].map((f, i) => `
   <article class="feature${i % 2 ? ' feature--flip' : ''}" id="${f.id}">
-    <div class="feature__text reveal">
+    <div class="feature__text reveal" data-number="${String(i + 1).padStart(2, '0')}">
       <h3>${f.title}</h3>
       <p class="feature__lead">${f.lead}</p>
       <ul>${f.points.map((p) => `<li>${p}</li>`).join('')}</ul>
@@ -171,11 +174,15 @@ function home(lang) {
   const rows = network.map(([host, why, what]) => `<tr><td data-label="${h.netHead[0]}"><code>${host}</code></td><td data-label="${h.netHead[1]}">${why[lang]}</td><td data-label="${h.netHead[2]}">${what[lang]}</td></tr>`).join('')
   const points = h.buildPoints.map(([title, text]) => `<div class="card reveal"><h4>${title}</h4><p>${text}</p></div>`).join('')
   const tl = timeline[lang].map(([v, text]) => `<li><span class="tl__v">${v}</span><span>${text}</span></li>`).join('')
+  const featureNav = features[lang].map((f, i) => `<a href="#${f.id}"><span>${String(i + 1).padStart(2, '0')}</span>${f.title.replace(/\.$/, '')}</a>`).join('')
+  const customizePoints = h.customizePoints.map((point) => `<li>${icons.arrow}<span>${point}</span></li>`).join('')
 
   return `${head(lang, 'home', { title: h.title, description: h.description })}
 ${header(lang, 'home')}
 <section class="hero">
-  <div class="hero__beam" aria-hidden="true"></div>
+  <div class="hero__beam hero__beam--a" aria-hidden="true"></div>
+  <div class="hero__beam hero__beam--b" aria-hidden="true"></div>
+  <div class="hero__grain" aria-hidden="true"></div>
   <div class="hero__text">
     <p class="kicker">${h.kicker}</p>
     <h1>${h.h1a}<br><span>${h.h1b}</span></h1>
@@ -186,9 +193,15 @@ ${header(lang, 'home')}
     </div>
     <p class="hero__note">${h.ctaNote(version)}</p>
   </div>
-  <div class="hero__art">
-    <div class="hero__window">${img('fondos.png', lang === 'es' ? 'La ventana de faro con la página Fondos' : 'The faro window showing the Wallpapers page', ' fetchpriority="high" loading="eager"')}</div>
+  <div class="hero__art" data-tilt>
+    <div class="display-stage" aria-hidden="true">
+      <span class="display-stage__camera"></span>
+      <span class="display-stage__status">9:41</span>
+    </div>
+    <div class="hero__window">${img('notch-configurar.png', lang === 'es' ? 'Editor visual de widgets de faro' : 'faro visual widget editor', ' fetchpriority="high" loading="eager"')}</div>
+    <div class="hero__island">${img('notch-sin-notch.png', lang === 'es' ? 'Isla flotante de faro en una pantalla sin notch' : 'faro floating island on a display without a notch', ' loading="eager"')}</div>
     <div class="hero__menu">${img('menu.png', lang === 'es' ? 'El menú de faro en la barra de menú' : 'The faro menu from the menu bar', ' loading="eager"')}</div>
+    <div class="hero__signal" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </div>
 </section>
 
@@ -197,7 +210,21 @@ ${header(lang, 'home')}
 <section class="section" id="funciones">
   <div class="wrap">
     <h2 class="reveal">${h.featuresTitle}</h2>
+    <p class="lead reveal">${h.featuresLead}</p>
+    <nav class="feature-nav reveal" aria-label="${lang === 'es' ? 'Explorar funciones' : 'Explore features'}">${featureNav}</nav>
     ${featureBlocks}
+  </div>
+</section>
+
+<section class="section customize" id="como-funciona">
+  <div class="wrap customize__grid">
+    <div class="customize__copy reveal">
+      <p class="kicker">${lang === 'es' ? 'Tu notch, tus reglas' : 'Your notch, your rules'}</p>
+      <h2>${h.customizeTitle}</h2>
+      <p class="lead">${h.customizeLead}</p>
+      <ul>${customizePoints}</ul>
+    </div>
+    <div class="customize__visual reveal" data-tilt>${img('notch-configurar.png', lang === 'es' ? 'Vista previa interactiva para organizar y redimensionar widgets' : 'Interactive preview for arranging and resizing widgets')}</div>
   </div>
 </section>
 
@@ -208,7 +235,7 @@ ${header(lang, 'home')}
   </div>
 </section>
 
-<section class="section" id="como-funciona">
+<section class="section experience">
   <div class="wrap wrap--narrow">
     <h2 class="reveal">${h.howTitle}</h2>
     <p class="lead reveal">${h.howLead}</p>
@@ -240,15 +267,37 @@ ${header(lang, 'home')}
   </div>
 </section>
 
-<section class="section section--tint">
-  <div class="wrap wrap--narrow open">
-    <h2 class="reveal">${h.openTitle}</h2>
-    <p class="lead reveal">${h.openLead}</p>
-    ${REPO_PUBLIC ? `<p class="reveal"><a class="btn btn--ghost" href="${REPO}">${icons.code}<span>${h.openRepo}</span></a></p>` : `<p class="muted reveal">${h.openSoon}</p>`}
+<section class="section open-source">
+  <div class="wrap open-source__grid">
+    <div class="open-source__copy reveal">
+      <span class="eyebrow">GitHub · AGPL-3.0</span>
+      <h2>${h.openTitle}</h2>
+      <p class="lead">${h.openLead}</p>
+      <p><a class="btn btn--github" href="${REPO}" rel="noopener">${icons.code}<span>${h.openRepo}</span></a></p>
+      ${REPO_PUBLIC ? '' : `<p class="muted">${h.openSoon}</p>`}
+    </div>
+    <div class="terminal reveal" aria-label="${lang === 'es' ? 'Ejemplo para compilar faro' : 'Example commands to build faro'}">
+      <div class="terminal__bar"><i></i><i></i><i></i><span>faro — main</span></div>
+      <pre><code><span class="terminal__muted">$</span> git clone ${REPO}.git
+<span class="terminal__muted">$</span> cd faro
+<span class="terminal__muted">$</span> ./scripts/build-app.sh
+
+<span class="terminal__ok">✓ ${lang === 'es' ? 'nativo en Swift' : 'native Swift'}</span>
+<span class="terminal__ok">✓ ${lang === 'es' ? 'sin telemetría' : 'no telemetry'}</span>
+<span class="terminal__ok">✓ AGPL-3.0-or-later</span></code></pre>
+    </div>
   </div>
 </section>
 
-${SUPPORT ? supportSection(lang) : ''}
+<section class="section lab-band">
+  <div class="wrap lab-band__inner reveal">
+    <img src="/img/conectalab-logo-white.svg" alt="Conecta Lab" width="244" height="40">
+    <div><h2>${h.labTitle}</h2><p class="lead">${h.labLead}</p></div>
+    <a class="btn btn--ghost" href="https://conectalab.co${lang === 'en' ? '/en' : ''}">${h.labCta}${icons.arrow}</a>
+  </div>
+</section>
+
+${supportSection(lang)}
 <section class="final">
   <div class="wrap wrap--narrow">
     <img src="/img/logo.svg" alt="" width="72" height="72">
@@ -262,13 +311,16 @@ ${footer(lang)}`
 
 function supportSection(lang) {
   const s = support[lang]
-  return `<section class="section" id="apoyo">
-  <div class="wrap wrap--narrow support">
+  const supportCard = (kind, title, url) => url
+    ? `<a class="support-card support-card--${kind}" href="${url}" rel="noopener"><span class="support-card__icon">${kind === 'github' ? icons.code : '☕'}</span><strong>${title}</strong><span>${icons.arrow}</span></a>`
+    : `<div class="support-card support-card--${kind} support-card--soon"><span class="support-card__icon">${kind === 'github' ? icons.code : '☕'}</span><strong>${title}</strong><small>${s.soon}</small></div>`
+  return `<section class="section support-section" id="apoyo">
+  <div class="wrap support">
     <h2 class="reveal">${s.title}</h2>
     <p class="lead reveal">${s.lead}</p>
     <div class="support__buttons reveal">
-      ${SPONSORS_URL ? `<a class="btn" href="${SPONSORS_URL}" rel="noopener">${s.github}</a>` : ''}
-      ${KOFI_URL ? `<a class="btn btn--ghost" href="${KOFI_URL}" rel="noopener">${s.kofi}</a>` : ''}
+      ${supportCard('github', s.github, SPONSORS_URL)}
+      ${supportCard('kofi', s.kofi, KOFI_URL)}
     </div>
     <p class="muted reveal">${s.note}</p>
   </div>

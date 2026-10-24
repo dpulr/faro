@@ -4,8 +4,10 @@
 
 # faro
 
-**Lo útil de tu Mac, en un solo lugar de la barra de menú.**
-Fondos que cambian solos, el estado del sistema, historial del portapapeles, una bandeja de archivos, un panel en el notch y más. Todo local, sin cuentas y sin servidores.
+**Tu Mac tiene mucho que decir. faro lo pone a tu alcance.**
+Un centro de control nativo, local y personalizable que vive en la barra de menú y el notch. Fondos, sistema, portapapeles, archivos, música y herramientas, sin cuentas ni telemetría.
+
+[Sitio oficial](https://faro.conectalab.co) · [Descargar](https://faro.conectalab.co/descargar) · [Explorar el código](https://github.com/dpulr/faro) · [Reportar un problema](https://github.com/dpulr/faro/issues)
 
 [![Licencia: AGPL v3](https://img.shields.io/badge/licencia-AGPL--3.0--or--later-2e7d6b.svg)](LICENSE)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-lightgrey)
@@ -13,6 +15,9 @@ Fondos que cambian solos, el estado del sistema, historial del portapapeles, una
 ![Sin telemetría](https://img.shields.io/badge/telemetr%C3%ADa-ninguna-brightgreen)
 
 <img src="docs/images/menu.png" width="420" alt="El menú de faro: foto actual, botones redondos, canal y perfil, y un resumen del Mac">
+
+<br>
+<a href="https://conectalab.co"><img src="site/public/img/conectalab-logo-black.svg" width="180" alt="Un producto de Conecta Lab"></a>
 
 </div>
 
@@ -35,13 +40,12 @@ Fondos que cambian solos, el estado del sistema, historial del portapapeles, una
 - [Hoja de ruta](#hoja-de-ruta)
 - [Contribuir, seguridad y conducta](#contribuir-seguridad-y-conducta)
 - [Licencia](#licencia)
-- [Agradecimientos](#agradecimientos)
 
 ---
 
 ## ¿Qué es faro?
 
-faro nació para reemplazar una app de pago que solo cambiaba el fondo de pantalla, y creció hasta reunir las pequeñas utilidades que suelen repartirse entre diez apps distintas. Vive en la barra de menú, no ocupa el Dock y se maneja con botones redondos que explican lo que hacen apenas pasas el cursor.
+faro es un producto de [Conecta Lab](https://conectalab.co) que reúne en una experiencia nativa las herramientas cotidianas que hacen al Mac más claro, rápido y personal. Vive en la barra de menú, no ocupa el Dock y cada control explica lo que hace al pasar el cursor.
 
 Principios con los que está hecho:
 
@@ -136,6 +140,8 @@ Bloquea las teclas un momento para limpiarlas sin escribir nada por accidente. L
   <img src="docs/images/notch-alas.png" width="480" alt="El notch con las alas que aparecen mientras suena música">
 </p>
 
+<img src="docs/images/notch-configurar.png" width="900" alt="Editor visual del notch con vista previa, widgets arrastrables y controles de ancho">
+
 Un panel negro que cuelga del notch: lleva el cursor arriba al centro de la pantalla y se despliega. Mientras suena música o corre un descanso, aparecen detalles a los lados **sin desplegarlo**.
 
 - **Música:** lo que suena en Música o Spotify, con carátula y controles, y **letras sincronizadas** ([LRCLIB](https://lrclib.net)) bajo la pastilla.
@@ -146,6 +152,8 @@ Un panel negro que cuelga del notch: lleva el cursor arriba al centro de la pant
 - **Bluetooth:** un aviso al conectarse tus audífonos, teclado, ratón o mando.
 - **Soltar archivos:** arrastra un archivo hacia el notch y suéltalo en la zona que aparece; se guarda en la bandeja.
 - **Notch a tu medida:** widgets que activas, ordenas y redimensionas, pestañas, dock de herramientas y varios estilos. En un Mac sin notch, una isla flotante hace lo mismo.
+- **Editor visual:** arrastra widgets sobre una vista previa real, cambia su prioridad y elige anchos de 1/3, 2/3 o completos.
+- **Cada detalle cuenta:** títulos, iconos, descripciones, fondos, forma de las herramientas y letras de cero, una o dos líneas son configurables.
 - **Temporizador:** Pomodoro o temporizador simple, con la cuenta visible en la pastilla.
 - **Silenciar el micrófono** con un botón o `⌃⌥⌘M`, **batería de AirPods y otros dispositivos**, **gotero de color**.
 - **Avisos:** batería llena o baja, descarga terminada, captura de pantalla (va a la bandeja), disco USB conectado (con botón para expulsar), cámara o micrófono en uso y Bloq Mayús.
@@ -169,7 +177,7 @@ Sin notch, el panel aparece como una cápsula arriba al centro.
 
 | | |
 |---|---|
-| **Sistema** | macOS 14 (Sonoma) o posterior. El cristal líquido y el panel del notch están pensados para macOS 26 en un MacBook con notch. |
+| **Sistema** | macOS 14 (Sonoma) o posterior. En un MacBook con notch se integra al recorte; en cualquier otra pantalla aparece como una isla flotante compacta. |
 | **Para compilar** | Xcode 26 o posterior (SDK de macOS 26) y Swift 5.9 o posterior. |
 | **Probado en** | MacBook con Apple Silicon y macOS 26. |
 
@@ -232,7 +240,7 @@ faro **no tiene telemetría ni cuentas**. Las únicas conexiones que hace son es
 | `api.artic.edu` y `www.artic.edu` | Obras del Art Institute of Chicago | El tema que escribiste |
 | `images-api.nasa.gov` y `images-assets.nasa.gov` | Imágenes de la NASA | El tema que escribiste |
 | `picsum.photos` | Fotos al azar | Nada personal |
-| `faro-conectalab.web.app` | Avisar de versiones nuevas (un archivo público, una vez al día; se apaga en *General*) | Nada personal |
+| `faro.conectalab.co` | Avisar de versiones nuevas (un archivo público, una vez al día; se apaga en *General*) | Nada personal |
 | `lrclib.net` | Letras sincronizadas (se apaga en *Notch*) | El título y el artista de la canción que suena |
 | `i.scdn.co` | Carátula de Spotify | Solo mientras suena algo de Spotify |
 
@@ -313,7 +321,7 @@ Ideas que no están hechas todavía, sin fechas:
 
 - Volumen por aplicación para cualquier app (macOS no lo permite sin un controlador de audio propio).
 - Más idiomas.
-- Integración continua y binarios firmados y notarizados.
+- Más automatizaciones y formas de adaptar el notch a cada flujo de trabajo.
 
 Las propuestas y los fallos se reportan en [Issues](https://github.com/dpulr/faro/issues).
 
@@ -329,10 +337,6 @@ faro es **software libre** bajo la licencia **GNU Affero General Public License,
 
 En palabras llanas, y sin ser asesoría legal: puedes usarlo, estudiarlo, modificarlo y compartirlo. Si distribuyes una versión modificada —o la ofreces a otras personas a través de una red— debes publicar su código fuente bajo esta misma licencia. El programa se ofrece **sin ninguna garantía**.
 
-Copyright © 2026 Daniel Pulgarín.
+Copyright © 2026 Conecta Lab Corp.
 
-## Agradecimientos
-
-faro es un proyecto independiente. **No tiene relación** con Apple, Spotify, FARO Technologies, Wallhaven, Wikimedia, Microsoft ni con ninguna de las apps mencionadas; los nombres pertenecen a sus dueños.
-
-Inspiración: muchas apps y utilidades del ecosistema Mac (ideas, no código). Los datos, las fuentes y las licencias de terceros están en [`CREDITS.md`](CREDITS.md).
+Los servicios de datos, sus condiciones y las licencias necesarias están documentados en [`CREDITS.md`](CREDITS.md).

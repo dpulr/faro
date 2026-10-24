@@ -1,16 +1,6 @@
-# Créditos y licencias de terceros
+# Servicios y licencias de terceros
 
-faro está escrito desde cero. **No contiene código de ninguno de los proyectos mencionados aquí**; algunos fueron fuente de inspiración y otros son servicios o herramientas que la app usa.
-
-## Inspiración
-
-| Proyecto | Qué inspiró |
-|---|---|
-| **Irvue** | Los fondos de pantalla por canales y temas. |
-| **Sapphire** ([cshariq/Sapphire](https://github.com/cshariq/Sapphire), AGPL-3.0) | La idea de aprovechar el notch como espacio útil. faro no reutiliza su código. |
-| **CopyClip** | La idea del historial del portapapeles. |
-
-Los nombres pertenecen a sus respectivos dueños. faro no tiene relación con ellos.
+faro está escrito desde cero y no usa dependencias externas de código. Este documento registra los servicios de datos y las tecnologías del sistema que hacen posible algunas funciones.
 
 ## Servicios de datos
 
@@ -30,7 +20,7 @@ Los nombres pertenecen a sus respectivos dueños. faro no tiene relación con el
 
 - **Swift**, **SwiftUI**, **AppKit**, **EventKit**, **Charts**, **CryptoKit**, **ImageIO** y **IOKit**, de Apple.
 - **Símbolos SF** de Apple para los íconos de las funciones. El logo del faro (`docs/images/logo.svg`), y los signos de más, equis, flecha y palomita de la interfaz, están dibujados a mano para este proyecto.
-- El código de conducta se inspira en el [Contributor Covenant](https://www.contributor-covenant.org) 2.1 (CC BY 4.0).
+- El código de conducta adapta el [Contributor Covenant](https://www.contributor-covenant.org) 2.1 (CC BY 4.0).
 
 ## Dependencias
 

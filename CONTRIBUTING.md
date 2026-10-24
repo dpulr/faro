@@ -56,7 +56,7 @@ Para ver la interfaz sin abrir la app, usa las herramientas de prueba descritas 
 
 Al enviar una contribución aceptas que se publique bajo la licencia del proyecto, **AGPL-3.0-or-later**, y declaras que tienes derecho a hacerlo. No pedimos un acuerdo de cesión (CLA); basta con tu aceptación en el pull request.
 
-No copies código de otros proyectos con licencias incompatibles. En particular, faro se inspira en otras apps (ver [`CREDITS.md`](CREDITS.md)) pero **no contiene código de ellas**, y así debe seguir.
+No copies código de otros proyectos con licencias incompatibles. Toda contribución debe ser original o usar material cuya licencia sea compatible y esté debidamente documentada.
 
 ## Código de conducta
 

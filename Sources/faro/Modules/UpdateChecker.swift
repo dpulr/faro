@@ -18,8 +18,8 @@ final class UpdateChecker: ObservableObject {
         case idle, checking, upToDate, available(Release), failed
     }
 
-    /// La dirección `web.app` no cambia aunque el sitio estrene dominio propio; `FARO_UPDATE_FEED` es solo para pruebas.
-    static let feed = URL(string: ProcessInfo.processInfo.environment["FARO_UPDATE_FEED"] ?? "https://faro-conectalab.web.app/download/latest.json")!
+    /// El dominio oficial sirve el feed; `FARO_UPDATE_FEED` permite sustituirlo solo durante pruebas.
+    static let feed = URL(string: ProcessInfo.processInfo.environment["FARO_UPDATE_FEED"] ?? "https://faro.conectalab.co/download/latest.json")!
 
     @Published var automatic: Bool {
         didSet {

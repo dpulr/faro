@@ -3,7 +3,7 @@
 # Copyright (C) 2026 Daniel Pulgarín
 # Genera y publica el sitio de faro (Firebase Hosting, proyecto conecta-lab, sitio faro-conectalab).
 # Antes: ./scripts/release.sh para tener el .dmg de la versión actual en build/.
-# Con SITE_REPO_PUBLIC=1 el sitio enlaza al repositorio de GitHub.
+# El sitio siempre enlaza al repositorio; SITE_REPO_PUBLIC=0 permite ocultar temporalmente las instrucciones de clonado.
 set -euo pipefail
 cd "$(dirname "$0")/../site"
 node build.mjs

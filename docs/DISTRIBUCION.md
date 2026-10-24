@@ -38,13 +38,13 @@ Después, sube el `.dmg` como *Release* de GitHub con la etiqueta `v<versión>` 
 
 ## Sitio web
 
-El sitio de faro (`site/`) es estático y bilingüe (español en la raíz, inglés en `/en`); no tiene dependencias, solo Node. Se genera con `node build.mjs` en `site/dist` y se publica en Firebase Hosting, proyecto `conecta-lab`, sitio `faro-conectalab` (dominio previsto: `faro.conectalab.co`).
+El sitio de faro (`site/`) es estático y bilingüe (español en la raíz, inglés en `/en`); no tiene dependencias, solo Node. Se genera con `node build.mjs` en `site/dist` y se publica en Firebase Hosting, proyecto `conecta-lab`, sitio `faro-conectalab`, con dominio oficial `faro.conectalab.co`.
 
 ```bash
 ./scripts/release.sh                  # genera build/faro-<versión>.dmg
 ./scripts/deploy-site.sh --preview    # canal de vista previa (7 días)
 ./scripts/deploy-site.sh              # publica en vivo
-SITE_REPO_PUBLIC=1 ./scripts/deploy-site.sh   # cuando el repositorio sea público: añade los enlaces a GitHub
+SITE_REPO_PUBLIC=0 ./scripts/deploy-site.sh   # solo si necesitas ocultar temporalmente las instrucciones de clonado
 ```
 
 La página de descargas publica el `.dmg` de `build/`, con su suma SHA-256 y un `download/latest.json`. Los textos están en `site/src/content.mjs`.

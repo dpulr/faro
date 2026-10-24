@@ -345,9 +345,6 @@ enum ColorEyedropper {
         guard keepAlive == nil else { return false }
         let sampler = NSColorSampler()
         Self.keepAlive = sampler
-        // El botón vive en un NSPanel no activable. Darle la activación a Faro antes de iniciar la
-        // sesión de seguimiento evita que el primer clic se pierda al cruzar a otro monitor.
-        NSApp.activate(ignoringOtherApps: true)
         sampler.show { color in
             Task { @MainActor in
                 Self.keepAlive = nil
