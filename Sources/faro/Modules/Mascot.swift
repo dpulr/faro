@@ -116,6 +116,20 @@ final class MascotModel: ObservableObject {
         wake(for: max(Double(sleepAfter), seconds + 5), now: now)
     }
 
+    /// Para probar desde ajustes: muestra ese ánimo en la mascota real del notch unos segundos
+    /// (dormir la manda a dormir al instante).
+    func demo(_ mood: MascotMood, now: Date = Date()) {
+        guard enabled else { return }
+        if mood == .sleeping {
+            reaction = nil
+            awakeUntil = .distantPast
+            awake = false
+            refresh(now: now)
+        } else {
+            react(mood, seconds: mood == .dancing ? 10 : 6, now: now)
+        }
+    }
+
     /// Una caricia: salen corazones.
     func pet() { react(.hearts, seconds: 2.8) }
 

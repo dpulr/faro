@@ -757,3 +757,5 @@ Dos mejillas sonrosadas. => Two rosy cheeks.
 Se duerme tras => Falls asleep after
 Sin usar el notch, la mascota se duerme y deja de animarse. => Without using the notch, the mascot falls asleep and stops animating.
 %lld s => %lld s
+Probar reacciones => Try reactions
+Toca un ánimo para verlo aquí y en la mascota real de tu notch. => Tap a mood to see it here and on your notch's real mascot.

@@ -862,10 +862,11 @@ struct NotchPage: View {
                         }
                         .frame(width: 130, height: 130)
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Vista previa").font(.callout.weight(.medium))
+                            Text("Probar reacciones").font(.callout.weight(.medium))
+                            Text("Toca un ánimo para verlo aquí y en la mascota real de tu notch.").font(.caption).foregroundStyle(.secondary)
                             LazyVGrid(columns: [GridItem(.adaptive(minimum: 84), spacing: 6)], alignment: .leading, spacing: 6) {
                                 ForEach(moods, id: \.1) { mood, label in
-                                    Button { previewMood = mood } label: {
+                                    Button { previewMood = mood; notch.mascot.demo(mood) } label: {
                                         Text(label).font(.caption.weight(.medium)).padding(.horizontal, 10).padding(.vertical, 5)
                                             .background(Capsule().fill(previewMood == mood ? Theme.accent.opacity(0.3) : Theme.fill))
                                     }.buttonStyle(.plain)

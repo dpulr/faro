@@ -437,6 +437,10 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate, NSWindowD
         let loved = pet.mood
         pet.dancing = false
         check("mascota: una caricia saca corazones", loved == .hearts)
+        pet.demo(.celebrate)
+        let party = pet.mood
+        pet.demo(.sleeping)
+        check("mascota: probar desde ajustes (fiesta y dormir al instante)", party == .celebrate && pet.mood == .sleeping && !pet.awake)
         pet.tick(now: Date().addingTimeInterval(120))
         check("mascota: sin uso vuelve a dormir y deja de animarse", pet.mood == .sleeping)
 
