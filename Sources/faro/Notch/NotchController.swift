@@ -184,6 +184,16 @@ final class NotchController {
         let top = screen.frame.maxY - (hasHardwareNotch ? 0 : 8)
         let buttonDown = NSEvent.pressedMouseButtons & 1 != 0
 
+        // Mascota: se despierta al acercar el cursor a la pastilla y, despierta, lo sigue con la mirada.
+        if model.mascot.enabled {
+            let near = p.y > top - notchSize.height - 10 && abs(p.x - screen.frame.midX) < max(notchSize.width, 260) / 2 + 40
+            if near { model.mascot.wake() }
+            if model.mascot.awake {
+                let cx = screen.frame.midX - notchSize.width / 2 - 30, cy = top - notchSize.height / 2
+                model.mascot.look(CGPoint(x: max(-1, min(1, (p.x - cx) / 320)), y: max(-1, min(1, -(p.y - cy) / 220))))
+            }
+        }
+
         // Cuando está recogido, solo la franja negra recibe eventos. Así los iconos pueden mostrar ayuda
         // y actuar como botones sin bloquear el resto de la barra de menús con la ventana transparente.
         if !model.expanded, !model.dropActive, model.toast?.actionLabel == nil {

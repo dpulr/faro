@@ -57,7 +57,10 @@ final class NotchExtras: ObservableObject {
     func start(notch: NotchModel, shelf: ShelfStore, monitor: SystemMonitor) {
         self.notch = notch
         self.shelf = shelf
-        timer.onEvent = { [weak self] symbol, text in self?.notch?.showToast(symbol: symbol, text: text, seconds: 6) }
+        timer.onEvent = { [weak self] symbol, text in
+            self?.notch?.showToast(symbol: symbol, text: text, seconds: 6)
+            self?.notch?.mascot.react(.celebrate, seconds: 5)
+        }
         notch.onBluetoothConnect = { [weak self] in
             Task { @MainActor in
                 try? await Task.sleep(nanoseconds: 5_000_000_000) // a los AirPods les toma unos segundos informar su carga
@@ -164,8 +167,10 @@ final class NotchExtras: ObservableObject {
         case .pluggedLong(let hours):
             notch?.showToast(symbol: "powerplug.fill", text: String(format: tr("Lleva %lld h enchufada al tope: desenchufar cuida la batería"), hours), seconds: 8)
         case .full(let level):
+            notch?.mascot.react(.hearts, seconds: 4)
             notch?.showToast(symbol: "battery.100percent.bolt", text: String(format: tr("Batería al %lld %%: ya puedes desenchufar"), level), seconds: 6)
         case .low(let level):
+            notch?.mascot.react(.sad, seconds: 8)
             notch?.showToast(symbol: level <= 10 ? "battery.0percent" : "battery.25percent",
                              text: String(format: tr("Batería baja: %lld %%"), level), seconds: 6)
         case nil:

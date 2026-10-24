@@ -414,6 +414,32 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate, NSWindowD
         check("letras: el proveedor muestra la línea del segundo 45", provider.line != nil, provider.line ?? "(ninguna)")
         provider.reset(); provider.enabled = savedLyrics
 
+        // Mascota: despierta al usar el notch, se duerme sola y reacciona
+        let pet = MascotModel()
+        let n0 = Date()
+        pet.look(CGPoint(x: 1, y: 1))
+        check("mascota: nace dormida y no sigue el cursor dormida", pet.mood == .sleeping && pet.gaze == .zero)
+        pet.wake(now: n0)
+        check("mascota: despierta al abrir el notch", pet.mood == .idle && pet.awake)
+        pet.look(CGPoint(x: 0.5, y: -0.5))
+        check("mascota: despierta sigue el cursor", pet.gaze == CGPoint(x: 0.5, y: -0.5))
+        pet.tick(now: n0.addingTimeInterval(29))
+        let before = pet.mood
+        pet.tick(now: n0.addingTimeInterval(31))
+        check("mascota: se duerme a los 30 s sin uso", before == .idle && pet.mood == .sleeping && !pet.awake)
+        pet.wake(now: n0.addingTimeInterval(40)); pet.dancing = true
+        check("mascota: baila con la música mientras está despierta", pet.mood == .dancing)
+        pet.react(.bluetooth, seconds: 8, now: n0.addingTimeInterval(41))
+        let blue = pet.mood
+        pet.tick(now: n0.addingTimeInterval(50))
+        check("mascota: se pone azul con Bluetooth y vuelve a bailar", blue == .bluetooth && pet.mood == .dancing)
+        pet.pet()
+        let loved = pet.mood
+        pet.dancing = false
+        check("mascota: una caricia saca corazones", loved == .hearts)
+        pet.tick(now: Date().addingTimeInterval(120))
+        check("mascota: sin uso vuelve a dormir y deja de animarse", pet.mood == .sleeping)
+
         // Capturas de pantalla: carpeta temporal; un archivo con la marca de captura entra, uno sin marca no.
         let shotsDir = tmp.appendingPathComponent("Capturas", isDirectory: true)
         try? manager.createDirectory(at: shotsDir, withIntermediateDirectories: true)

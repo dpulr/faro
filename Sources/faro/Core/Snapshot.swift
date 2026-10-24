@@ -111,6 +111,21 @@ enum Snapshot {
         let usb = NotchModel(); usb.showToast(symbol: "externaldrive.fill", text: "SANDISK conectado", seconds: 60, actionLabel: "Expulsar") {}
         render(demoNotch(usb)
             .frame(width: 520, height: 110).background(Color(white: 0.78)), name: "notch-usb", size: CGSize(width: 520, height: 110))
+        // Mascota: todos los ánimos, formas y ojos.
+        let mm = MascotModel()
+        mm.react(.hearts, seconds: 120)
+        try? await Task.sleep(nanoseconds: 900_000_000)
+        let moods: [MascotMood] = [.sleeping, .idle, .dancing, .hearts, .bluetooth, .celebrate, .sad]
+        render(VStack(spacing: 18) {
+            HStack(spacing: 20) { ForEach(0..<moods.count, id: \.self) { MascotView(model: mm, size: 96, forcedMood: moods[$0]) } }
+            HStack(spacing: 20) { ForEach(MascotShape.allCases) { MascotView(model: mm, size: 96, forcedMood: .idle, shape: $0) } }
+            HStack(spacing: 20) { ForEach(MascotEyes.allCases) { MascotView(model: mm, size: 96, forcedMood: .idle, eyes: $0) } }
+        }.padding(24).background(Color(red: 0.04, green: 0.05, blue: 0.06)), name: "mascota-estados", size: CGSize(width: 880, height: 400))
+        let savedLook = (mm.shape, mm.accessory, mm.colorHex)
+        mm.shape = .cloud; mm.accessory = .headphones; mm.colorHex = "#6BA5CE"
+        render(HStack(spacing: 20) { ForEach([MascotMood.idle, .dancing, .sleeping], id: \.self.hashValue) { MascotView(model: mm, size: 96, forcedMood: $0) } }
+            .padding(24).background(Color.black), name: "mascota-personalizada", size: CGSize(width: 420, height: 150))
+        (mm.shape, mm.accessory, mm.colorHex) = savedLook // las capturas no tocan tus ajustes
         render(framed(NotchPage()), name: "page-notch", size: nil)
         render(framed(AudioPage()), name: "page-audio", size: nil)
         render(framed(TecladoPage()), name: "page-teclado", size: nil)

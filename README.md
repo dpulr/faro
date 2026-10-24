@@ -154,6 +154,7 @@ Un panel negro que cuelga del notch: lleva el cursor arriba al centro de la pant
 - **Notch a tu medida:** widgets que activas, ordenas y redimensionas, pestañas, dock de herramientas y varios estilos. En un Mac sin notch, una isla flotante hace lo mismo.
 - **Editor visual:** arrastra widgets sobre una vista previa real, cambia su prioridad y elige anchos de 1/3, 2/3 o completos.
 - **Cada detalle cuenta:** títulos, iconos, descripciones, fondos, forma de las herramientas y letras de cero, una o dos líneas son configurables.
+- **Mascota:** un personaje que sigue el cursor, baila con la música, se pone azul con el Bluetooth y se duerme sola cuando no usas el notch. Se personaliza (forma, color, ojos y accesorio).
 - **Temporizador:** Pomodoro o temporizador simple, con la cuenta visible en la pastilla.
 - **Silenciar el micrófono** con un botón o `⌃⌥⌘M`, **batería de AirPods y otros dispositivos**, **gotero de color**.
 - **Avisos:** batería llena o baja, descarga terminada, captura de pantalla (va a la bandeja), disco USB conectado (con botón para expulsar), cámara o micrófono en uso y Bloq Mayús.

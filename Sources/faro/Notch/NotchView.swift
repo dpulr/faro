@@ -89,7 +89,7 @@ struct NotchView: View {
     }
 
     private var hasCompactContent: Bool {
-        model.showCompactControls || !compactMetrics.isEmpty
+        model.showCompactControls || !compactMetrics.isEmpty || model.mascot.enabled
     }
 
     private var compactPanelWidth: CGFloat {
@@ -143,6 +143,13 @@ struct NotchView: View {
         let rightMetrics = Array(compactMetrics.dropFirst(middle))
         return HStack(spacing: 0) {
             HStack(spacing: 2) {
+                if model.mascot.enabled {
+                    Button { model.mascot.pet() } label: {
+                        MascotView(model: model.mascot, size: 24).frame(width: 28, height: 28).contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .help(tr("Acariciar a la mascota"))
+                }
                 if model.showCompactControls {
                     compactAction("doc.on.clipboard", help: tr("Portapapeles")) { AppController.shared.showClipboard() }
                 }
@@ -364,6 +371,13 @@ struct NotchView: View {
 
     private var expandedNavigation: some View {
         HStack(spacing: 4) {
+            if model.mascot.enabled {
+                Button { model.mascot.pet() } label: {
+                    MascotView(model: model.mascot, size: 32).frame(width: 36, height: 36).contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .help(tr("Acariciar a la mascota"))
+            }
             if model.showGreetingInHeader, !model.greetingEmoji.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 Text(model.greetingEmoji).font(.system(size: 13)).padding(.horizontal, 3)
             }

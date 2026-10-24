@@ -244,7 +244,7 @@ final class NotchModel: ObservableObject {
     }
 
     // MARK: Estado
-    @Published var expanded = false
+    @Published var expanded = false { didSet { if expanded { mascot.wake() } } }
     @Published var expandedHeight: CGFloat = 160
     @Published var track: Track?
     @Published var artwork: NSImage?
@@ -272,6 +272,9 @@ final class NotchModel: ObservableObject {
     /// Letras sincronizadas de lo que suena.
     var lyrics = LyricsProvider()
     private var lyricsObserver: AnyCancellable?
+    /// La mascota: despierta mientras usas el notch y se duerme sola.
+    var mascot = MascotModel()
+    private var mascotObserver: AnyCancellable?
     private var timer: Timer?
     private var toastTask: Task<Void, Never>?
     private let bluetooth = BluetoothWatcher()
@@ -346,12 +349,13 @@ final class NotchModel: ObservableObject {
         }
         lyrics.enabled = lyricsDisplay != .hidden
         lyricsObserver = lyrics.objectWillChange.sink { [weak self] _ in DispatchQueue.main.async { self?.objectWillChange.send() } }
+        mascotObserver = mascot.objectWillChange.sink { [weak self] _ in DispatchQueue.main.async { self?.objectWillChange.send() } }
     }
 
     func compactPanelWidth(notchWidth: CGFloat, metricCount: Int, hasActivity: Bool) -> CGFloat {
         if collapsedWidthMode == .wide { return min(540, notchWidth + 320) }
         let metricsPerSide = Int(ceil(Double(metricCount) / 2))
-        let wing = CGFloat(metricsPerSide * 36 + (showCompactControls ? 30 : 0) + (hasActivity ? 30 : 0) + 4)
+        let wing = CGFloat(metricsPerSide * 36 + (showCompactControls ? 30 : 0) + (hasActivity ? 30 : 0) + (mascot.enabled ? 30 : 0) + 4)
         return min(540, max(notchWidth + 16, notchWidth + wing * 2))
     }
 
@@ -372,6 +376,7 @@ final class NotchModel: ObservableObject {
             Task { @MainActor in
                 self?.showToast(symbol: symbol, text: String(format: tr("%@ conectado"), name))
                 self?.onBluetoothConnect?()
+                self?.mascot.react(.bluetooth, seconds: 8)
             }
         }
         if showBluetooth { bluetooth.start() }
@@ -391,6 +396,9 @@ final class NotchModel: ObservableObject {
         if counter % 60 == 0 { refreshCalendar() }
         if counter % 1200 == 0 { Task { await refreshWeather() } }
         tickBreak()
+        mascot.dancing = showMusic && track?.playing == true
+        if expanded { mascot.wake() }
+        mascot.tick()
     }
 
     /// Muestra un aviso colgando del notch unos segundos.
