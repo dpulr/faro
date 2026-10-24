@@ -57,4 +57,15 @@
       })
     })
   }
+  // Foco que sigue al cursor en tarjetas y escalonado de las que aparecen juntas.
+  document.addEventListener('pointermove', function (e) {
+    var el = e.target.closest && e.target.closest('.card, .facts li, .bento__tile')
+    if (!el) return
+    var r = el.getBoundingClientRect()
+    el.style.setProperty('--mx', (e.clientX - r.left) + 'px')
+    el.style.setProperty('--my', (e.clientY - r.top) + 'px')
+  })
+  document.querySelectorAll('.grid, .facts, .bento, .steps').forEach(function (group) {
+    Array.prototype.forEach.call(group.children, function (child, i) { child.style.setProperty('--d', i) })
+  })
 })()

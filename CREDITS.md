@@ -16,6 +16,9 @@ faro está escrito desde cero y no usa dependencias externas de código. Este do
 | [Open-Meteo](https://open-meteo.com) | Clima y geocodificación | Datos meteorológicos de [Open-Meteo.com](https://open-meteo.com/), bajo licencia [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). Su uso gratuito es para fines no comerciales. |
 | Servidores de Apple (`networkQuality`) | Medición de internet | Herramienta incluida en macOS. |
 
+- **Iconos del sitio web:** [Lucide](https://lucide.dev) (licencia ISC).
+- Logos de GitHub y Ko-fi: [Simple Icons](https://simpleicons.org) (CC0).
+
 ## Tecnologías
 
 - **Swift**, **SwiftUI**, **AppKit**, **EventKit**, **Charts**, **CryptoKit**, **ImageIO** y **IOKit**, de Apple.

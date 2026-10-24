@@ -4,7 +4,8 @@
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { features, more, network, privacy, releaseNotes, support, timeline, ui } from './src/content.mjs'
+import { demo, features, more, network, privacy, releaseNotes, support, timeline, ui } from './src/content.mjs'
+import { icon, lucide } from './src/icons.mjs'
 
 const root = dirname(fileURLToPath(import.meta.url))
 const dist = join(root, 'dist')
@@ -88,6 +89,7 @@ function head(lang, key, meta) {
 <link rel="preload" href="/fonts/manrope-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/space-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/style.css">
+<link rel="stylesheet" href="/demo.css">
 <script>document.documentElement.classList.add('js');try{var t=localStorage.getItem('faro-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
 <script type="application/ld+json">${JSON.stringify(ld)}</script>
 </head>`
@@ -147,6 +149,7 @@ function footer(lang) {
   <p class="foot__legal">${t.footer.rights} · ${t.footer.license}</p>
 </footer>
 <script src="/app.js" defer></script>
+<script src="/demo.js" defer></script>
 </body>
 </html>`
 }
@@ -163,7 +166,7 @@ function home(lang) {
     ? `<a class="btn btn--ghost" href="${REPO}">${icons.code}<span>${h.code}</span></a>`
     : `<span class="btn btn--ghost btn--off" aria-disabled="true">${icons.code}<span>${h.codeSoon}</span></span>`
 
-  const featureBlocks = features[lang].map((f, i) => `
+  const featureBlocks = features[lang].map((f, i) => f.id === 'notch' ? notchBento(lang, f, i) : `
   <article class="feature${i % 2 ? ' feature--flip' : ''}" id="${f.id}">
     <div class="feature__text reveal" data-number="${String(i + 1).padStart(2, '0')}">
       <h3>${f.title}</h3>
@@ -181,7 +184,10 @@ function home(lang) {
   const rows = network.map(([host, why, what]) => `<tr><td data-label="${h.netHead[0]}"><code>${host}</code></td><td data-label="${h.netHead[1]}">${why[lang]}</td><td data-label="${h.netHead[2]}">${what[lang]}</td></tr>`).join('')
   const points = h.buildPoints.map(([title, text]) => `<div class="card reveal"><h4>${title}</h4><p>${text}</p></div>`).join('')
   const tl = timeline[lang].map(([v, text]) => `<li><span class="tl__v">${v}</span><span>${text}</span></li>`).join('')
-  const marquee = [...features[lang].map((f) => f.title.replace(/\.$/, '')), ...more[lang].map(([title]) => title)]
+  const featureIcons = { fondos: 'image', perfiles: 'layers', sistema: 'activity', portapapeles: 'clipboard', bandeja: 'inbox', notch: 'panel-top', teclado: 'keyboard', audio: 'volume-2' }
+  const moreIcons = ['hard-drive', 'coffee', 'gauge', 'sparkles', 'battery-charging', 'timer', 'mic-off', 'languages', 'command']
+  const marqueeA = features[lang].map((f) => [featureIcons[f.id] ?? 'zap', f.title.replace(/\.$/, '')])
+  const marqueeB = more[lang].map(([title], k) => [moreIcons[k] ?? 'zap', title])
   const featureNav = features[lang].map((f, i) => `<a href="#${f.id}"><span>${String(i + 1).padStart(2, '0')}</span>${f.title.replace(/\.$/, '')}</a>`).join('')
   const customizePoints = h.customizePoints.map((point) => `<li>${icons.arrow}<span>${point}</span></li>`).join('')
 
@@ -190,7 +196,6 @@ ${header(lang, 'home')}
 <section class="hero">
   <div class="hero__beam hero__beam--a" aria-hidden="true"></div>
   <div class="hero__beam hero__beam--b" aria-hidden="true"></div>
-  <div class="hero__grain" aria-hidden="true"></div>
   <div class="hero__text">
     <p class="kicker">${h.kicker}</p>
     <h1>${h.h1a}<br><span>${h.h1b}</span></h1>
@@ -216,9 +221,13 @@ ${header(lang, 'home')}
   </div>
 </section>
 
-<ul class="facts" aria-label="faro">${h.facts.map((f) => `<li>${f}</li>`).join('')}</ul>
+${demoSection(lang)}
 
-<div class="marquee" aria-hidden="true"><div class="marquee__track">${[0, 1].map(() => `<ul>${marquee.map((m) => `<li>${m}</li>`).join('')}</ul>`).join('')}</div></div>
+<ul class="facts" aria-label="faro">${h.facts.map((f, i) => `<li class="reveal"><span class="facts__icon">${icon(['cpu', 'shield-check', 'sliders-horizontal', 'code-xml'][i], 22)}</span><strong>${f}</strong><small>${h.factsSub[i]}</small></li>`).join('')}</ul>
+
+<div class="marquee" aria-hidden="true">
+  ${[[marqueeA, ''], [marqueeB, ' marquee__track--rev']].map(([items, cls]) => `<div class="marquee__row"><div class="marquee__track${cls}">${[0, 1].map(() => `<ul>${items.map(([ic, label]) => `<li><span>${icon(ic, 17)}</span>${label}</li>`).join('')}</ul>`).join('')}</div></div>`).join('')}
+</div>
 
 <section class="section" id="funciones">
   <div class="wrap">
@@ -320,6 +329,114 @@ ${supportSection(lang)}
   </div>
 </section>
 ${footer(lang)}`
+}
+
+function notchBento(lang, f, i) {
+  const es = lang === 'es'
+  const t = {
+    music: es ? 'Música y letra' : 'Music and lyrics', musicLine: es ? 'Una luz en la costa se enciende' : 'A light on the coast turns on',
+    timer: es ? 'Pomodoro' : 'Pomodoro', timerSub: es ? 'La cuenta se ve en la pastilla' : 'The countdown shows on the pill',
+    alerts: es ? 'Avisos con acción' : 'Notices with actions', usb: es ? 'SANDISK conectado' : 'SANDISK connected', eject: es ? 'Expulsar' : 'Eject', dl: es ? 'Descarga lista' : 'Download ready', show: es ? 'Mostrar' : 'Show',
+    battery: es ? 'Cuida tu batería' : 'Battery care', batterySub: es ? 'Aviso para desenchufar al 80 %' : 'Notice to unplug at 80%',
+    privacy: es ? 'Cámara y micrófono' : 'Camera and microphone', cam: es ? 'Cámara en uso' : 'Camera in use', mic: es ? 'Micrófono en uso' : 'Microphone in use',
+    widgets: es ? 'Tus widgets, a tu manera' : 'Your widgets, your way',
+  }
+  return `
+  <article class="feature feature--bento" id="${f.id}">
+    <div class="feature__text reveal" data-number="${String(i + 1).padStart(2, '0')}">
+      <h3>${f.title}</h3>
+      <p class="feature__lead">${f.lead}</p>
+      <ul>${f.points.map((p) => `<li>${p}</li>`).join('')}</ul>
+    </div>
+    <div class="bento">
+      <div class="bento__tile bento__tile--music reveal"><span class="bento__label">${icon('music', 15)}${t.music}</span><div class="bento__eq"><i></i><i></i><i></i><i></i><i></i></div><p class="bento__lyric"><span>${t.musicLine}</span><span>${es ? 'La noche se abre en el mar' : 'The night opens over the sea'}</span></p></div>
+      <div class="bento__tile bento__tile--timer reveal"><span class="bento__label">${icon('timer', 15)}${t.timer}</span><div class="bento__ring"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="26"/><circle class="bento__ring-bar" cx="32" cy="32" r="26" pathLength="100"/></svg><b>25:00</b></div><small>${t.timerSub}</small></div>
+      <div class="bento__tile bento__tile--alerts reveal"><span class="bento__label">${icon('zap', 15)}${t.alerts}</span><div class="bento__toasts"><div class="bento__toast">${icon('usb', 16)}<span>${t.usb}</span><em>${t.eject}</em></div><div class="bento__toast">${icon('download', 16)}<span>${t.dl}</span><em>${t.show}</em></div></div></div>
+      <div class="bento__tile bento__tile--battery reveal"><span class="bento__label">${icon('battery-charging', 15)}${t.battery}</span><div class="bento__battery"><i></i><b>80%</b></div><small>${t.batterySub}</small></div>
+      <div class="bento__tile bento__tile--privacy reveal"><span class="bento__label">${icon('camera', 15)}${t.privacy}</span><div class="bento__dots"><span class="bento__dot bento__dot--cam"></span><em>${t.cam}</em><span class="bento__dot bento__dot--mic"></span><em>${t.mic}</em></div></div>
+      <div class="bento__tile bento__tile--widgets reveal"><span class="bento__label">${icon('layers', 15)}${t.widgets}</span><div class="bento__blocks"><i></i><i></i><i></i></div></div>
+    </div>
+  </article>`
+}
+
+function demoSection(lang) {
+  const d = demo[lang]
+  const tools = [['clipboard', 'clipboard'], ['shelf', 'inbox'], ['timer', 'timer'], ['mic', 'mic'], ['color', 'pipette'], ['awake', 'coffee'], ['keyboard', 'keyboard'], ['settings', 'sliders-horizontal']]
+  const sims = [['airpods', 'headphones'], ['usb', 'usb'], ['download', 'download'], ['battery', 'battery-charging']]
+  return `<section class="section demo" id="prueba" aria-label="${d.title}">
+  <div class="wrap">
+    <div class="demo__head reveal">
+      <span class="eyebrow">${d.eyebrow}</span>
+      <h2>${d.title}</h2>
+      <p class="lead">${d.lead}</p>
+    </div>
+    <div class="demo-stage reveal" data-notch-demo>
+      <script type="application/json" data-demo-i18n>${JSON.stringify({ ...d, icons: Object.fromEntries(['timer', 'mic', 'mic-off', 'coffee', 'headphones', 'usb', 'download', 'battery-charging', 'keyboard', 'pipette', 'clipboard', 'inbox', 'play', 'pause', 'volume-2', 'x', 'music', 'sliders-horizontal', 'folder-down', 'plug-zap', 'cloud-sun', 'zap'].filter((n) => lucide[n]).map((n) => [n, lucide[n]])) })}</script>
+      <div class="demo-screen">
+        <div class="demo-wall" aria-hidden="true"></div>
+        <div class="demo-menubar" aria-hidden="true">
+          <span class="demo-menubar__brand"><img src="/img/logo.svg" alt="" width="16" height="16">faro</span>
+          <span class="demo-menubar__stats"><i data-sys-cpu>CPU 24%</i><i data-sys-mem>MEM 58%</i><b data-clock>9:41</b></span>
+        </div>
+        <div class="demo-notch" data-notch aria-live="polite">
+          <button class="dn-pill" type="button" data-pill aria-label="${d.hint}" aria-expanded="false">
+            <span class="dn-pill__left" data-pill-left></span>
+            <span class="dn-pill__cam"></span>
+            <span class="dn-pill__right" data-pill-right></span>
+          </button>
+          <div class="dn-lyric" data-pill-lyric></div>
+          <div class="dn-panel" data-panel>
+            <div class="dn-tabs" role="tablist">
+              ${['home', 'system', 'tools'].map((t, k) => `<button role="tab" type="button" data-tab="${t}" aria-selected="${k === 0}">${d.tabs[t]}</button>`).join('')}
+              <button class="dn-close" type="button" data-collapse aria-label="Cerrar">${icon('x', 16)}</button>
+            </div>
+            <div class="dn-views">
+              <div class="dn-view dn-view--home" data-view="home">
+                <div class="dn-music">
+                  <div class="dn-art" data-art><span class="dn-eq"><i></i><i></i><i></i><i></i></span></div>
+                  <div class="dn-meta"><strong data-title></strong><span data-artist></span></div>
+                  <div class="dn-controls">
+                    <button type="button" data-prev aria-label="Anterior">${icon('skip-back', 16)}</button>
+                    <button type="button" class="dn-play" data-play aria-label="Reproducir o pausar">${icon('pause', 18)}</button>
+                    <button type="button" data-next aria-label="Siguiente">${icon('skip-forward', 16)}</button>
+                  </div>
+                  <div class="dn-lyrics"><p data-lyric-now></p><p data-lyric-next></p></div>
+                  <div class="dn-progress"><i data-progress></i></div>
+                </div>
+                <div class="dn-side">
+                  <div class="dn-card dn-volume">
+                    <span class="dn-card__label"><span data-vol-icon>${icon('volume-2', 15)}</span>${d.volume}<b data-vol-value>60</b></span>
+                    <input type="range" min="0" max="100" value="60" data-volume aria-label="${d.volume}">
+                  </div>
+                  <div class="dn-card dn-weather">
+                    <span class="dn-weather__icon">${icon('cloud-sun', 30)}</span>
+                    <span><small>${d.weather.city}</small><strong>${d.weather.temp}</strong><em>${d.weather.text}</em></span>
+                  </div>
+                </div>
+              </div>
+              <div class="dn-view dn-view--system" data-view="system" hidden>
+                ${[['cpu', 'cpu'], ['mem', 'activity'], ['disk', 'hard-drive'], ['bat', 'battery-charging']].map(([k, ic]) => `<div class="dn-ring" data-ring="${k}"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="26"/><circle class="dn-ring__bar" cx="32" cy="32" r="26" pathLength="100"/></svg><span class="dn-ring__icon">${icon(ic, 16)}</span><strong data-ring-value>0</strong><small>${d.system[k]}</small></div>`).join('')}
+              </div>
+              <div class="dn-view dn-view--tools" data-view="tools" hidden>
+                ${tools.map(([k, ic], n) => `<button type="button" class="dn-tool" data-tool="${k}" style="--i:${n}">${icon(ic, 20)}<span>${d.tools[k]}</span></button>`).join('')}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dn-toast" data-toast hidden></div>
+        <div class="dn-popover" data-popover hidden></div>
+        <div class="dn-lock" data-lock hidden>
+          <div class="dn-lock__box">${icon('keyboard', 34)}<strong>${d.keyboardLock.title}</strong><p>${d.keyboardLock.text}</p><b data-lock-count>10</b><button type="button" data-lock-exit>${d.keyboardLock.exit}</button></div>
+        </div>
+        <span class="demo-hint" data-hint>${icon('mouse-pointer-click', 15)}${d.hint}</span>
+      </div>
+      <div class="demo-sims">
+        <span>${d.simulate}</span>
+        ${sims.map(([k, ic]) => `<button type="button" class="chip" data-sim="${k}">${icon(ic, 15)}${d.sims[k]}</button>`).join('')}
+      </div>
+    </div>
+  </div>
+</section>`
 }
 
 function supportSection(lang) {
@@ -434,6 +551,8 @@ rmSync(dist, { recursive: true, force: true })
 cpSync(join(root, 'public'), dist, { recursive: true })
 cpSync(join(root, 'src/style.css'), join(dist, 'style.css'))
 cpSync(join(root, 'src/app.js'), join(dist, 'app.js'))
+cpSync(join(root, 'src/demo.css'), join(dist, 'demo.css'))
+cpSync(join(root, 'src/demo.js'), join(dist, 'demo.js'))
 
 write('index.html', home('es'))
 write('en/index.html', home('en'))
