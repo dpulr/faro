@@ -6,6 +6,7 @@ import Charts
 
 struct InternetPage: View {
     @EnvironmentObject var speed: SpeedTest
+    @EnvironmentObject var extras: NotchExtras
 
     private let autoOptions: [(String, Int)] = [
         ("Nunca", 0), ("Cada 30 minutos", 30), ("Cada hora", 60), ("Cada 3 horas", 180),
@@ -15,6 +16,7 @@ struct InternetPage: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             PageHeader(title: "Internet", subtitle: "Mide tu conexión y mira cómo cambia a lo largo del día.")
+            status
             latest
             automation
             if speed.history.count > 1 { chart }
@@ -50,6 +52,41 @@ struct InternetPage: View {
                     }
                 }
                 if let error = speed.error { Text(error).font(.callout).foregroundStyle(Theme.critical) }
+            }
+        }
+    }
+
+    private var status: some View {
+        let connection = extras.connection
+        return Card {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 12) {
+                    Image(systemName: connection.issue == .offline ? "wifi.slash" : "wifi")
+                        .font(.title3).foregroundStyle(connection.issue == nil ? Theme.accent : Theme.critical)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(connection.headline).font(.title3.weight(.semibold))
+                        if !connection.detail.isEmpty { Text(connection.detail).font(.callout).foregroundStyle(.secondary) }
+                    }
+                    Spacer()
+                }
+                if connection.latencyHistory.count > 2 {
+                    Chart(Array(connection.latencyHistory.enumerated()), id: \.offset) { point in
+                        LineMark(x: .value("n", point.offset), y: .value("ms", point.element))
+                            .interpolationMethod(.monotone).foregroundStyle(Theme.accent)
+                    }
+                    .chartXAxis(.hidden).chartYAxisLabel("ms").frame(height: 70)
+                }
+                Divider()
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Avisar de problemas de conexión").font(.callout.weight(.medium))
+                        Text("Un aviso en el notch si se cae internet, se pone lento, la VPN se desconecta o el Wi‑Fi se debilita.")
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Toggle("", isOn: Binding(get: { connection.alertsEnabled }, set: { connection.alertsEnabled = $0 }))
+                        .toggleStyle(MiniSwitchStyle()).labelsHidden()
+                }
             }
         }
     }

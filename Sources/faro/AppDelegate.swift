@@ -52,6 +52,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
+    func application(_ application: NSApplication, open urls: [URL]) {
+        Task { @MainActor in urls.forEach { AppController.shared.handleDeepLink($0) } }
+    }
+
     /// ⌘Q pregunta antes de cerrar, como un navegador: se puede solo minimizar la vista de escritorio y dejar faro en la barra de menú.
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         if Self.forceQuit { return .terminateNow }

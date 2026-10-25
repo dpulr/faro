@@ -47,6 +47,28 @@ struct NotchMatrixLayout: Layout {
         }
     }
 
+    /// Filas que ocupa una lista de widgets (columnas, filas) con el mismo acomodo del notch; sirve para miniaturas.
+    static func rowCount(spans: [(Int, Int)]) -> Int {
+        var occupied: [[Bool]] = []
+        for (rawColumns, rawRows) in spans {
+            let columns = min(max(rawColumns, 1), 3), rows = min(max(rawRows, 1), 2)
+            var row = 0, placed = false
+            while !placed {
+                for column in 0...(3 - columns) {
+                    let free = (row..<(row + rows)).allSatisfy { y in y >= occupied.count || (column..<(column + columns)).allSatisfy { !occupied[y][$0] } }
+                    if free {
+                        while occupied.count < row + rows { occupied.append([Bool](repeating: false, count: 3)) }
+                        for y in row..<(row + rows) { for x in column..<(column + columns) { occupied[y][x] = true } }
+                        placed = true
+                        break
+                    }
+                }
+                if !placed { row += 1 }
+            }
+        }
+        return occupied.count
+    }
+
     private func arrange(_ subviews: Subviews) -> (cells: [Cell], rows: Int) {
         var occupied: [[Bool]] = []
         var cells: [Cell] = []

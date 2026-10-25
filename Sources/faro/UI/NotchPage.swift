@@ -307,6 +307,10 @@ struct NotchPage: View {
                         }
                     }
                 }
+                Divider().padding(.horizontal, 12)
+                row("Prioridad contextual", "Pone primero lo que está ocurriendo ahora sin cambiar tu orden guardado.") {
+                    Toggle("", isOn: $notch.contextualPriority).toggleStyle(MiniSwitchStyle()).labelsHidden()
+                }
             }
         }
     }
@@ -742,6 +746,8 @@ struct NotchPage: View {
                 previewInfo(symbol: "eye", title: tr("Próxima pausa"), detail: tr("En 12 min"), background: false)
             case .storage:
                 previewInfo(symbol: "internaldrive", title: "128 GB", detail: tr("Espacio libre"), background: false)
+            case .connection:
+                previewInfo(symbol: "wifi", title: "Wi‑Fi · 24 ms", detail: tr("señal excelente"), background: false)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -988,6 +994,7 @@ struct NotchPage: View {
 
     private func toolSymbol(_ kind: NotchToolKind) -> String {
         switch kind {
+        case .commands: "command"
         case .clipboard: "doc.on.clipboard"; case .shelf: "tray.and.arrow.down"; case .timer: "timer"
         case .microphone: "mic"; case .eyedropper: "eyedropper"; case .emoji: "face.smiling"; case .awake: "cup.and.saucer"
         case .keyboard: "keyboard"; case .settings: "slider.horizontal.3"

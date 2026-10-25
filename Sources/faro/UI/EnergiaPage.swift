@@ -47,6 +47,53 @@ struct EnergiaPage: View {
             }
 
             if monitor.hasBattery { batteryCard }
+            devicesCard
+        }
+    }
+
+    // MARK: Baterías de dispositivos
+
+    private var devicesCard: some View {
+        let devices = extras.devices
+        return Card {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 14) {
+                    Image(systemName: "airpods.gen3").font(.system(size: 22)).foregroundStyle(Theme.accent)
+                        .frame(width: 48, height: 48).background(Circle().fill(Theme.accent.opacity(0.12)))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Baterías de tus dispositivos").font(.title3.weight(.semibold))
+                        Text(devices.devices.isEmpty ? "Conecta AirPods, un teclado, un ratón o un trackpad para ver su carga."
+                             : "Los de menos carga van primero.").foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Button("Actualizar") { devices.refresh(force: true); devices.refreshFast() }
+                        .buttonStyle(PillButtonStyle(prominent: false))
+                }
+                ForEach(devices.devices) { device in
+                    HStack(spacing: 12) {
+                        Image(systemName: device.symbol).frame(width: 24).foregroundStyle(.secondary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(device.name).font(.callout.weight(.medium)).lineLimit(1)
+                            if let detail = device.detail { Text(detail).font(.caption).foregroundStyle(.secondary) }
+                        }
+                        Spacer(minLength: 12)
+                        UsageBar(value: Double(device.percent) / 100, tint: device.percent <= 20 && !device.charging ? Theme.critical : Theme.accent)
+                            .frame(width: 140)
+                        if device.charging { Image(systemName: "bolt.fill").foregroundStyle(Theme.accent).font(.caption) }
+                        Text("\(device.percent)%").font(.callout.weight(.semibold).monospacedDigit()).frame(width: 46, alignment: .trailing)
+                    }
+                }
+                Divider()
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Avisar si queda poca batería").font(.callout.weight(.medium))
+                        Text("Un aviso en el notch cuando un periférico baja del 20% y otra vez del 10%.").font(.caption).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Toggle("", isOn: Binding(get: { devices.lowAlerts }, set: { devices.lowAlerts = $0 }))
+                        .toggleStyle(MiniSwitchStyle()).labelsHidden()
+                }
+            }
         }
     }
 

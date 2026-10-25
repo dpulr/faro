@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Daniel Pulgarín
 
+import CoreServices
 import Foundation
 
 enum DiskTools {
@@ -59,7 +60,8 @@ enum DiskTools {
             let url = URL(fileURLWithPath: String(line))
             guard let v = try? url.resourceValues(forKeys: keys),
                   let bytes = v.totalFileAllocatedSize else { return nil }
-            return CleanItem(url: url, bytes: Int64(bytes), modified: v.contentModificationDate)
+            let used = MDItemCreateWithURL(nil, url as CFURL).flatMap { MDItemCopyAttribute($0, kMDItemLastUsedDate) as? Date }
+            return CleanItem(url: url, bytes: Int64(bytes), modified: v.contentModificationDate, lastUsed: used)
         }
         .sorted { $0.bytes > $1.bytes }
         .prefix(80).map { $0 }

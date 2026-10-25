@@ -83,11 +83,15 @@ Un **canal** es un tema; una **mezcla** reparte las fotos entre varios canales. 
 
 <img src="docs/images/editar-canal.png" width="520" alt="Ventana para editar una mezcla de canales con niveles Poco, Normal y Mucho">
 
-### Perfiles
+### Escenas Faro
 
-<img src="docs/images/perfiles.png" width="760" alt="Página Perfiles con los modos Trabajo y Descanso">
+<img src="docs/images/perfiles.png" width="760" alt="Página Escenas Faro con modos de uso y activación automática">
 
-Un perfil es un **modo guardado**: con un clic cambia el canal de fondos, cada cuánto cambia, si el Mac se mantiene despierto, los datos de la barra de menú y el descanso visual. Vienen *Trabajo* y *Descanso*, y puedes crear los tuyos desde tus ajustes actuales. Un perfil también puede **activarse solo** a cierta hora de ciertos días.
+Una escena guarda la **experiencia completa**: diseño, widgets y herramientas del notch; fondos; modo despierto; datos de la barra de menú y descanso visual. Faro puede preparar escenas para *Trabajo*, *Reunión*, *Multimedia*, *Escritorio* y *Minimal*, y activarlas por la aplicación al frente, una reunión próxima, pantalla completa, Bluetooth, monitor externo, batería o un horario. Al entrar puede ajustar volumen, brillo y micrófono, iniciar un enfoque o abrir apps y enlaces; al salir restaura los controles anteriores. Incluye explicación de cada cambio, pausa temporal, prioridad entre reglas, historial, enlaces para Atajos, duplicado e importación/exportación.
+
+### Centro de comandos
+
+Pulsa `⌃⌥⌘F` desde cualquier aplicación para buscar y ejecutar todo lo que Faro sabe hacer: activar escenas, abrir secciones, cambiar el fondo, controlar audio y micrófono, iniciar el temporizador, mantener despierto el Mac, abrir emojis, usar el gotero o limpiar el teclado. Funciona completamente en el Mac, se maneja con teclado y permite fijar favoritos; también está disponible en la barra de menú y como herramienta del notch.
 
 ### Sistema, internet y energía
 
@@ -101,13 +105,32 @@ Un perfil es un **modo guardado**: con un clic cambia el canal de fondos, cada c
 <img src="docs/images/audio.png" width="760" alt="Página Audio con la salida, el volumen y el volumen por app">
 <img src="docs/images/notch-audio.png" width="760" alt="Pestaña Audio del notch con volumen general y controles para las aplicaciones que están reproduciendo">
 
+### Diagnóstico y equipo conectado
+
+<img src="docs/images/diagnostico.png" width="760" alt="Página Diagnóstico con el estado del Mac, cargador, puertos, discos, ventiladores y periféricos">
+
+Faro reúne en una sola página lo que suele estar repartido por macOS:
+
+- **Qué frena al Mac:** memoria, procesador, disco, temperatura y energía, con la aplicación que más consume y un botón para actuar.
+- **Cargador explicado:** potencia del adaptador, energía que entra al Mac, consumo del sistema y vatios que llegan a la batería.
+- **Puertos USB-C y MagSafe:** capacidad, transportes activos —USB, Thunderbolt o DisplayPort—, cable activo u óptico cuando macOS lo informa y detección de humedad.
+- **Discos externos:** nombre, conexión, espacio disponible y botón para expulsar uno o todos.
+- **Ventiladores:** revoluciones y carga de cada ventilador, siempre en solo lectura.
+- **Periféricos:** batería y carga de AirPods, teclados, ratones y trackpads compatibles.
+- **Equipo en el notch:** una pestaña independiente resume estado, conexión, cargador, ventiladores y discos; un punto naranja aparece cuando algo requiere atención.
+
+<img src="docs/images/notch-equipo.png" width="760" alt="Pestaña Equipo del notch con estado, conexión, cargador, ventiladores y discos externos">
+
 ### Almacenamiento y limpieza
 
 Encuentra qué ocupa espacio y lo libera **sin tocar tus documentos**.
 
+- **Asistente:** ordena las recomendaciones por espacio recuperable y seguridad, con un botón *Limpiar lo seguro* (a la Papelera, con confirmación).
 - **Limpieza guiada** por categorías seguras: compilaciones de Xcode, símbolos de dispositivos iOS, cachés de apps, registros, Gradle, npm, cachés de herramientas y, marcadas como "Revisa antes", los archivos de Xcode y los emuladores de Android.
 - **Simuladores de iOS:** quita los que ya no funcionan con tu Xcode.
-- **Archivos grandes** (más de 300 MB) y un **explorador de carpetas** con barras de tamaño.
+- **Archivos grandes** (más de 300 MB), con el tiempo que llevan **sin tocarse** para encontrar los olvidados, y un **explorador de carpetas** con barras de tamaño.
+- **Predicción de llenado:** con unos días de datos estima cuándo se llenaría el disco y avisa si falta menos de dos semanas.
+- **Widget del notch accionable:** analiza y limpia lo seguro desde el propio panel.
 - **Aviso de poco espacio:** una notificación y una señal en el notch cuando el disco baja de un umbral que eliges (5 a 100 GB); no repite hasta que empeora o se recupera.
 - **Seguro por diseño:** solo borra dentro de una lista blanca de carpetas conocidas, manda a la Papelera por defecto y pide confirmación siempre.
 
@@ -252,6 +275,7 @@ faro **no tiene telemetría ni cuentas**. Las únicas conexiones que hace son es
 | `www.bing.com` | Fotos del día | Nada personal |
 | `open-meteo.com` | Clima | La ciudad que escribiste |
 | Servidores de Apple (`networkQuality`) | Medir la conexión | Lo normal de una prueba de velocidad |
+| Cloudflare (`1.1.1.1`) | Comprobar latencia y detectar caídas | Una conexión TCP sin datos personales |
 | `api.artic.edu` y `www.artic.edu` | Obras del Art Institute of Chicago | El tema que escribiste |
 | `images-api.nasa.gov` y `images-assets.nasa.gov` | Imágenes de la NASA | El tema que escribiste |
 | `picsum.photos` | Fotos al azar | Nada personal |
@@ -336,7 +360,7 @@ Ideas que no están hechas todavía, sin fechas:
 
 - Volumen por aplicación para cualquier app (macOS no lo permite sin un controlador de audio propio).
 - Más idiomas.
-- Más automatizaciones y formas de adaptar el notch a cada flujo de trabajo.
+- Integración opcional con modos de concentración y redes Wi‑Fi cuando macOS permita hacerlo sin sacrificar privacidad.
 
 Las propuestas y los fallos se reportan en [Issues](https://github.com/dpulr/faro/issues).
 

@@ -2,6 +2,28 @@
 
 Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen [SemVer](https://semver.org/lang/es/).
 
+## [2.0.0] — 2026-10-25
+
+### Novedades
+- **Puertos USB-C.** Diagnóstico lista los puertos USB-C y MagSafe, su capacidad, los transportes activos (USB, Thunderbolt y DisplayPort), si el cable es activo u óptico cuando macOS lo informa, y detecta humedad.
+- **Diagnóstico.** Página nueva que dice qué frena a tu Mac (memoria, procesador, disco, temperatura, energía), analiza el cargador (cuántos vatios llegan al Mac y a la batería), lista los discos externos con botón para expulsarlos y muestra la velocidad de los ventiladores en solo lectura.
+- **Alertas de conexión.** El notch avisa cuando se cae internet y cuando vuelve, si la VPN se desconecta, si la respuesta se vuelve lenta o si el Wi‑Fi se debilita. Un widget nuevo ("Conexión") aparece solo cuando hay algo que decir, y la página Internet muestra el estado y la latencia en vivo. Se puede apagar en Internet.
+- **Escenas Faro.** Los perfiles ahora guardan la experiencia completa del notch y pueden activarse automáticamente por la aplicación al frente, un monitor externo, la fuente de energía o un horario.
+- **Configuración en un minuto.** Un asistente prepara escenas recomendadas para Trabajo, Reunión, Multimedia, Escritorio y Minimal a partir de los ajustes actuales.
+- **Historial, duplicado e intercambio.** Antes de aplicar una escena manual o programada, Faro conserva una restauración rápida. Las escenas también se pueden duplicar, exportar e importar como JSON.
+- **Widgets contextuales.** El notch puede llevar temporalmente al frente lo que está ocurriendo —música, temporizador, calendario, dispositivos o alertas— sin alterar el orden guardado.
+- **Acciones de escena.** Al entrar, una escena puede ajustar volumen, brillo de pantalla y teclado, silenciar o activar el micrófono, iniciar un enfoque, abrir aplicaciones y abrir un enlace. Al terminar un contexto automático, Faro restaura los controles anteriores.
+- **Más contexto.** Las escenas también pueden reaccionar a una reunión próxima, una aplicación en pantalla completa, un dispositivo Bluetooth conectado o un nivel bajo de batería.
+- **Automatización explicable.** Faro muestra por qué activó la última escena, permite pausar los cambios por una hora o hasta mañana y vuelve exactamente a la configuración anterior al salir del contexto.
+- **Atajos.** Cada escena expone un enlace `faro://` que se puede usar desde la app Atajos de macOS.
+- **Centro de comandos.** `⌃⌥⌘F` abre un buscador local para ejecutar escenas, abrir cualquier sección y controlar las herramientas de Faro sin recorrer menús. Admite teclado, favoritos y comandos recientes, y también se abre desde la barra de menú o el notch.
+- **Baterías de periféricos al instante.** faro lee por IOKit la carga de teclados, ratones y trackpads (y si se están cargando) y se actualiza en cuanto macOS avisa de un cambio, sin sondear; se une con la lectura de AirPods y estuche. La página *Energía* muestra una tarjeta *Baterías de tus dispositivos* (los de menos carga primero) y el notch avisa, una vez por nivel, cuando un periférico baja del 20 % y del 10 %.
+- **Almacenamiento más inteligente.** Un asistente ordena las recomendaciones por espacio recuperable y seguridad, con un botón *Limpiar lo seguro* (a la Papelera, con confirmación). Los archivos grandes muestran cuánto llevan sin abrirse ni modificarse y se filtran como *Olvidados*. faro anota el espacio libre cada día, predice cuándo se llenaría el disco y avisa si falta menos de dos semanas. El widget de almacenamiento del notch permite *Analizar* y *Limpiar* lo seguro desde el propio panel.
+
+### Cambios
+- La antigua sección *Perfiles* pasa a llamarse *Escenas* y permite elegir aplicaciones instaladas con un selector nativo.
+- El acceso *Comandos* se incorpora automáticamente a configuraciones antiguas del dock del notch.
+
 ## [1.9.0] — 2026-10-25
 
 ### Novedades

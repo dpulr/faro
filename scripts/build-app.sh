@@ -31,6 +31,10 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleDevelopmentRegion</key><string>es</string>
   <key>CFBundleLocalizations</key><array><string>es</string><string>en</string></array>
   <key>CFBundleIconFile</key><string>AppIcon</string>
+  <key>CFBundleURLTypes</key><array><dict>
+    <key>CFBundleURLName</key><string>Escenas Faro</string>
+    <key>CFBundleURLSchemes</key><array><string>faro</string></array>
+  </dict></array>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>${VERSION}</string>
   <key>CFBundleVersion</key><string>${BUILD}</string>

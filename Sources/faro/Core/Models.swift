@@ -131,8 +131,85 @@ enum MenuBarMetric: String, Codable, CaseIterable, Identifiable {
     }
 }
 
-/// Un modo guardado: con un clic cambia fondos, pantalla despierta, barra de menú y descanso visual.
-struct Profile: Codable, Identifiable, Hashable {
+struct SceneApplication: Codable, Identifiable, Hashable {
+    var bundleIdentifier: String
+    var name: String
+    var id: String { bundleIdentifier }
+}
+
+enum ScenePowerTrigger: String, Codable, CaseIterable, Identifiable {
+    case any, pluggedIn, battery
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .any: tr("No importa")
+        case .pluggedIn: tr("Con corriente")
+        case .battery: tr("Usando batería")
+        }
+    }
+}
+
+enum SceneMicrophoneAction: String, Codable, CaseIterable, Identifiable {
+    case unchanged, mute, unmute
+    var id: String { rawValue }
+    var title: String {
+        switch self {
+        case .unchanged: tr("No cambiar")
+        case .mute: tr("Silenciar")
+        case .unmute: tr("Activar")
+        }
+    }
+}
+
+/// Acciones seguras que una escena puede ejecutar al entrar. Los porcentajes usan 0...100.
+struct SceneActions: Codable, Equatable {
+    var volume: Int?
+    var screenBrightness: Int?
+    var keyboardBrightness: Int?
+    var microphone: SceneMicrophoneAction
+    var focusMinutes: Int?
+    var launchApplications: [SceneApplication]
+    var openURL: String
+
+    init(volume: Int? = nil, screenBrightness: Int? = nil, keyboardBrightness: Int? = nil,
+         microphone: SceneMicrophoneAction = .unchanged, focusMinutes: Int? = nil,
+         launchApplications: [SceneApplication] = [], openURL: String = "") {
+        self.volume = volume; self.screenBrightness = screenBrightness; self.keyboardBrightness = keyboardBrightness
+        self.microphone = microphone; self.focusMinutes = focusMinutes
+        self.launchApplications = launchApplications; self.openURL = openURL
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case volume, screenBrightness, keyboardBrightness, microphone, focusMinutes, launchApplications, openURL
+    }
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        volume = try c.decodeIfPresent(Int.self, forKey: .volume)
+        screenBrightness = try c.decodeIfPresent(Int.self, forKey: .screenBrightness)
+        keyboardBrightness = try c.decodeIfPresent(Int.self, forKey: .keyboardBrightness)
+        microphone = try c.decodeIfPresent(SceneMicrophoneAction.self, forKey: .microphone) ?? .unchanged
+        focusMinutes = try c.decodeIfPresent(Int.self, forKey: .focusMinutes)
+        launchApplications = try c.decodeIfPresent([SceneApplication].self, forKey: .launchApplications) ?? []
+        openURL = try c.decodeIfPresent(String.self, forKey: .openURL) ?? ""
+    }
+
+    var isEmpty: Bool {
+        volume == nil && screenBrightness == nil && keyboardBrightness == nil && microphone == .unchanged
+            && focusMinutes == nil && launchApplications.isEmpty && openURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+}
+
+struct SceneActivationRecord: Codable, Equatable {
+    var date = Date()
+    var profileID: UUID
+    var profileName: String
+    var reason: String
+    var automatic: Bool
+}
+
+/// Una escena completa: cambia la experiencia de faro y puede activarse por contexto.
+/// Conserva los campos de los perfiles antiguos para que las configuraciones existentes migren sin perderse.
+struct Profile: Codable, Identifiable, Equatable {
     var id = UUID()
     var name: String
     var symbol = "briefcase"
@@ -147,6 +224,86 @@ struct Profile: Codable, Identifiable, Hashable {
     var days: Set<Int> = [2, 3, 4, 5, 6]   // 1 = domingo … 7 = sábado
     var hour = 8
     var minute = 0
+    /// Apariencia, widgets y herramientas del notch. `nil` identifica un perfil creado por una versión anterior.
+    var notch: NotchSceneSettings?
+    /// Aplicaciones que activan esta escena mientras están al frente.
+    var applications: [SceneApplication] = []
+    /// La escena compite cuando hay al menos una pantalla externa.
+    var externalDisplay = false
+    /// La escena compite según la fuente de energía.
+    var powerTrigger: ScenePowerTrigger = .any
+    /// Entre varias coincidencias contextuales gana el número mayor.
+    var priority = 50
+    /// Disparadores contextuales adicionales.
+    var meetingTrigger = false
+    var fullScreenTrigger = false
+    var bluetoothDevices: [String] = []
+    var batteryBelow: Int?
+    /// Acciones que se ejecutan después de aplicar la escena.
+    var actions = SceneActions()
+
+    var hasContextTrigger: Bool {
+        !applications.isEmpty || externalDisplay || powerTrigger != .any || meetingTrigger || fullScreenTrigger
+            || !bluetoothDevices.isEmpty || batteryBelow != nil
+    }
+
+    init(id: UUID = UUID(), name: String, symbol: String = "briefcase", channelID: UUID? = nil,
+         intervalMinutes: Int, keepAwake: Bool, menuBarMetrics: Set<MenuBarMetric>, menuBarShowIcon: Bool = true,
+         eyeBreak: Bool, autoStart: Bool = false, days: Set<Int> = [2, 3, 4, 5, 6], hour: Int = 8,
+         minute: Int = 0, notch: NotchSceneSettings? = nil, applications: [SceneApplication] = [],
+         externalDisplay: Bool = false, powerTrigger: ScenePowerTrigger = .any, priority: Int = 50,
+         meetingTrigger: Bool = false, fullScreenTrigger: Bool = false,
+         bluetoothDevices: [String] = [], batteryBelow: Int? = nil,
+         actions: SceneActions = SceneActions()) {
+        self.id = id; self.name = name; self.symbol = symbol; self.channelID = channelID
+        self.intervalMinutes = intervalMinutes; self.keepAwake = keepAwake; self.menuBarMetrics = menuBarMetrics
+        self.menuBarShowIcon = menuBarShowIcon; self.eyeBreak = eyeBreak; self.autoStart = autoStart
+        self.days = days; self.hour = hour; self.minute = minute; self.notch = notch
+        self.applications = applications; self.externalDisplay = externalDisplay
+        self.powerTrigger = powerTrigger; self.priority = priority
+        self.meetingTrigger = meetingTrigger; self.fullScreenTrigger = fullScreenTrigger; self.bluetoothDevices = bluetoothDevices
+        self.batteryBelow = batteryBelow; self.actions = actions
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, symbol, channelID, intervalMinutes, keepAwake, menuBarMetrics, menuBarShowIcon, eyeBreak
+        case autoStart, days, hour, minute, notch, applications, externalDisplay, powerTrigger, priority
+        case meetingTrigger, fullScreenTrigger, bluetoothDevices, batteryBelow, actions
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        name = try c.decode(String.self, forKey: .name)
+        symbol = try c.decodeIfPresent(String.self, forKey: .symbol) ?? "briefcase"
+        channelID = try c.decodeIfPresent(UUID.self, forKey: .channelID)
+        intervalMinutes = try c.decodeIfPresent(Int.self, forKey: .intervalMinutes) ?? 60
+        keepAwake = try c.decodeIfPresent(Bool.self, forKey: .keepAwake) ?? false
+        menuBarMetrics = try c.decodeIfPresent(Set<MenuBarMetric>.self, forKey: .menuBarMetrics) ?? [.cpu, .memory]
+        menuBarShowIcon = try c.decodeIfPresent(Bool.self, forKey: .menuBarShowIcon) ?? true
+        eyeBreak = try c.decodeIfPresent(Bool.self, forKey: .eyeBreak) ?? false
+        autoStart = try c.decodeIfPresent(Bool.self, forKey: .autoStart) ?? false
+        days = try c.decodeIfPresent(Set<Int>.self, forKey: .days) ?? [2, 3, 4, 5, 6]
+        hour = try c.decodeIfPresent(Int.self, forKey: .hour) ?? 8
+        minute = try c.decodeIfPresent(Int.self, forKey: .minute) ?? 0
+        notch = try c.decodeIfPresent(NotchSceneSettings.self, forKey: .notch)
+        applications = try c.decodeIfPresent([SceneApplication].self, forKey: .applications) ?? []
+        externalDisplay = try c.decodeIfPresent(Bool.self, forKey: .externalDisplay) ?? false
+        powerTrigger = try c.decodeIfPresent(ScenePowerTrigger.self, forKey: .powerTrigger) ?? .any
+        priority = try c.decodeIfPresent(Int.self, forKey: .priority) ?? 50
+        meetingTrigger = try c.decodeIfPresent(Bool.self, forKey: .meetingTrigger) ?? false
+        fullScreenTrigger = try c.decodeIfPresent(Bool.self, forKey: .fullScreenTrigger) ?? false
+        bluetoothDevices = try c.decodeIfPresent([String].self, forKey: .bluetoothDevices) ?? []
+        batteryBelow = try c.decodeIfPresent(Int.self, forKey: .batteryBelow)
+        actions = try c.decodeIfPresent(SceneActions.self, forKey: .actions) ?? SceneActions()
+    }
+}
+
+struct SceneHistoryEntry: Codable, Identifiable, Equatable {
+    var id = UUID()
+    var date = Date()
+    var reason: String
+    var snapshot: Profile
 }
 
 struct AppState: Codable {
@@ -171,6 +328,12 @@ struct AppState: Codable {
     var activeProfileID: UUID?
     var seededProfiles = false
     var seededExtraChannels = false
+    var sceneHistory: [SceneHistoryEntry] = []
+    var sceneAutomationEnabled = true
+    var sceneOnboardingCompleted = false
+    var sceneAutomationPauseUntil: Date?
+    var lastSceneActivation: SceneActivationRecord?
+    var sceneAutomationVersion = 0
 
     init(channels: [Channel], currentChannelID: UUID) {
         self.channels = channels
@@ -198,6 +361,12 @@ struct AppState: Codable {
         activeProfileID = try c.decodeIfPresent(UUID.self, forKey: .activeProfileID)
         seededProfiles = try c.decodeIfPresent(Bool.self, forKey: .seededProfiles) ?? false
         seededExtraChannels = try c.decodeIfPresent(Bool.self, forKey: .seededExtraChannels) ?? false
+        sceneHistory = try c.decodeIfPresent([SceneHistoryEntry].self, forKey: .sceneHistory) ?? []
+        sceneAutomationEnabled = try c.decodeIfPresent(Bool.self, forKey: .sceneAutomationEnabled) ?? true
+        sceneOnboardingCompleted = try c.decodeIfPresent(Bool.self, forKey: .sceneOnboardingCompleted) ?? false
+        sceneAutomationPauseUntil = try c.decodeIfPresent(Date.self, forKey: .sceneAutomationPauseUntil)
+        lastSceneActivation = try c.decodeIfPresent(SceneActivationRecord.self, forKey: .lastSceneActivation)
+        sceneAutomationVersion = try c.decodeIfPresent(Int.self, forKey: .sceneAutomationVersion) ?? 0
     }
 
     /// Canales temáticos de fábrica y la mezcla que los junta.

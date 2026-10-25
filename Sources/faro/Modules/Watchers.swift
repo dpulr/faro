@@ -279,8 +279,7 @@ final class VolumeWatcher: ObservableObject {
     static func ejectableName(_ url: URL) -> String? {
         let keys: Set<URLResourceKey> = [.volumeIsInternalKey, .volumeIsEjectableKey, .volumeIsRemovableKey, .volumeIsLocalKey, .volumeNameKey]
         guard let values = try? url.resourceValues(forKeys: keys),
-              values.volumeIsInternal != true, values.volumeIsLocal != false,
-              values.volumeIsEjectable == true || values.volumeIsRemovable == true else { return nil }
+              ConnectedVolumes.isExternal(internal: values.volumeIsInternal, local: values.volumeIsLocal, path: url.path) else { return nil }
         return values.volumeName ?? url.lastPathComponent
     }
 

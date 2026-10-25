@@ -22,6 +22,10 @@ final class StorageModel: ObservableObject {
     @Published var trashedBytes: Int64 = 0
     @Published var message: String?
     @Published var didScan = false
+    /// Cuánto ocupa la Papelera (si el sistema deja leerla).
+    @Published var trashBytes: Int64 = 0
+    /// Días sin actividad para considerar «olvidado» un archivo grande.
+    @Published var forgottenDays: Int { didSet { UserDefaults.standard.set(forgottenDays, forKey: "forgottenDays") } }
 
     @Published var largeFiles: [CleanItem] = []
     @Published var scanningLarge = false
@@ -37,6 +41,41 @@ final class StorageModel: ObservableObject {
 
     var selectedBytes: Int64 {
         categories.flatMap(\.items).filter { selected.contains($0.id) }.reduce(0) { $0 + $1.bytes }
+    }
+
+    init() {
+        let saved = UserDefaults.standard.integer(forKey: "forgottenDays")
+        forgottenDays = saved == 0 ? 180 : saved
+    }
+
+    // MARK: Asistente
+
+    /// Archivos grandes sin abrir ni modificar en `forgottenDays` días, los más pesados primero.
+    var forgotten: [CleanItem] {
+        let now = Date()
+        return largeFiles.filter { ($0.idleDays(now: now) ?? 0) >= forgottenDays }
+    }
+
+    var recommendations: [Recommendation] {
+        StorageAdvisor.recommendations(categories: categories, trashBytes: trashBytes, simulatorBytes: simulatorBytes,
+                                       forgotten: forgotten, forgottenDays: forgottenDays)
+    }
+
+    /// Lo que se puede liberar sin riesgo (categorías seguras con su selección por defecto).
+    var safeBytes: Int64 { categories.reduce(0) { $0 + StorageAdvisor.safeBytes(of: $1) } }
+    var safeCount: Int { categories.reduce(0) { $0 + StorageAdvisor.safeItems(of: $1).count } }
+
+    /// Marca solo lo seguro y lo manda a la Papelera.
+    func cleanSafe() async {
+        selected = Set(categories.flatMap { StorageAdvisor.safeItems(of: $0) }.map(\.id))
+        await cleanSelected(mode: .trash)
+    }
+
+    /// Marca solo una categoría segura (con su selección por defecto) y la manda a la Papelera.
+    func clean(categoryID: String) async {
+        guard let category = categories.first(where: { $0.id == categoryID }) else { return }
+        selected = Set(StorageAdvisor.safeItems(of: category).map(\.id))
+        await cleanSelected(mode: .trash)
     }
 
     var selectedCount: Int { categories.flatMap(\.items).filter { selected.contains($0.id) }.count }
@@ -58,6 +97,7 @@ final class StorageModel: ObservableObject {
         simulatorBytes = await Task.detached {
             DiskTools.size(of: DiskTools.home.appendingPathComponent("Library/Developer/CoreSimulator"))
         }.value
+        trashBytes = await Task.detached { DiskTools.size(of: DiskTools.home.appendingPathComponent(".Trash")) }.value
     }
 
     private func preselect(_ index: Int) {

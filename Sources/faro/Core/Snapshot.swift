@@ -10,6 +10,10 @@ enum Snapshot {
         NSApp.appearance = NSAppearance(named: .darkAqua) // los textos "primarios" se dibujan claros
         let engine = WallpaperEngine(), monitor = SystemMonitor(), speed = SpeedTest(), awake = KeepAwake()
         let storage = StorageModel()
+        let snapshotExtras = NotchExtras()
+        snapshotExtras.diagnostics.loadDemo()
+        snapshotExtras.volumesList.loadDemo()
+        snapshotExtras.devices.loadDemo()
         let clipboard = ClipboardStore(persistent: false)
         clipboard.addDemo(text: "https://example.com/articulo-interesante", app: "Safari", pinned: true, ago: 86_400)
         clipboard.addDemo(text: "func nextWallpaper() async {\n    guard !busy else { return }\n}", app: "Xcode", ago: 120)
@@ -22,8 +26,8 @@ enum Snapshot {
         func render<V: View>(_ view: V, name: String, size: CGSize?) {
             let host = NSHostingView(rootView: view
                 .environmentObject(engine).environmentObject(monitor)
-                .environmentObject(speed).environmentObject(awake).environmentObject(storage).environmentObject(clipboard).environmentObject(CleaningMode()).environmentObject(NotchModel()).environmentObject(DiskAlert()).environmentObject(UpdateChecker()).environmentObject(NotchExtras()).environmentObject(AudioMixer())
-                .environmentObject(Appearance.shared).tint(Appearance.shared.accent))
+                .environmentObject(speed).environmentObject(awake).environmentObject(storage).environmentObject(clipboard).environmentObject(CleaningMode()).environmentObject(NotchModel()).environmentObject(DiskAlert()).environmentObject(DiskHistory(file: nil)).environmentObject(UpdateChecker()).environmentObject(AudioMixer())
+                .environmentObject(Appearance.shared).environmentObject(snapshotExtras).tint(Appearance.shared.accent))
             let frame = CGRect(origin: .zero, size: size ?? host.fittingSize)
             let window = NSWindow(contentRect: frame, styleMask: [.titled, .fullSizeContentView], backing: .buffered, defer: false)
             window.appearance = NSAppearance(named: .darkAqua)
@@ -37,6 +41,8 @@ enum Snapshot {
         }
 
         render(MenuView(), name: "menu", size: nil)
+        render(CommandCenterView(store: CommandCenterStore(), onRun: { _ in }, onClose: {}),
+               name: "command-center", size: CGSize(width: 580, height: 520))
         render(MenuView().environment(\.colorScheme, .dark).background(Color(red: 0.07, green: 0.086, blue: 0.105)), name: "site-menu", size: nil)
         UserDefaults.standard.set("sistema", forKey: "page")
         render(MainWindow(), name: "window", size: CGSize(width: 1020, height: 720))
@@ -47,6 +53,7 @@ enum Snapshot {
         render(framed(FondosPage()), name: "page-fondos", size: nil)
         render(framed(SistemaPage()), name: "page-sistema", size: nil)
         render(framed(InternetPage()), name: "page-internet", size: nil)
+        render(framed(DiagnosticoPage()), name: "page-diagnostico", size: nil)
         render(framed(EnergiaPage()), name: "page-energia", size: nil)
         render(framed(BarraPage()), name: "page-barra", size: nil)
         render(framed(GeneralPage()), name: "page-general", size: nil)
@@ -118,6 +125,17 @@ enum Snapshot {
         let usb = NotchModel(); usb.showToast(symbol: "externaldrive.fill", text: "SANDISK conectado", seconds: 60, actionLabel: "Expulsar") {}
         render(demoNotch(usb)
             .frame(width: 520, height: 110).background(Color(white: 0.78)), name: "notch-usb", size: CGSize(width: 520, height: 110))
+        // Widget de conexión con un problema (internet lento) y la tarjeta de estado de la página Internet.
+        let linkExtras = NotchExtras()
+        linkExtras.diagnostics.loadDemo()
+        linkExtras.volumesList.loadDemo()
+        linkExtras.devices.loadDemo()
+        let slowRead = ConnectionMonitor.Reading(online: true, link: .wifi, vpn: false, rssi: -66, latencyMs: 520)
+        for _ in 0..<3 { linkExtras.connection.apply(slowRead, probeFailed: false) }
+        let linkModel = NotchModel(); linkModel.loadDemo(); linkModel.expanded = true
+        render(demoNotch(linkModel, linkExtras).frame(width: 760, height: 460).background(Color(white: 0.78)), name: "notch-conexion", size: CGSize(width: 760, height: 460))
+        let equipoModel = NotchModel(); equipoModel.loadDemo(); equipoModel.expanded = true; equipoModel.expandedSection = .equipo
+        render(demoNotch(equipoModel, linkExtras).frame(width: 760, height: 460).background(Color(white: 0.78)), name: "notch-equipo", size: CGSize(width: 760, height: 460))
         // Mascota: todos los ánimos, formas y ojos.
         let mm = MascotModel()
         mm.react(.hearts, seconds: 120)
@@ -133,8 +151,16 @@ enum Snapshot {
         render(HStack(spacing: 20) { ForEach([MascotMood.idle, .dancing, .sleeping], id: \.self.hashValue) { MascotView(model: mm, size: 96, forcedMood: $0) } }
             .padding(24).background(Color.black), name: "mascota-personalizada", size: CGSize(width: 420, height: 150))
         (mm.shape, mm.accessory, mm.colorHex) = savedLook // las capturas no tocan tus ajustes
+        // Calendario mensual dentro del panel (antes se salía de su tarjeta).
+        let monthModel = NotchModel(); monthModel.loadDemo(); monthModel.showCalendar = true; monthModel.calendarStyle = .month; monthModel.expanded = true
+        render(demoNotch(monthModel).frame(width: 760, height: 460).background(Color(white: 0.78)), name: "notch-mes", size: CGSize(width: 760, height: 460))
+        let tallModel = NotchModel(); tallModel.loadDemo(); tallModel.showCalendar = true; tallModel.calendarStyle = .month; tallModel.expanded = true
+        if let i = tallModel.widgetLayout.firstIndex(where: { $0.kind == .calendar }) { tallModel.widgetLayout[i].height = .double; tallModel.widgetLayout[i].size = .regular }
+        render(demoNotch(tallModel).frame(width: 760, height: 560).background(Color(white: 0.78)), name: "notch-mes-doble", size: CGSize(width: 760, height: 560))
         render(framed(NotchPage()), name: "page-notch", size: nil)
         render(framed(MascotaPage().environmentObject(notchDemo)), name: "page-mascota", size: nil)
+        let deviceDemo = NotchExtras(); deviceDemo.devices.loadDemo()
+        render(framed(EnergiaPage().environmentObject(deviceDemo)), name: "page-energia-dispositivos", size: nil)
         render(framed(AudioPage()), name: "page-audio", size: nil)
         render(framed(TecladoPage()), name: "page-teclado", size: nil)
         render(CleaningOverlay(mode: CleaningMode()), name: "cleaning-overlay", size: CGSize(width: 900, height: 560))

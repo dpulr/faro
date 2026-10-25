@@ -7,8 +7,18 @@ struct CleanItem: Identifiable, Hashable {
     var url: URL
     var bytes: Int64
     var modified: Date?
+    /// Último uso según Spotlight (cuando una app lo abrió); `nil` si el sistema no lo sabe.
+    var lastUsed: Date?
     var id: String { url.path }
     var name: String { url.lastPathComponent }
+
+    /// La última vez que pasó algo con el archivo: abrirlo o modificarlo.
+    var lastActivity: Date? { [lastUsed, modified].compactMap { $0 }.max() }
+
+    /// Días desde la última actividad (`nil` si no hay datos).
+    func idleDays(now: Date = Date()) -> Int? {
+        lastActivity.map { max(0, Int(now.timeIntervalSince($0) / 86_400)) }
+    }
 }
 
 enum Risk { case safe, review }

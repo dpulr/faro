@@ -184,7 +184,7 @@ function home(lang) {
   const rows = network.map(([host, why, what]) => `<tr><td data-label="${h.netHead[0]}"><code>${host}</code></td><td data-label="${h.netHead[1]}">${why[lang]}</td><td data-label="${h.netHead[2]}">${what[lang]}</td></tr>`).join('')
   const points = h.buildPoints.map(([title, text]) => `<div class="card reveal"><h4>${title}</h4><p>${text}</p></div>`).join('')
   const tl = timeline[lang].map(([v, text]) => `<li><span class="tl__v">${v}</span><span>${text}</span></li>`).join('')
-  const featureIcons = { fondos: 'image', perfiles: 'layers', sistema: 'activity', portapapeles: 'clipboard', bandeja: 'inbox', notch: 'panel-top', teclado: 'keyboard', audio: 'volume-2' }
+  const featureIcons = { fondos: 'image', perfiles: 'layers', sistema: 'activity', diagnostico: 'stethoscope', almacenamiento: 'hard-drive', portapapeles: 'clipboard', bandeja: 'inbox', notch: 'panel-top', teclado: 'keyboard', audio: 'volume-2' }
   const moreIcons = ['hard-drive', 'coffee', 'gauge', 'sparkles', 'battery-charging', 'timer', 'mic-off', 'languages', 'command']
   const marqueeA = features[lang].map((f) => [featureIcons[f.id] ?? 'zap', f.title.replace(/\.$/, '')])
   const marqueeB = more[lang].map(([title], k) => [moreIcons[k] ?? 'zap', title])

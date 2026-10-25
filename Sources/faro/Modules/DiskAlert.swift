@@ -67,6 +67,17 @@ final class DiskAlert: ObservableObject {
         }
     }
 
+    /// Aviso preventivo: según el ritmo de los últimos días, el disco se llenaría pronto.
+    func notifyFillSoon(days: Int) {
+        guard enabled, canNotify else { return }
+        let content = UNMutableNotificationContent()
+        content.title = tr("Tu disco se está llenando")
+        content.body = String(format: tr("A este ritmo se llenará en unos %lld días. Abre faro para ver qué puedes limpiar."), days)
+        content.sound = .default
+        content.userInfo = ["page": Page.almacenamiento.rawValue]
+        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: "faro.diskforecast", content: content, trigger: nil))
+    }
+
     private func notify(free: Int64) {
         guard canNotify else { return }
         let content = UNMutableNotificationContent()

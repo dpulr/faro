@@ -19,12 +19,13 @@ export const features = {
     {
       id: 'perfiles',
       img: 'perfiles.png',
-      alt: 'La página Perfiles con los modos Trabajo y Descanso',
-      title: 'Un modo, un clic.',
-      lead: 'Un perfil cambia el fondo, mantiene el Mac despierto y elige los datos de la barra de menú, todo junto.',
+      alt: 'La página Escenas Faro con Trabajo, Reunión, Multimedia, Escritorio y Minimal',
+      title: 'Tu Mac cambia contigo.',
+      lead: 'Una escena guarda toda tu experiencia y puede activarse sola según la app, una reunión, la pantalla, el Bluetooth, la batería o la hora.',
       points: [
-        'Vienen Trabajo y Descanso; creas los tuyos desde tus ajustes actuales.',
-        'Pueden activarse solos a cierta hora de ciertos días.',
+        'Trabajo, Reunión, Multimedia, Escritorio y Minimal quedan listos en un minuto.',
+        'Ajusta notch, fondos, volumen, brillo, micrófono, enfoque, aplicaciones y enlaces; al salir restaura lo anterior.',
+        'Historial, pausa temporal, prioridad de reglas, Atajos, duplicado e importación o exportación.',
       ],
     },
     {
@@ -37,6 +38,32 @@ export const features = {
         'Elige qué datos ver siempre en la barra de menú, con vista previa.',
         'Mide tu internet a mano o cada cierto tiempo, y guarda el historial.',
         'Un aviso en el notch cuando el disco está por llenarse.',
+      ],
+    },
+    {
+      id: 'diagnostico',
+      img: 'diagnostico.png',
+      alt: 'La página Diagnóstico con el estado del Mac, cargador, puertos, discos, ventiladores y periféricos',
+      title: 'No solo muestra datos. Los explica.',
+      lead: 'Faro encuentra qué frena al Mac, señala la aplicación responsable y te lleva a la acción correcta.',
+      points: [
+        'Memoria, CPU, disco, temperatura y energía, ordenados por gravedad.',
+        'Vatios del cargador, entrada al Mac, consumo y energía que llega a la batería.',
+        'Puertos USB-C y MagSafe, transportes activos, humedad, discos externos, ventiladores y baterías de periféricos.',
+        'Una pestaña Equipo en el notch resume lo importante sin recargar Inicio.',
+      ],
+      extra: ['notch-equipo.png'],
+    },
+    {
+      id: 'almacenamiento',
+      img: 'almacenamiento.png',
+      alt: 'El asistente de almacenamiento de Faro con espacio libre, previsión y limpieza segura',
+      title: 'Recupera espacio sin miedo.',
+      lead: 'Un asistente local separa lo seguro de lo que debes revisar y te avisa antes de que el disco se llene.',
+      points: [
+        'Limpieza segura a la Papelera, con confirmación y categorías conocidas.',
+        'Archivos grandes olvidados según su última apertura o modificación.',
+        'Historial y previsión de llenado; el widget del notch puede analizar y limpiar.',
       ],
     },
     {
@@ -115,12 +142,13 @@ export const features = {
     {
       id: 'perfiles',
       img: 'perfiles.png',
-      alt: 'The Profiles page with the Work and Break modes',
-      title: 'One mode, one click.',
-      lead: 'A profile changes the wallpaper, keeps the Mac awake and picks the menu bar data, all at once.',
+      alt: 'The Faro Scenes page with Work, Meeting, Media, Desktop and Minimal scenes',
+      title: 'Your Mac changes with you.',
+      lead: 'A scene saves the whole experience and can switch itself based on the app, a meeting, display, Bluetooth, battery or time.',
       points: [
-        'Work and Break come built in; create your own from your current settings.',
-        'They can switch on by themselves at a set time on set days.',
+        'Work, Meeting, Media, Desktop and Minimal are ready in a minute.',
+        'Adjust the notch, wallpapers, volume, brightness, microphone, focus, apps and links; restore everything when the context ends.',
+        'History, temporary pause, rule priority, Shortcuts, duplicate, import and export.',
       ],
     },
     {
@@ -133,6 +161,32 @@ export const features = {
         'Choose which data you always see in the menu bar, with a preview.',
         'Measure your internet by hand or on a schedule, with a saved history.',
         'A notice in the notch when your disk is about to fill up.',
+      ],
+    },
+    {
+      id: 'diagnostico',
+      img: 'diagnostico.png',
+      alt: 'The Diagnostics page with Mac status, charger, ports, drives, fans and peripherals',
+      title: 'It does more than show data. It explains it.',
+      lead: 'Faro finds what is holding your Mac back, names the responsible app and takes you to the right action.',
+      points: [
+        'Memory, CPU, disk, temperature and power, sorted by severity.',
+        'Charger watts, power entering the Mac, system use and power reaching the battery.',
+        'USB-C and MagSafe ports, active transports, moisture, external drives, fans and peripheral batteries.',
+        'A separate Equipment tab in the notch keeps the Home view uncluttered.',
+      ],
+      extra: ['notch-equipo.png'],
+    },
+    {
+      id: 'almacenamiento',
+      img: 'almacenamiento.png',
+      alt: 'Faro’s storage assistant with free space, forecast and safe cleanup',
+      title: 'Recover space without the fear.',
+      lead: 'A local assistant separates safe cleanup from items you should review and warns you before the disk fills up.',
+      points: [
+        'Safe cleanup to the Trash, with confirmation and known categories.',
+        'Forgotten large files based on last use or modification.',
+        'History and fill forecast; the notch widget can analyze and clean.',
       ],
     },
     {
@@ -199,7 +253,7 @@ export const features = {
 
 export const more = {
   es: [
-    ['Almacenamiento', 'Encuentra qué ocupa espacio y libéralo sin tocar tus documentos.'],
+    ['Almacenamiento', 'Un asistente que ordena qué limpiar, encuentra archivos olvidados y predice cuándo se llena el disco.'],
     ['Mantener despierto', 'Evita que la pantalla se apague, por el tiempo que elijas.'],
     ['Barra de menú viva', 'Procesador, memoria, disco, red o batería, a tu elección.'],
     ['Cristal líquido', 'Con tus colores, en macOS 26.'],
@@ -210,7 +264,7 @@ export const more = {
     ['Atajos globales', 'Cambia de foto, guarda o abre paneles sin usar el ratón.'],
   ],
   en: [
-    ['Storage', 'Find what takes up space and free it without touching your documents.'],
+    ['Storage', 'An assistant that ranks what to clean, finds forgotten files and predicts when your disk fills up.'],
     ['Keep awake', 'Stops the screen from sleeping, for as long as you choose.'],
     ['Live menu bar', 'Processor, memory, disk, network or battery, your pick.'],
     ['Liquid glass', 'In your own colors, on macOS 26.'],
@@ -238,6 +292,7 @@ export const timeline = {
     ['1.7', 'Notch reorganizable, isla flotante sin notch y cuidado de la batería.'],
     ['1.8', 'Llega la mascota: expresiones, accesorios y reacciones que viven en el notch.'],
     ['1.9', 'Plantillas de notch, edición directa en la vista previa y mezclador de audio por aplicaciones.'],
+    ['2.0', 'Diagnóstico, Equipo en el notch, escenas automáticas, puertos, cargador, conexión y almacenamiento inteligente.'],
   ],
   en: [
     ['0.1', 'A prototype that changed the wallpaper using Wallhaven.'],
@@ -254,6 +309,7 @@ export const timeline = {
     ['1.7', 'Rearrangeable notch, floating island without a notch and battery care.'],
     ['1.8', 'The mascot arrives: expressions, accessories and reactions that live in the notch.'],
     ['1.9', 'Notch presets, direct editing in the preview and per-app audio mixing.'],
+    ['2.0', 'Diagnostics, Equipment in the notch, automatic scenes, ports, charger, connection and smarter storage.'],
   ],
 }
 
@@ -268,6 +324,7 @@ export const network = [
   ['open-meteo.com', { es: 'Clima', en: 'Weather' }, { es: 'La ciudad', en: 'The city' }],
   ['faro.conectalab.co', { es: 'Avisar de versiones nuevas', en: 'New-version notices' }, { es: 'Nada personal (un archivo público, una vez al día)', en: 'Nothing personal (one public file, once a day)' }],
   ['Apple (networkQuality)', { es: 'Medir tu conexión', en: 'Measure your connection' }, { es: 'Una prueba de velocidad normal', en: 'A normal speed test' }],
+  ['1.1.1.1 (Cloudflare)', { es: 'Comprobar latencia y caídas', en: 'Check latency and outages' }, { es: 'Una conexión TCP sin datos personales', en: 'A TCP connection with no personal data' }],
 ]
 
 export const ui = {
@@ -279,11 +336,11 @@ export const ui = {
     theme: 'Cambiar tema',
     home: {
       title: 'faro — tu Mac, más claro, rápido y tuyo',
-      description: 'faro convierte la barra de menú y el notch en un centro de control personalizable para tu Mac, con widgets, audio por aplicación y una mascota que reacciona contigo. Sin cuentas ni telemetría.',
+      description: 'faro convierte la barra de menú y el notch en un centro de control personalizable, diagnostica tu Mac y automatiza su experiencia. Sin cuentas ni telemetría.',
       kicker: 'Un producto de Conecta Lab · Hecho para macOS',
       h1a: 'Tu Mac tiene mucho que decir.',
       h1b: 'faro lo pone a tu alcance.',
-      sub: 'Un centro de control nativo, local y personalizable que vive donde ya estás mirando: la barra de menú y el notch.',
+      sub: 'Un centro de control nativo y local que diagnostica, automatiza y pone tu Mac a tu alcance desde la barra de menú y el notch.',
       cta: 'Descargar para macOS',
       ctaNote: (v) => `Versión ${v} · macOS 14 o posterior`,
       code: 'Ver el código',
@@ -315,7 +372,7 @@ export const ui = {
       buildTitle: 'Abierto por diseño.',
       buildLead: 'faro es un producto de Conecta Lab construido de forma nativa, documentado y publicado bajo una licencia libre para que cualquiera pueda entender cómo funciona.',
       buildPoints: [
-        ['Nativo, sin dependencias', 'Swift, SwiftUI y AppKit, sin paquetes de terceros: más de 11 000 líneas en 68 archivos.'],
+        ['Nativo, sin dependencias', 'Swift, SwiftUI y AppKit, sin paquetes de terceros: más de 16 000 líneas en 84 archivos.'],
         ['Diseño propio', 'Un logo dibujado a mano y controles propios en lugar de los genéricos del sistema, con cristal líquido en macOS 26.'],
         ['Hecho en iteraciones', 'Cada versión se prueba y se anota en el historial de cambios.'],
         ['Producto Conecta Lab', 'Diseño, producto e ingeniería trabajando como una sola disciplina, con foco en claridad, privacidad y utilidad real.'],
@@ -371,11 +428,11 @@ export const ui = {
     theme: 'Toggle theme',
     home: {
       title: 'faro — your Mac, clearer, faster and yours',
-      description: 'faro turns the menu bar and notch into a customizable control center for your Mac, with widgets, per-app audio and a mascot that reacts with you. No accounts or telemetry.',
+      description: 'faro turns the menu bar and notch into a customizable control center, diagnoses your Mac and automates its experience. No accounts or telemetry.',
       kicker: 'A Conecta Lab product · Made for macOS',
       h1a: 'Your Mac has a lot to say.',
       h1b: 'faro puts it within reach.',
-      sub: 'A native, local and customizable control center that lives where you are already looking: the menu bar and the notch.',
+      sub: 'A native, local control center that diagnoses, automates and puts your Mac within reach from the menu bar and notch.',
       cta: 'Download for macOS',
       ctaNote: (v) => `Version ${v} · macOS 14 or later`,
       code: 'View the code',
@@ -407,7 +464,7 @@ export const ui = {
       buildTitle: 'Open by design.',
       buildLead: 'faro is a Conecta Lab product, built natively, documented and published under a free license so anyone can understand how it works.',
       buildPoints: [
-        ['Native, no dependencies', 'Swift, SwiftUI and AppKit, with no third-party packages: over 11,000 lines across 68 files.'],
+        ['Native, no dependencies', 'Swift, SwiftUI and AppKit, with no third-party packages: over 16,000 lines across 84 files.'],
         ['Its own design', 'A hand-drawn logo and custom controls instead of the generic system ones, with liquid glass on macOS 26.'],
         ['Built in iterations', 'Every version is tested and noted in the changelog.'],
         ['A Conecta Lab product', 'Product, design and engineering working as one discipline, focused on clarity, privacy and real utility.'],
@@ -459,8 +516,8 @@ export const ui = {
 
 // Notas cortas de la versión actual: salen en latest.json y la app las muestra al avisar de la actualización.
 export const releaseNotes = {
-  es: 'Plantillas para configurar el notch en segundos, edición directa en la vista previa, nueva pestaña de audio por aplicaciones y una mascota más viva.',
-  en: 'Notch presets for a faster setup, direct editing in the preview, a new per-app audio tab and a livelier mascot.',
+  es: 'Diagnóstico del Mac, análisis del cargador y puertos, pestaña Equipo, alertas de conexión, escenas automáticas y almacenamiento inteligente.',
+  en: 'Mac diagnostics, charger and port analysis, Equipment tab, connection alerts, automatic scenes and smarter storage.',
 }
 
 export const privacy = {
@@ -482,7 +539,7 @@ export const privacy = {
         'Puedes pausar el historial, borrarlo y fijar lo importante. Lo fijado no se borra solo.',
       ]],
       ['A qué servidores se conecta', [
-        'Solo cuando usas la función: los servicios de fotos (Wallhaven, Wikimedia Commons, Bing, Art Institute of Chicago, NASA y Picsum), Open-Meteo para el clima y la prueba de velocidad de Apple (<code>networkQuality</code>). Cada uno recibe lo mínimo para responder, como el tema que escribiste o la ciudad.',
+        'Solo cuando usas la función: los servicios de fotos (Wallhaven, Wikimedia Commons, Bing, Art Institute of Chicago, NASA y Picsum), Open-Meteo para el clima y la prueba de velocidad de Apple (<code>networkQuality</code>). Para detectar latencia y caídas, abre una conexión TCP breve con <code>1.1.1.1</code> de Cloudflare, sin enviar datos de tu Mac. Cada servicio recibe lo mínimo necesario.',
         'Para avisarte de versiones nuevas, faro pide una vez al día el archivo público <code>latest.json</code> de este sitio. No envía identificadores ni datos de tu Mac; como cualquier petición web, el servidor ve tu dirección IP y el nombre y la versión de la app. Puedes apagarlo en General.',
         'Si activas las letras sincronizadas (puedes apagarlas en Notch), faro envía a lrclib.net el título y el artista de la canción que suena.',
         'Si usas Spotify, la carátula se baja de <code>i.scdn.co</code> mientras suena algo.',
@@ -523,7 +580,7 @@ export const privacy = {
         'You can pause the history, clear it and pin what matters. Pinned items are not deleted automatically.',
       ]],
       ['Which servers it connects to', [
-        'Only when you use the feature: the photo services (Wallhaven, Wikimedia Commons, Bing, Art Institute of Chicago, NASA and Picsum), Open-Meteo for weather and Apple’s speed test (<code>networkQuality</code>). Each receives the minimum needed to answer, such as the topic you typed or the city.',
+        'Only when you use the feature: the photo services (Wallhaven, Wikimedia Commons, Bing, Art Institute of Chicago, NASA and Picsum), Open-Meteo for weather and Apple’s speed test (<code>networkQuality</code>). To detect latency and outages, it opens a brief TCP connection to Cloudflare’s <code>1.1.1.1</code> without sending Mac data. Each service receives only what is needed.',
         'To tell you about new versions, faro requests the public <code>latest.json</code> file from this site once a day. It sends no identifiers or data from your Mac; like any web request, the server sees your IP address and the app’s name and version. You can turn it off in General.',
         'If you turn on synced lyrics (you can turn them off in Notch), faro sends the title and artist of the playing song to lrclib.net.',
         'If you use Spotify, the album art is downloaded from <code>i.scdn.co</code> while something plays.',

@@ -58,9 +58,9 @@ final class AudioMixer: ObservableObject {
         defaultOutput = Self.currentDefaultOutput()
         outputs = Self.listOutputs()
         var vol = Self.address(Self.mainVolume, scope: kAudioObjectPropertyScopeOutput)
-        if let v: Float32 = Self.get(defaultOutput, &vol, Float32(0)) { volume = Double(v); canSetVolume = true } else { canSetVolume = false }
+        if let v = Self.getFloat(defaultOutput, &vol) { volume = Double(v); canSetVolume = true } else { canSetVolume = false }
         var mute = Self.address(kAudioDevicePropertyMute, scope: kAudioObjectPropertyScopeOutput)
-        muted = (Self.get(defaultOutput, &mute, UInt32(0)) ?? 0) != 0
+        muted = (Self.getUInt32(defaultOutput, &mute) ?? 0) != 0
         refreshProcesses()
     }
 
@@ -88,18 +88,18 @@ final class AudioMixer: ObservableObject {
     func setVolume(_ value: Double) {
         let v = Float32(min(max(value, 0), 1))
         var addr = Self.address(Self.mainVolume, scope: kAudioObjectPropertyScopeOutput)
-        if Self.set(defaultOutput, &addr, v) { volume = Double(v) }
+        if Self.setFloat(defaultOutput, &addr, v) { volume = Double(v) }
         if v > 0, muted { setMuted(false) }
     }
 
     func setMuted(_ on: Bool) {
         var addr = Self.address(kAudioDevicePropertyMute, scope: kAudioObjectPropertyScopeOutput)
-        if Self.set(defaultOutput, &addr, UInt32(on ? 1 : 0)) { muted = on }
+        if Self.setUInt32(defaultOutput, &addr, UInt32(on ? 1 : 0)) { muted = on }
     }
 
     func selectOutput(_ id: AudioObjectID) {
         var addr = Self.address(kAudioHardwarePropertyDefaultOutputDevice)
-        _ = Self.set(Self.system, &addr, id)
+        _ = Self.setUInt32(Self.system, &addr, id)
         refresh()
     }
 
@@ -116,24 +116,48 @@ final class AudioMixer: ObservableObject {
         AudioObjectPropertyAddress(mSelector: selector, mScope: scope, mElement: kAudioObjectPropertyElementMain)
     }
 
-    private static func get<T>(_ object: AudioObjectID, _ address: inout AudioObjectPropertyAddress, _ initial: T) -> T? {
+    private static func getUInt32(_ object: AudioObjectID, _ address: inout AudioObjectPropertyAddress) -> UInt32? {
         guard AudioObjectHasProperty(object, &address) else { return nil }
-        var value = initial
-        var size = UInt32(MemoryLayout<T>.size)
+        var value = UInt32(0)
+        var size = UInt32(MemoryLayout<UInt32>.size)
         return AudioObjectGetPropertyData(object, &address, 0, nil, &size, &value) == noErr ? value : nil
     }
 
-    private static func set<T>(_ object: AudioObjectID, _ address: inout AudioObjectPropertyAddress, _ value: T) -> Bool {
+    private static func getInt32(_ object: AudioObjectID, _ address: inout AudioObjectPropertyAddress) -> Int32? {
+        guard AudioObjectHasProperty(object, &address) else { return nil }
+        var value = Int32(0)
+        var size = UInt32(MemoryLayout<Int32>.size)
+        return AudioObjectGetPropertyData(object, &address, 0, nil, &size, &value) == noErr ? value : nil
+    }
+
+    private static func getFloat(_ object: AudioObjectID, _ address: inout AudioObjectPropertyAddress) -> Float32? {
+        guard AudioObjectHasProperty(object, &address) else { return nil }
+        var value = Float32(0)
+        var size = UInt32(MemoryLayout<Float32>.size)
+        return AudioObjectGetPropertyData(object, &address, 0, nil, &size, &value) == noErr ? value : nil
+    }
+
+    private static func canSet(_ object: AudioObjectID, _ address: inout AudioObjectPropertyAddress) -> Bool {
         var settable: DarwinBoolean = false
-        guard AudioObjectHasProperty(object, &address), AudioObjectIsPropertySettable(object, &address, &settable) == noErr, settable.boolValue
-        else { return false }
+        return AudioObjectHasProperty(object, &address)
+            && AudioObjectIsPropertySettable(object, &address, &settable) == noErr && settable.boolValue
+    }
+
+    private static func setUInt32(_ object: AudioObjectID, _ address: inout AudioObjectPropertyAddress, _ value: UInt32) -> Bool {
+        guard canSet(object, &address) else { return false }
         var copy = value
-        return AudioObjectSetPropertyData(object, &address, 0, nil, UInt32(MemoryLayout<T>.size), &copy) == noErr
+        return AudioObjectSetPropertyData(object, &address, 0, nil, UInt32(MemoryLayout<UInt32>.size), &copy) == noErr
+    }
+
+    private static func setFloat(_ object: AudioObjectID, _ address: inout AudioObjectPropertyAddress, _ value: Float32) -> Bool {
+        guard canSet(object, &address) else { return false }
+        var copy = value
+        return AudioObjectSetPropertyData(object, &address, 0, nil, UInt32(MemoryLayout<Float32>.size), &copy) == noErr
     }
 
     private static func currentDefaultOutput() -> AudioObjectID {
         var addr = address(kAudioHardwarePropertyDefaultOutputDevice)
-        return get(system, &addr, AudioObjectID(0)) ?? 0
+        return getUInt32(system, &addr) ?? 0
     }
 
     private static func listOutputs() -> [AudioOutput] {
@@ -171,9 +195,9 @@ final class AudioMixer: ObservableObject {
         var found: [String: AudioProcessApp] = [:]
         for id in ids {
             var runningAddr = Self.address(kAudioProcessPropertyIsRunningOutput)
-            guard (Self.get(id, &runningAddr, UInt32(0)) ?? 0) != 0 else { continue }
+            guard (Self.getUInt32(id, &runningAddr) ?? 0) != 0 else { continue }
             var pidAddr = Self.address(kAudioProcessPropertyPID)
-            let pid = Self.get(id, &pidAddr, pid_t(0)) ?? 0
+            let pid = pid_t(Self.getInt32(id, &pidAddr) ?? 0)
             guard pid > 0, let bundle = Self.processBundleID(id), bundle != Bundle.main.bundleIdentifier else { continue }
             let identity = Self.normalizedIdentity(bundle: bundle,
                 fallbackName: NSRunningApplication(processIdentifier: pid)?.localizedName)

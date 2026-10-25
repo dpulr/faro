@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Daniel Pulgarín
 
+import Charts
 import SwiftUI
 
 struct AlmacenamientoPage: View {
     @EnvironmentObject var storage: StorageModel
     @EnvironmentObject var monitor: SystemMonitor
     @EnvironmentObject var diskAlert: DiskAlert
+    @EnvironmentObject var history: DiskHistory
 
     enum Tab: String, CaseIterable, Identifiable {
         case limpieza = "Limpieza", grandes = "Archivos grandes", carpetas = "Carpetas"
@@ -17,6 +19,9 @@ struct AlmacenamientoPage: View {
     @State private var mode = DeleteMode.trash
     @State private var confirmClean = false
     @State private var pendingFile: CleanItem?
+    @State private var confirmSafe = false
+    @State private var pendingRecommendation: Recommendation?
+    @State private var onlyForgotten = false
     @State private var expanded: Set<String>
 
     init(expandedInitially: Set<String> = []) {
@@ -37,7 +42,10 @@ struct AlmacenamientoPage: View {
             case .carpetas: folders
             }
         }
-        .task { if !storage.didScan { await storage.scan() } }
+        .task {
+            if !storage.didScan { await storage.scan() }
+            if !storage.largeScanned { await storage.scanLarge() }   // para detectar lo olvidado
+        }
     }
 
     // MARK: Resumen
@@ -55,7 +63,51 @@ struct AlmacenamientoPage: View {
                         .font(.callout.weight(.medium)).foregroundStyle(tint)
                 }
                 UsageBar(value: monitor.diskUsedFraction, tint: tint)
+                forecastView
             }
+        }
+    }
+
+    /// Cuánto tardará en llenarse según los últimos días (y la gráfica del espacio usado).
+    @ViewBuilder private var forecastView: some View {
+        let forecast = history.forecast(free: monitor.diskFree)
+        HStack(alignment: .center, spacing: 14) {
+            Image(systemName: forecast?.trend == .growing ? "chart.line.uptrend.xyaxis" : "chart.line.flattrend.xyaxis")
+                .foregroundStyle(forecast?.trend == .growing && (forecast?.daysLeft ?? 999) <= 30 ? Theme.warning : Theme.accent)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(forecastTitle(forecast)).font(.callout.weight(.medium))
+                Text(forecastDetail(forecast)).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 12)
+            if history.samples.count >= 3 {
+                Chart(history.samples.suffix(30)) { sample in
+                    LineMark(x: .value("Día", sample.day), y: .value("Usado", Double(sample.used) / 1e9)).foregroundStyle(Theme.accent)
+                    AreaMark(x: .value("Día", sample.day), y: .value("Usado", Double(sample.used) / 1e9)).foregroundStyle(Theme.accent.opacity(0.15))
+                }
+                .chartYScale(domain: .automatic(includesZero: false))
+                .chartXAxis(.hidden).chartYAxis(.hidden)
+                .frame(width: 160, height: 44)
+            }
+        }
+        .padding(.top, 4)
+    }
+
+    private func forecastTitle(_ forecast: DiskHistory.Forecast?) -> String {
+        guard let forecast else { return tr("Todavía no hay suficientes datos para predecir") }
+        switch forecast.trend {
+        case .growing: return String(format: tr("A este ritmo se llenará en unos %lld días"), forecast.daysLeft ?? 999)
+        case .stable: return tr("Tu espacio está estable")
+        case .shrinking: return tr("Tu espacio libre está aumentando")
+        }
+    }
+
+    private func forecastDetail(_ forecast: DiskHistory.Forecast?) -> String {
+        guard let forecast else { return tr("faro anota el espacio libre cada día; la predicción aparece en cuanto haya tres días.") }
+        let rate = Format.bytes(abs(forecast.bytesPerDay))
+        switch forecast.trend {
+        case .growing: return String(format: tr("Ocupas unos %@ más cada día (últimos %lld días)."), rate, forecast.sampleDays)
+        case .stable: return String(format: tr("Casi no cambia en los últimos %lld días."), forecast.sampleDays)
+        case .shrinking: return String(format: tr("Liberas unos %@ al día (últimos %lld días)."), rate, forecast.sampleDays)
         }
     }
 
@@ -95,6 +147,7 @@ struct AlmacenamientoPage: View {
 
     private var cleanup: some View {
         VStack(spacing: 14) {
+            assistantCard
             actionBar
             if let message = storage.message { messageCard(message) }
             if storage.scanning {
@@ -118,6 +171,102 @@ struct AlmacenamientoPage: View {
                     .buttonStyle(.link).disabled(storage.working)
             }
             .font(.caption)
+        }
+    }
+
+    // MARK: Asistente
+
+    private var assistantCard: some View {
+        let recommendations = Array(storage.recommendations.prefix(5))
+        return Card(padding: 0) {
+            VStack(spacing: 0) {
+                HStack(spacing: 14) {
+                    Image(systemName: "sparkles").font(.system(size: 20)).foregroundStyle(Theme.accent)
+                        .frame(width: 44, height: 44).background(Circle().fill(Theme.accent.opacity(0.14)))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Asistente de almacenamiento").font(.title3.weight(.semibold))
+                        Text(assistantSubtitle).font(.callout).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Button { confirmSafe = true } label: {
+                        if storage.working { ProgressView().controlSize(.small) }
+                        else { Text(storage.safeBytes > 0 ? "Limpiar lo seguro · \(Format.bytes(storage.safeBytes))" : "Limpiar lo seguro") }
+                    }
+                    .buttonStyle(PillButtonStyle(prominent: true))
+                    .disabled(storage.safeBytes == 0 || storage.working || storage.scanning)
+                }
+                .padding(16)
+                if !recommendations.isEmpty {
+                    Divider()
+                    ForEach(Array(recommendations.enumerated()), id: \.element.id) { index, item in
+                        if index > 0 { Divider().padding(.leading, 16) }
+                        recommendationRow(item)
+                    }
+                }
+            }
+        }
+        .confirmationDialog("¿Limpiar \(Format.bytes(storage.safeBytes)) de lo seguro?", isPresented: $confirmSafe, titleVisibility: .visible) {
+            Button("Mover a la Papelera") { Task { await storage.cleanSafe() } }
+            Button("Cancelar", role: .cancel) {}
+        } message: {
+            Text("Son cachés, compilaciones y registros que las apps vuelven a crear. Irán a la Papelera; el espacio se recupera cuando la vacíes.")
+        }
+        .confirmationDialog(pendingRecommendation.map { "¿\($0.title)?" } ?? "", isPresented: Binding(
+            get: { pendingRecommendation != nil }, set: { if !$0 { pendingRecommendation = nil } }),
+            titleVisibility: .visible, presenting: pendingRecommendation) { item in
+            Button(item.action == .emptyTrash ? "Vaciar la Papelera" : item.action == .simulators ? "Quitar no disponibles" : "Mover a la Papelera",
+                   role: item.action == .emptyTrash ? .destructive : nil) { perform(item) }
+            Button("Cancelar", role: .cancel) {}
+        } message: { item in
+            Text(item.action == .emptyTrash ? "Se borrará para siempre lo que hay en la Papelera." : "Liberarás unos \(Format.bytes(item.bytes)).")
+        }
+    }
+
+    private var assistantSubtitle: String {
+        if storage.scanning && !storage.didScan { return tr("Analizando tu Mac…") }
+        if storage.safeBytes > 0 { return String(format: tr("Puedes liberar %@ sin riesgo."), Format.bytes(storage.safeBytes)) }
+        return storage.recommendations.isEmpty ? tr("Todo en orden: no hay nada que valga la pena limpiar.") : tr("No hay nada seguro que limpiar; revisa estas sugerencias.")
+    }
+
+    private func recommendationRow(_ item: Recommendation) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: item.symbol).frame(width: 24).foregroundStyle(item.risk == .safe ? Theme.accent : Theme.warning)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(item.title).font(.callout.weight(.semibold))
+                Text(item.detail).font(.caption).foregroundStyle(.secondary).lineLimit(2)
+            }
+            Spacer(minLength: 12)
+            riskBadge(item.risk)
+            Text(Format.bytes(item.bytes)).font(.callout.weight(.semibold).monospacedDigit()).frame(width: 84, alignment: .trailing)
+            Button(actionLabel(item)) { if needsConfirmation(item) { pendingRecommendation = item } else { perform(item) } }
+                .buttonStyle(PillButtonStyle(prominent: item.risk == .safe)).disabled(storage.working)
+        }
+        .padding(.horizontal, 16).padding(.vertical, 11)
+    }
+
+    private func actionLabel(_ item: Recommendation) -> LocalizedStringKey {
+        switch item.action {
+        case .cleanCategory: return "Limpiar"
+        case .emptyTrash: return "Vaciar"
+        case .simulators: return "Quitar"
+        case .reviewCategory, .reviewForgotten: return "Revisar"
+        }
+    }
+
+    private func needsConfirmation(_ item: Recommendation) -> Bool {
+        switch item.action {
+        case .cleanCategory, .emptyTrash, .simulators: return true
+        case .reviewCategory, .reviewForgotten: return false
+        }
+    }
+
+    private func perform(_ item: Recommendation) {
+        switch item.action {
+        case .cleanCategory(let id): Task { await storage.clean(categoryID: id) }
+        case .emptyTrash: Task { await storage.emptyTrash() }
+        case .simulators: Task { await storage.removeUnavailableSimulators() }
+        case .reviewCategory(let id): expanded.insert(id)
+        case .reviewForgotten: onlyForgotten = true; tab = .grandes
         }
     }
 
@@ -238,6 +387,12 @@ struct AlmacenamientoPage: View {
 
     // MARK: Archivos grandes
 
+    private func idleText(_ days: Int) -> String {
+        if days < 30 { return tr("Usado este mes") }
+        if days < 365 { return String(format: tr("Sin tocar hace %lld meses"), days / 30) }
+        return String(format: tr("Sin tocar hace %lld años"), days / 365)
+    }
+
     private var large: some View {
         VStack(alignment: .leading, spacing: 14) {
             Card {
@@ -263,9 +418,26 @@ struct AlmacenamientoPage: View {
                 Text("No hay archivos tan grandes en tu carpeta personal.").foregroundStyle(.secondary)
             }
             if !storage.largeFiles.isEmpty {
+                HStack(spacing: 12) {
+                    Segments(selection: $onlyForgotten, options: [("Todos", false), ("Olvidados", true)])
+                    if onlyForgotten {
+                        MenuChip(text: String(format: tr("Más de %lld meses"), storage.forgottenDays / 30)) {
+                            ForEach([90, 180, 365], id: \.self) { days in
+                                DropdownRow(title: String(format: tr("Más de %lld meses"), days / 30), selected: days == storage.forgottenDays) { storage.forgottenDays = days }
+                            }
+                        }
+                    }
+                    Spacer()
+                    if onlyForgotten {
+                        Text(String(format: tr("%lld archivos · %@"), storage.forgotten.count, Format.bytes(storage.forgotten.reduce(0) { $0 + $1.bytes })))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                }
+            }
+            if !storage.largeFiles.isEmpty {
                 Card(padding: 0) {
                     VStack(spacing: 0) {
-                        ForEach(Array(storage.largeFiles.enumerated()), id: \.element.id) { index, file in
+                        ForEach(Array((onlyForgotten ? storage.forgotten : storage.largeFiles).enumerated()), id: \.element.id) { index, file in
                             if index > 0 { Divider() }
                             HStack(spacing: 12) {
                                 Image(systemName: "doc").frame(width: 22).foregroundStyle(.secondary)
@@ -276,8 +448,9 @@ struct AlmacenamientoPage: View {
                                         .font(.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.head)
                                 }
                                 Spacer()
-                                if let date = file.modified {
-                                    Text(Format.relative(date)).font(.caption).foregroundStyle(.tertiary)
+                                if let days = file.idleDays() {
+                                    Text(idleText(days)).font(.caption)
+                                        .foregroundStyle(days >= storage.forgottenDays ? Theme.warning : Color.secondary.opacity(0.7))
                                 }
                                 Text(Format.bytes(file.bytes)).font(.callout.weight(.semibold).monospacedDigit())
                                     .frame(width: 80, alignment: .trailing)

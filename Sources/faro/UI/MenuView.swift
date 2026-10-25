@@ -38,6 +38,8 @@ struct MenuView: View {
             .instantTip("Abrir la ventana de faro", anchor: .bottomLeading)
             Spacer(minLength: 6)
             battery
+            Button { AppController.shared.showCommands() } label: { Image(systemName: "command") }
+                .buttonStyle(IconButtonStyle(size: 30)).instantTip("Comandos de Faro (⌃⌥⌘F)", anchor: .bottomTrailing)
             Button { AppController.shared.showClipboard() } label: { Image(systemName: "doc.on.clipboard") }
                 .buttonStyle(IconButtonStyle(size: 30)).instantTip("Historial del portapapeles (⌃⌥⌘V)", anchor: .bottomTrailing)
             Button { AppController.shared.showShelf() } label: { Image(systemName: "tray.and.arrow.down") }
@@ -149,7 +151,7 @@ struct MenuView: View {
         .padding(.horizontal, 4)
     }
 
-    /// Cambiar de perfil: un clic ajusta fondos, pantalla despierta y barra de menú.
+    /// Cambiar de escena: un clic ajusta notch, fondos, pantalla despierta y barra de menú.
     private var profileMenu: some View {
         let active = engine.state.profiles.first { $0.id == engine.state.activeProfileID }
         return Menu {
@@ -157,9 +159,9 @@ struct MenuView: View {
                 Button { AppController.shared.apply(profile) } label: { Label(profile.name, systemImage: profile.symbol) }
             }
             Divider()
-            Button("Editar perfiles…") { AppController.shared.openMain(.perfiles) }
+            Button("Editar escenas…") { AppController.shared.openMain(.perfiles) }
         } label: {
-            Label(active?.name ?? "Perfiles", systemImage: active?.symbol ?? "person.crop.square")
+            Label(active?.name ?? "Escenas", systemImage: active?.symbol ?? "rectangle.3.group")
                 .font(.callout).foregroundStyle(.secondary)
         }
         .menuStyle(.borderlessButton).fixedSize()

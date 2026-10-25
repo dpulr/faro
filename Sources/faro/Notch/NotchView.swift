@@ -314,6 +314,9 @@ struct NotchView: View {
             case .home: homeSection
             case .system: systemSection
             case .audio: audioSection
+            case .equipo:
+                EquipoNotchSection(model: model, extras: extras, diagnostics: extras.diagnostics, volumes: extras.volumesList,
+                                   connection: extras.connection, monitor: monitor)
             case .tools: toolsDock
             }
             if model.dockPlacement == .bottom, model.expandedSection != .tools { toolsDock }
@@ -382,6 +385,7 @@ struct NotchView: View {
             sectionButton(.home, "Inicio", "sparkles")
             sectionButton(.system, "Sistema", "gauge.with.dots.needle.50percent")
             sectionButton(.audio, "Audio", "speaker.wave.2.fill")
+            sectionButton(.equipo, "Equipo", "stethoscope", badge: extras.diagnostics.topIssue != nil || extras.connection.issue != nil)
             sectionButton(.tools, "Herramientas", "square.grid.2x2")
             Spacer(minLength: 8)
             Button {
@@ -399,7 +403,7 @@ struct NotchView: View {
         }
     }
 
-    private func sectionButton(_ section: NotchExpandedSection, _ title: LocalizedStringKey, _ symbol: String) -> some View {
+    private func sectionButton(_ section: NotchExpandedSection, _ title: LocalizedStringKey, _ symbol: String, badge: Bool = false) -> some View {
         Button {
             if section == .audio { mixer.refreshApps() }
             withAnimation(.easeInOut(duration: 0.18)) { model.expandedSection = section }
@@ -412,6 +416,9 @@ struct NotchView: View {
                 .padding(.horizontal, 9).frame(height: 30)
                 .foregroundStyle(model.expandedSection == section ? Color.white : Color.white.opacity(0.48))
                 .background(Capsule().fill(Color.white.opacity(model.expandedSection == section ? 0.12 : 0)))
+                .overlay(alignment: .topTrailing) {
+                    if badge { Circle().fill(Color.orange).frame(width: 6, height: 6).offset(x: -3, y: 5) }
+                }
                 .contentShape(Capsule())
         }
         .buttonStyle(.plain)
@@ -427,7 +434,29 @@ struct NotchView: View {
     }
 
     private var visibleWidgetConfigs: [NotchWidgetConfig] {
-        model.widgetLayout.filter { $0.enabled && isWidgetVisible($0.kind) }
+        let visible = model.widgetLayout.enumerated().filter { $0.element.enabled && isWidgetVisible($0.element.kind) }
+        guard model.contextualPriority else { return visible.map(\.element) }
+        return visible.sorted {
+            let left = contextualScore($0.element.kind), right = contextualScore($1.element.kind)
+            return left == right ? $0.offset < $1.offset : left > right
+        }.map(\.element)
+    }
+
+    private func contextualScore(_ kind: NotchWidgetKind) -> Int {
+        switch kind {
+        case .timer: return extras.timer.active ? 120 : 20
+        case .storage: return storageNeedsAttention ? 125 : 15
+        case .connection: return extras.connection.issue == .offline ? 130 : 118
+        case .music: return model.breakRemaining != nil ? 110 : (model.track?.playing == true ? 100 : 55)
+        case .calendar:
+            guard let event = model.event else { return 45 }
+            return event.start.timeIntervalSinceNow < 30 * 60 ? 90 : 60
+        case .devices: return extras.devices.devices.isEmpty ? 25 : 75
+        case .volume: return 65
+        case .eyeBreak: return 50
+        case .weather: return 40
+        case .greeting: return 30
+        }
     }
 
     @ViewBuilder private func widget(_ config: NotchWidgetConfig) -> some View {
@@ -476,7 +505,7 @@ struct NotchView: View {
                 if extras.devices.enabled, let device = extras.devices.devices.first {
                     infoCard(InfoItem(id: "b-\(device.id)", symbol: device.symbol, eyebrow: tr("Dispositivo"),
                                       value: device.name.components(separatedBy: " de ").first ?? device.name,
-                                      detail: "\(device.percent)%", action: nil), showsBackground: false)
+                                      detail: deviceDetail(device), action: nil), showsBackground: false)
                 }
             case .eyeBreak:
                 if model.eyeBreak, model.breakRemaining == nil, let next = model.nextBreak {
@@ -485,17 +514,28 @@ struct NotchView: View {
                                       detail: minutes <= 0 ? tr("Ahora") : String(format: tr("En %lld min"), minutes),
                                       action: { model.startBreakNow() }), showsBackground: false)
                 }
+            case .connection:
+                if extras.connection.issue != nil {
+                    ConnectionNotchWidget(model: model, connection: extras.connection, speed: speed)
+                }
             case .storage:
-                if let gb = model.lowDiskGB {
-                    infoCard(InfoItem(id: "d", symbol: "internaldrive", eyebrow: tr("Almacenamiento"),
-                                      value: String(format: tr("Quedan %d GB"), gb), detail: tr("Conviene liberar espacio"),
-                                      action: { AppController.shared.openMain(.almacenamiento) }), showsBackground: false)
+                if storageNeedsAttention {
+                    StorageNotchWidget(model: model, storage: AppController.shared.storage,
+                                       history: AppController.shared.diskHistory, monitor: monitor)
                 }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(RoundedRectangle(cornerRadius: 18, style: .continuous)
             .fill(Color.white.opacity(config.showsBackground ? 0.055 : 0)))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))   // nada se sale de su tarjeta
+    }
+
+    /// Poco espacio ahora, o el disco se llenaría en menos de un mes según los últimos días.
+    private var storageNeedsAttention: Bool {
+        if model.lowDiskGB != nil { return true }
+        let forecast = AppController.shared.diskHistory.forecast(free: monitor.diskFree)
+        return forecast?.trend == .growing && (forecast?.daysLeft ?? 999) <= 30
     }
 
     private func isWidgetVisible(_ kind: NotchWidgetKind) -> Bool {
@@ -509,39 +549,62 @@ struct NotchView: View {
         case .calendar: return model.showCalendar && !model.calendarDenied
         case .devices: return extras.devices.enabled && !extras.devices.devices.isEmpty
         case .eyeBreak: return model.eyeBreak && model.breakRemaining == nil && model.nextBreak != nil
-        case .storage: return model.lowDiskGB != nil
+        case .storage: return storageNeedsAttention
+        case .connection: return extras.connection.issue != nil
         }
+    }
+
+    /// El mes se ajusta al alto de su tarjeta: si no cabe entero (una sola fila), muestra solo la semana actual.
+    /// "82%" o "82% · cargando" para un periférico.
+    private func deviceDetail(_ device: DeviceBattery.Device) -> String {
+        device.charging ? "\(device.percent)% · \(tr("cargando"))" : "\(device.percent)%"
     }
 
     private var monthCalendar: some View {
         let calendar = Calendar.current
         let now = Date()
-        let interval = calendar.dateInterval(of: .month, for: now)
-        let first = interval?.start ?? now
+        let first = calendar.dateInterval(of: .month, for: now)?.start ?? now
         let days = calendar.range(of: .day, in: .month, for: now)?.count ?? 30
         let leading = (calendar.component(.weekday, from: first) - calendar.firstWeekday + 7) % 7
+        let today = calendar.component(.day, from: now)
+        let weeks = Int(ceil(Double(leading + days) / 7))
         let columns = Array(repeating: GridItem(.flexible(), spacing: 2), count: 7)
-        return Button { openCalendar() } label: {
-            VStack(spacing: 6) {
-                HStack {
-                    Text(now.formatted(.dateTime.month(.wide).year())).font(.system(size: 12, weight: .semibold))
-                    Spacer()
-                    Image(systemName: "arrow.up.forward.app").font(.system(size: 9)).foregroundStyle(.white.opacity(0.45))
-                }
-                LazyVGrid(columns: columns, spacing: 3) {
-                    ForEach(calendar.veryShortWeekdaySymbols, id: \.self) { symbol in
-                        Text(symbol).font(.system(size: 7, weight: .medium)).foregroundStyle(.white.opacity(0.4))
+        // Casillas del mes en orden; nil son huecos antes del día 1.
+        let cells: [Int?] = Array(repeating: nil, count: leading) + (1...days).map { Optional($0) }
+        let currentWeek = (leading + today - 1) / 7
+        return GeometryReader { proxy in
+            let full = proxy.size.height >= 150
+            let titleHeight: CGFloat = 20, weekdayHeight: CGFloat = 12, padding: CGFloat = 20
+            let rowHeight = full
+                ? max(10, min(17, (proxy.size.height - padding - titleHeight - weekdayHeight - CGFloat(weeks + 1) * 3) / CGFloat(weeks)))
+                : 18
+            let visible: [Int?] = full ? cells : Array(cells[(currentWeek * 7)..<min(cells.count, currentWeek * 7 + 7)])
+            Button { openCalendar() } label: {
+                VStack(spacing: 4) {
+                    HStack {
+                        Text(now.formatted(.dateTime.month(.wide).year())).font(.system(size: 12, weight: .semibold)).lineLimit(1)
+                        Spacer()
+                        Image(systemName: "arrow.up.forward.app").font(.system(size: 9)).foregroundStyle(.white.opacity(0.45))
                     }
-                    ForEach(0..<leading, id: \.self) { _ in Color.clear.frame(height: 15) }
-                    ForEach(1...days, id: \.self) { day in
-                        Text("\(day)").font(.system(size: 8, weight: day == calendar.component(.day, from: now) ? .bold : .regular))
-                            .frame(maxWidth: .infinity).frame(height: 15)
-                            .background(Circle().fill(day == calendar.component(.day, from: now) ? Theme.accent.opacity(0.8) : .clear))
+                    .frame(height: titleHeight)
+                    LazyVGrid(columns: columns, spacing: 3) {
+                        ForEach(Array(calendar.veryShortWeekdaySymbols.enumerated()), id: \.offset) { _, symbol in
+                            Text(symbol).font(.system(size: 7, weight: .medium)).foregroundStyle(.white.opacity(0.4)).frame(height: weekdayHeight)
+                        }
+                        ForEach(Array(visible.enumerated()), id: \.offset) { _, day in
+                            if let day {
+                                Text("\(day)").font(.system(size: min(9, rowHeight - 4), weight: day == today ? .bold : .regular))
+                                    .frame(maxWidth: .infinity).frame(height: rowHeight)
+                                    .background(Circle().fill(day == today ? Theme.accent.opacity(0.8) : .clear))
+                            } else {
+                                Color.clear.frame(height: rowHeight)
+                            }
+                        }
                     }
                 }
-            }
-            .padding(12).contentShape(Rectangle())
-        }.buttonStyle(.plain)
+                .padding(10).frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top).contentShape(Rectangle())
+            }.buttonStyle(.plain)
+        }
     }
 
     private func openCalendar() {
@@ -895,6 +958,8 @@ struct NotchView: View {
 
     @ViewBuilder private func toolConfig(_ kind: NotchToolKind) -> some View {
         switch kind {
+        case .commands:
+            tool("command", kind.title) { model.collapse?(); AppController.shared.showCommands() }
         case .clipboard:
             tool("doc.on.clipboard", kind.title) { model.collapse?(); AppController.shared.showClipboard() }
         case .shelf:
@@ -1030,7 +1095,7 @@ struct NotchView: View {
             for device in extras.devices.devices.prefix(2) {
                 let short = device.name.components(separatedBy: " de ").first ?? device.name
                 out.append(InfoItem(id: "b-\(device.id)", symbol: device.symbol, eyebrow: tr("Dispositivo"), value: short,
-                                    detail: "\(device.percent)%", action: nil))
+                                    detail: deviceDetail(device), action: nil))
             }
         }
         if model.eyeBreak, model.breakRemaining == nil, let next = model.nextBreak {

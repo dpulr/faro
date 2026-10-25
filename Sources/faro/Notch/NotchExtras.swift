@@ -16,6 +16,9 @@ final class NotchExtras: ObservableObject {
     var downloads = DownloadWatcher()
     var screenshots = ScreenshotWatcher()
     var volumes = VolumeWatcher()
+    var connection = ConnectionMonitor()
+    var diagnostics = DiagnosticsModel()
+    var volumesList = ConnectedVolumes()
 
     @Published var eyedropperEnabled: Bool { didSet { save("eyedropperEnabled", eyedropperEnabled) } }
     @Published var privacyEnabled: Bool { didSet { save("privacyIndicator", privacyEnabled); if !privacyEnabled { cameraOn = false; micOn = false } } }
@@ -43,7 +46,7 @@ final class NotchExtras: ObservableObject {
         capsEnabled = d.object(forKey: "capsLockHUD") as? Bool ?? true
         // Que la vista se actualice cuando cambie cualquiera de los módulos.
         forward(timer); forward(mic); forward(devices); forward(battery)
-        forward(downloads); forward(screenshots); forward(volumes)
+        forward(downloads); forward(screenshots); forward(volumes); forward(connection); forward(diagnostics); forward(volumesList)
     }
 
     private func forward<O: ObservableObject>(_ object: O) where O.ObjectWillChangePublisher == ObservableObjectPublisher {
@@ -80,6 +83,18 @@ final class NotchExtras: ObservableObject {
         downloads.start()
         screenshots.start()
         volumes.start()
+        devices.onLow = { [weak self] device in
+            self?.notch?.showToast(symbol: device.symbol, text: String(format: tr("%@ tiene poca batería: %lld%%"), device.name, device.percent), seconds: 6)
+            self?.notch?.mascot.react(.sad, seconds: 6)
+        }
+        devices.startWatching()
+        connection.onAlert = { [weak self] alert in
+            guard let self else { return }
+            let message = self.connection.message(for: alert)
+            self.notch?.showToast(symbol: message.symbol, text: message.text, seconds: alert == .restored ? 4 : 7)
+            self.notch?.mascot.react(alert == .restored ? .celebrate : .sad, seconds: 5)
+        }
+        connection.start()
         devices.refresh()
         Hotkeys.shared.register(keyCode: kVK_ANSI_M, modifiers: cmdKey | optionKey | controlKey) { [weak self] in
             Task { @MainActor in self?.toggleMic() }

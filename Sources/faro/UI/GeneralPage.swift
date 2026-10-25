@@ -13,6 +13,7 @@ struct GeneralPage: View {
     private let shortcuts: [(String, String)] = [
         ("Siguiente foto", "⌃⌥⌘ →"), ("Foto anterior", "⌃⌥⌘ ←"),
         ("Ocultar esta foto", "⌃⌥⌘ H"), ("Guardar esta foto", "⌃⌥⌘ S"),
+        ("Centro de comandos", "⌃⌥⌘ F"),
         ("Historial del portapapeles", "⌃⌥⌘ V"), ("Bandeja de archivos", "⌃⌥⌘ B"),
     ]
 

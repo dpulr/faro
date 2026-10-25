@@ -105,7 +105,7 @@ enum NotchLyricsDisplay: String, Codable, CaseIterable, Identifiable {
 }
 
 enum NotchExpandedSection {
-    case home, system, audio, tools
+    case home, system, audio, equipo, tools
 }
 
 enum NotchWidgetSize: String, Codable, CaseIterable, Identifiable {
@@ -132,20 +132,20 @@ enum NotchCalendarStyle: String, Codable, CaseIterable, Identifiable {
 }
 
 enum NotchWidgetKind: String, Codable, CaseIterable, Identifiable {
-    case greeting, timer, music, volume, weather, calendar, devices, eyeBreak, storage
+    case greeting, timer, music, volume, weather, calendar, devices, eyeBreak, storage, connection
     var id: String { rawValue }
     var title: String {
         switch self {
         case .greeting: tr("Saludo"); case .timer: tr("Temporizador"); case .music: tr("Música"); case .volume: tr("Controles del sistema")
         case .weather: tr("Clima"); case .calendar: tr("Calendario"); case .devices: tr("Dispositivos")
-        case .eyeBreak: tr("Descanso visual"); case .storage: tr("Almacenamiento")
+        case .eyeBreak: tr("Descanso visual"); case .storage: tr("Almacenamiento"); case .connection: tr("Conexión")
         }
     }
     var symbol: String {
         switch self {
         case .greeting: "hand.wave"; case .timer: "timer"; case .music: "music.note"; case .volume: "speaker.wave.2"
         case .weather: "cloud.sun"; case .calendar: "calendar"; case .devices: "airpods"
-        case .eyeBreak: "eye"; case .storage: "internaldrive"
+        case .eyeBreak: "eye"; case .storage: "internaldrive"; case .connection: "wifi"
         }
     }
 }
@@ -176,11 +176,11 @@ struct NotchWidgetConfig: Codable, Identifiable, Equatable {
 }
 
 enum NotchToolKind: String, Codable, CaseIterable, Identifiable {
-    case clipboard, shelf, timer, microphone, eyedropper, emoji, awake, keyboard, settings
+    case commands, clipboard, shelf, timer, microphone, eyedropper, emoji, awake, keyboard, settings
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .clipboard: tr("Historial"); case .shelf: tr("Bandeja"); case .timer: tr("Tiempo")
+        case .commands: tr("Comandos"); case .clipboard: tr("Historial"); case .shelf: tr("Bandeja"); case .timer: tr("Tiempo")
         case .microphone: tr("Micro"); case .eyedropper: tr("Color"); case .emoji: tr("Emoji"); case .awake: tr("Despierto")
         case .keyboard: tr("Teclado"); case .settings: tr("Ajustes")
         }
@@ -191,6 +191,46 @@ struct NotchToolConfig: Codable, Identifiable, Equatable {
     var kind: NotchToolKind
     var enabled: Bool
     var id: NotchToolKind { kind }
+}
+
+/// La parte visual y funcional del notch que viaja con una Escena Faro.
+/// Los datos personales (ciudad y texto del saludo) siguen siendo globales.
+struct NotchSceneSettings: Codable, Equatable {
+    var enabled: Bool
+    var showMusic: Bool
+    var showCalendar: Bool
+    var showWeather: Bool
+    var eyeBreak: Bool
+    var eyeBreakMinutes: Int
+    var openOnClick: Bool
+    var showVolume: Bool
+    var showCompactControls: Bool
+    var panelWidth: NotchPanelWidth
+    var panelDensity: NotchPanelDensity
+    var panelStyle: NotchPanelStyle
+    var panelTintHex: String
+    var panelOpacity: Double
+    var dockPlacement: NotchDockPlacement
+    var dockScale: NotchDockScale
+    var showExpandedStatus: Bool
+    var showTabIcons: Bool
+    var showSystemItemBackgrounds: Bool
+    var toolButtonStyle: NotchToolButtonStyle
+    var showVolumeControl: Bool
+    var showDisplayControl: Bool
+    var showKeyboardControl: Bool
+    var calendarStyle: NotchCalendarStyle
+    var showGreetingInHeader: Bool
+    var systemMetricScale: NotchSystemMetricScale
+    var showSystemDescriptions: Bool
+    var showSystemTitle: Bool
+    var showToolsTitle: Bool
+    var lyricsDisplay: NotchLyricsDisplay
+    var collapsedWidthMode: NotchCollapsedWidthMode
+    var widgetLayout: [NotchWidgetConfig]
+    var toolLayout: [NotchToolConfig]
+    var showBluetooth: Bool
+    var contextualPriority: Bool
 }
 
 /// Estado y ajustes del panel del notch: música, calendario, clima y descanso visual.
@@ -240,6 +280,8 @@ final class NotchModel: ObservableObject {
     @Published var collapsedWidthMode: NotchCollapsedWidthMode { didSet { save("notchCollapsedWidthMode", collapsedWidthMode.rawValue) } }
     @Published var widgetLayout: [NotchWidgetConfig] { didSet { saveCodable("notchWidgetLayout", widgetLayout) } }
     @Published var toolLayout: [NotchToolConfig] { didSet { saveCodable("notchToolLayout", toolLayout) } }
+    /// Lleva primero lo que está ocurriendo ahora (temporizador, música, alertas) sin alterar el orden guardado.
+    @Published var contextualPriority: Bool { didSet { save("notchContextualPriority", contextualPriority) } }
     @Published var showBluetooth: Bool {
         didSet {
             save("notchBluetooth", showBluetooth)
@@ -335,9 +377,11 @@ final class NotchModel: ObservableObject {
             .init(kind: .volume, enabled: true, size: .compact), .init(kind: .weather, enabled: true, size: .compact),
             .init(kind: .calendar, enabled: true, size: .compact), .init(kind: .devices, enabled: true, size: .compact),
             .init(kind: .eyeBreak, enabled: true, size: .compact), .init(kind: .storage, enabled: true, size: .compact),
+            .init(kind: .connection, enabled: true, size: .compact),
         ]
         toolLayout = (d.data(forKey: "notchToolLayout").flatMap { try? JSONDecoder().decode([NotchToolConfig].self, from: $0) })
             ?? NotchToolKind.allCases.map { .init(kind: $0, enabled: true) }
+        contextualPriority = flag("notchContextualPriority", true)
         showBluetooth = flag("notchBluetooth", true)
         eyeBreak = flag("notchEyeBreak", false)
         eyeBreakMinutes = d.integer(forKey: "notchEyeMinutes") == 0 ? 20 : d.integer(forKey: "notchEyeMinutes")
@@ -355,6 +399,47 @@ final class NotchModel: ObservableObject {
         lyrics.enabled = lyricsDisplay != .hidden
         lyricsObserver = lyrics.objectWillChange.sink { [weak self] _ in DispatchQueue.main.async { self?.objectWillChange.send() } }
         mascotObserver = mascot.objectWillChange.sink { [weak self] _ in DispatchQueue.main.async { self?.objectWillChange.send() } }
+    }
+
+    func sceneSettings() -> NotchSceneSettings {
+        NotchSceneSettings(
+            enabled: enabled, showMusic: showMusic, showCalendar: showCalendar, showWeather: showWeather,
+            eyeBreak: eyeBreak, eyeBreakMinutes: eyeBreakMinutes, openOnClick: openOnClick, showVolume: showVolume,
+            showCompactControls: showCompactControls, panelWidth: panelWidth, panelDensity: panelDensity,
+            panelStyle: panelStyle, panelTintHex: panelTintHex, panelOpacity: panelOpacity,
+            dockPlacement: dockPlacement, dockScale: dockScale, showExpandedStatus: showExpandedStatus,
+            showTabIcons: showTabIcons, showSystemItemBackgrounds: showSystemItemBackgrounds,
+            toolButtonStyle: toolButtonStyle, showVolumeControl: showVolumeControl,
+            showDisplayControl: showDisplayControl, showKeyboardControl: showKeyboardControl,
+            calendarStyle: calendarStyle, showGreetingInHeader: showGreetingInHeader,
+            systemMetricScale: systemMetricScale, showSystemDescriptions: showSystemDescriptions,
+            showSystemTitle: showSystemTitle, showToolsTitle: showToolsTitle, lyricsDisplay: lyricsDisplay,
+            collapsedWidthMode: collapsedWidthMode, widgetLayout: widgetLayout, toolLayout: toolLayout,
+            showBluetooth: showBluetooth, contextualPriority: contextualPriority)
+    }
+
+    func apply(_ settings: NotchSceneSettings) {
+        enabled = settings.enabled
+        showMusic = settings.showMusic; showCalendar = settings.showCalendar; showWeather = settings.showWeather
+        eyeBreak = settings.eyeBreak; eyeBreakMinutes = settings.eyeBreakMinutes; openOnClick = settings.openOnClick
+        showVolume = settings.showVolume; showCompactControls = settings.showCompactControls
+        panelWidth = settings.panelWidth; panelDensity = settings.panelDensity; panelStyle = settings.panelStyle
+        panelTintHex = settings.panelTintHex; panelOpacity = settings.panelOpacity
+        dockPlacement = settings.dockPlacement; dockScale = settings.dockScale
+        showExpandedStatus = settings.showExpandedStatus; showTabIcons = settings.showTabIcons
+        showSystemItemBackgrounds = settings.showSystemItemBackgrounds; toolButtonStyle = settings.toolButtonStyle
+        showVolumeControl = settings.showVolumeControl; showDisplayControl = settings.showDisplayControl
+        showKeyboardControl = settings.showKeyboardControl; calendarStyle = settings.calendarStyle
+        showGreetingInHeader = settings.showGreetingInHeader; systemMetricScale = settings.systemMetricScale
+        showSystemDescriptions = settings.showSystemDescriptions; showSystemTitle = settings.showSystemTitle
+        showToolsTitle = settings.showToolsTitle; lyricsDisplay = settings.lyricsDisplay
+        collapsedWidthMode = settings.collapsedWidthMode; widgetLayout = settings.widgetLayout
+        var tools = settings.toolLayout
+        for kind in NotchToolKind.allCases where !tools.contains(where: { $0.kind == kind }) {
+            tools.append(.init(kind: kind, enabled: true))
+        }
+        toolLayout = tools; showBluetooth = settings.showBluetooth
+        contextualPriority = settings.contextualPriority
     }
 
     func compactPanelWidth(notchWidth: CGFloat, metricCount: Int, hasActivity: Bool) -> CGFloat {
@@ -520,8 +605,8 @@ final class NotchModel: ObservableObject {
 
     // MARK: Calendario
 
-    func refreshCalendar() {
-        guard showCalendar else { event = nil; return }
+    func refreshCalendar(force: Bool = false) {
+        guard showCalendar || force else { event = nil; return }
         switch EKEventStore.authorizationStatus(for: .event) {
         case .fullAccess:
             calendarDenied = false

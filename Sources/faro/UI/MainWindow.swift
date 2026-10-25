@@ -4,15 +4,16 @@
 import SwiftUI
 
 enum Page: String, CaseIterable, Identifiable {
-    case fondos, perfiles, sistema, almacenamiento, internet, portapapeles, energia, audio, teclado, notch, mascota, barra, general
+    case fondos, perfiles, sistema, diagnostico, almacenamiento, internet, portapapeles, energia, audio, teclado, notch, mascota, barra, general
 
     var id: String { rawValue }
 
     var title: String {
         switch self {
         case .fondos: return tr("Fondos")
-        case .perfiles: return tr("Perfiles")
+        case .perfiles: return tr("Escenas")
         case .sistema: return tr("Sistema")
+        case .diagnostico: return tr("Diagnóstico")
         case .almacenamiento: return tr("Almacenamiento")
         case .internet: return tr("Internet")
         case .portapapeles: return tr("Portapapeles")
@@ -29,8 +30,9 @@ enum Page: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .fondos: return "photo.on.rectangle"
-        case .perfiles: return "person.crop.square"
+        case .perfiles: return "rectangle.3.group"
         case .sistema: return "cpu"
+        case .diagnostico: return "stethoscope"
         case .almacenamiento: return "internaldrive"
         case .internet: return "wifi"
         case .portapapeles: return "doc.on.clipboard"
@@ -60,6 +62,7 @@ struct MainWindow: View {
                     case .fondos: FondosPage()
                     case .perfiles: PerfilesPage()
                     case .sistema: SistemaPage()
+                    case .diagnostico: DiagnosticoPage()
                     case .almacenamiento: AlmacenamientoPage()
                     case .internet: InternetPage()
                     case .portapapeles: PortapapelesPage()
