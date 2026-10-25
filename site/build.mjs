@@ -15,7 +15,7 @@ const REPO = 'https://github.com/dpulr/faro'
 const REPO_PUBLIC = process.env.SITE_REPO_PUBLIC !== '0'
 // Los espacios de apoyo se muestran como "próximamente" hasta que se configure cada enlace.
 const SPONSORS_URL = process.env.SITE_SPONSORS === '1' ? 'https://github.com/sponsors/dpulr' : ''
-const KOFI_URL = process.env.SITE_KOFI_URL || ''
+const KOFI_URL = process.env.SITE_KOFI_URL || 'https://ko-fi.com/conectalab'
 const version = readFileSync(join(root, '../VERSION'), 'utf8').trim()
 
 // Descarga: se publica el .dmg que dejó scripts/release.sh, si existe.
