@@ -56,7 +56,8 @@ enum Snapshot {
         render(sheet(ProfileSheet(profileID: engine.state.profiles[0].id)), name: "sheet-perfil", size: nil)
         render(framed(PerfilesPage()), name: "page-perfiles", size: nil)
         let demoExtras = NotchExtras()
-        let demoMixer = AudioMixer()
+        let demoMixer = AudioMixer(live: false)
+        demoMixer.loadDemo()
         func demoNotch(_ model: NotchModel, _ extras: NotchExtras = demoExtras) -> some View {
             NotchView(model: model, mixer: demoMixer, extras: extras, engine: engine, monitor: monitor,
                       speed: speed, awake: awake, notchSize: CGSize(width: 220, height: 38), hasHardwareNotch: true)
@@ -69,6 +70,12 @@ enum Snapshot {
         notchDemo.expanded = true
         render(demoNotch(notchDemo)
             .frame(width: 620, height: 560).background(Color(white: 0.78)), name: "notch-expanded", size: CGSize(width: 620, height: 560))
+        let audioDemo = NotchModel()
+        audioDemo.loadDemo()
+        audioDemo.expanded = true
+        audioDemo.expandedSection = .audio
+        render(demoNotch(audioDemo)
+            .frame(width: 840, height: 430).background(Color(white: 0.78)), name: "notch-audio", size: CGSize(width: 840, height: 430))
         // Para el sitio web: mismos paneles pero sobre fondo transparente (se recortan después).
         render(demoNotch(notchDemo).frame(width: 760, height: 600).background(Color.clear), name: "site-notch", size: CGSize(width: 760, height: 600))
         notchDemo.expanded = false

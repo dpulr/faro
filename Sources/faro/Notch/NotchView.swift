@@ -48,10 +48,7 @@ struct NotchView: View {
     var hasHardwareNotch: Bool
 
     @State private var dropTargeted = false
-    @State private var expandedSection: ExpandedSection = .home
     private let spring = Animation.spring(response: 0.4, dampingFraction: 0.82)
-
-    private enum ExpandedSection { case home, system, tools }
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -313,12 +310,13 @@ struct NotchView: View {
         VStack(spacing: model.panelDensity.spacing) {
             if model.showExpandedStatus { expandedCompactBar }
             expandedNavigation
-            switch expandedSection {
+            switch model.expandedSection {
             case .home: homeSection
             case .system: systemSection
+            case .audio: audioSection
             case .tools: toolsDock
             }
-            if model.dockPlacement == .bottom, expandedSection != .tools { toolsDock }
+            if model.dockPlacement == .bottom, model.expandedSection != .tools { toolsDock }
         }
         .padding(.horizontal, 18)
         .padding(.top, hasHardwareNotch ? notchSize.height + 10 : 10)
@@ -383,6 +381,7 @@ struct NotchView: View {
             }
             sectionButton(.home, "Inicio", "sparkles")
             sectionButton(.system, "Sistema", "gauge.with.dots.needle.50percent")
+            sectionButton(.audio, "Audio", "speaker.wave.2.fill")
             sectionButton(.tools, "Herramientas", "square.grid.2x2")
             Spacer(minLength: 8)
             Button {
@@ -400,16 +399,19 @@ struct NotchView: View {
         }
     }
 
-    private func sectionButton(_ section: ExpandedSection, _ title: LocalizedStringKey, _ symbol: String) -> some View {
-        Button { withAnimation(.easeInOut(duration: 0.18)) { expandedSection = section } } label: {
+    private func sectionButton(_ section: NotchExpandedSection, _ title: LocalizedStringKey, _ symbol: String) -> some View {
+        Button {
+            if section == .audio { mixer.refreshApps() }
+            withAnimation(.easeInOut(duration: 0.18)) { model.expandedSection = section }
+        } label: {
             HStack(spacing: 6) {
                 if model.showTabIcons { Image(systemName: symbol) }
                 Text(title)
             }
                 .font(.system(size: 10, weight: .medium))
                 .padding(.horizontal, 9).frame(height: 30)
-                .foregroundStyle(expandedSection == section ? Color.white : Color.white.opacity(0.48))
-                .background(Capsule().fill(Color.white.opacity(expandedSection == section ? 0.12 : 0)))
+                .foregroundStyle(model.expandedSection == section ? Color.white : Color.white.opacity(0.48))
+                .background(Capsule().fill(Color.white.opacity(model.expandedSection == section ? 0.12 : 0)))
                 .contentShape(Capsule())
         }
         .buttonStyle(.plain)
@@ -560,6 +562,161 @@ struct NotchView: View {
                 }
             }
         }
+    }
+
+    private var audioSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "hifispeaker.2.fill")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.55))
+                Text(mixer.defaultOutputName)
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(.white.opacity(0.62))
+                    .lineLimit(1)
+                Spacer(minLength: 8)
+                Button {
+                    model.collapse?()
+                    AppController.shared.openMain(.audio)
+                } label: {
+                    Image(systemName: "slider.horizontal.3")
+                        .font(.system(size: 10, weight: .semibold))
+                        .frame(width: 26, height: 24)
+                        .background(Circle().fill(Color.white.opacity(0.07)))
+                }
+                .buttonStyle(.plain)
+                .help(tr("Abrir ajustes de audio"))
+            }
+
+            audioGeneralRow
+
+            if hasAudioApplications {
+                HStack {
+                    Text("Por aplicación")
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.42))
+                    Spacer()
+                    Text("En reproducción")
+                        .font(.system(size: 8, weight: .medium))
+                        .foregroundStyle(.white.opacity(0.28))
+                }
+                VStack(spacing: 3) {
+                    if let value = mixer.musicVolume {
+                        audioControlledRow(name: tr("Música"), symbol: "music.note", value: value) {
+                            mixer.setAppVolume("Music", $0)
+                        }
+                    }
+                    if let value = mixer.spotifyVolume {
+                        audioControlledRow(name: "Spotify", symbol: "music.quarternote.3", value: value) {
+                            mixer.setAppVolume("Spotify", $0)
+                        }
+                    }
+                    ForEach(visibleInheritedAudioApps) { app in audioInheritedRow(app) }
+                    if hiddenAudioAppCount > 0 {
+                        Text(String(format: tr("%lld aplicaciones más"), Int64(hiddenAudioAppCount)))
+                            .font(.system(size: 8, weight: .medium))
+                            .foregroundStyle(.white.opacity(0.34))
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .padding(.top, 2)
+                    }
+                }
+            } else {
+                HStack(spacing: 8) {
+                    Image(systemName: "waveform")
+                    Text("Reproduce audio en una aplicación para verla aquí.")
+                }
+                .font(.system(size: 9))
+                .foregroundStyle(.white.opacity(0.38))
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.vertical, 7)
+            }
+
+            HStack(alignment: .top, spacing: 6) {
+                Image(systemName: "info.circle").font(.system(size: 9))
+                Text("Música y Spotify ofrecen volumen propio. Las demás aplicaciones siguen el volumen general de macOS.")
+                    .font(.system(size: 8)).fixedSize(horizontal: false, vertical: true)
+            }
+            .foregroundStyle(.white.opacity(0.32))
+        }
+        .onAppear { mixer.refresh(); mixer.refreshApps() }
+        .onChange(of: mixer.activeOutputApps.map(\.bundleID)) { _, _ in
+            if model.expandedSection == .audio { mixer.refreshApps() }
+        }
+    }
+
+    private var hasAudioApplications: Bool {
+        mixer.musicVolume != nil || mixer.spotifyVolume != nil || !inheritedAudioApps.isEmpty
+    }
+
+    private var inheritedAudioApps: [AudioProcessApp] {
+        mixer.activeOutputApps.filter { app in
+            if app.bundleID == "com.apple.Music" { return mixer.musicVolume == nil }
+            if app.bundleID == "com.spotify.client" { return mixer.spotifyVolume == nil }
+            return true
+        }
+    }
+
+    private var visibleInheritedAudioApps: [AudioProcessApp] {
+        let supportedCount = (mixer.musicVolume == nil ? 0 : 1) + (mixer.spotifyVolume == nil ? 0 : 1)
+        return Array(inheritedAudioApps.prefix(max(4 - supportedCount, 1)))
+    }
+
+    private var hiddenAudioAppCount: Int { max(inheritedAudioApps.count - visibleInheritedAudioApps.count, 0) }
+
+    private var audioGeneralRow: some View {
+        HStack(spacing: 10) {
+            Button { mixer.setMuted(!mixer.muted) } label: {
+                Image(systemName: mixer.muted || mixer.volume == 0 ? "speaker.slash.fill" : "speaker.wave.2.fill")
+                    .font(.system(size: 12, weight: .medium))
+                    .frame(width: 26, height: 26)
+                    .background(Circle().fill(Color.white.opacity(mixer.muted ? 0.14 : 0.07)))
+            }
+            .buttonStyle(.plain)
+            .help(mixer.muted ? tr("Quitar el silencio") : tr("Silenciar"))
+            Text("General").font(.system(size: 10, weight: .medium)).frame(width: 48, alignment: .leading)
+            FaroSlider(value: Binding(get: { mixer.volume }, set: { mixer.setVolume($0) }),
+                       tint: .white, track: Color.white.opacity(0.16))
+                .disabled(!mixer.canSetVolume)
+            Text("\(Int((mixer.volume * 100).rounded()))%")
+                .font(.system(size: 9, weight: .semibold, design: .rounded)).monospacedDigit()
+                .foregroundStyle(.white.opacity(0.45)).frame(width: 34, alignment: .trailing)
+        }
+        .opacity(mixer.canSetVolume ? 1 : 0.35)
+        .padding(.horizontal, 10).frame(height: 42)
+        .background(RoundedRectangle(cornerRadius: 13, style: .continuous).fill(Color.white.opacity(0.055)))
+    }
+
+    private func audioControlledRow(name: String, symbol: String, value: Double,
+                                    set: @escaping (Double) -> Void) -> some View {
+        HStack(spacing: 9) {
+            Image(systemName: symbol).font(.system(size: 11, weight: .medium)).frame(width: 22)
+            Text(name).font(.system(size: 9, weight: .medium)).lineLimit(1).frame(width: 72, alignment: .leading)
+            FaroSlider(value: Binding(get: { value }, set: set), tint: Theme.accent,
+                       track: Color.white.opacity(0.14))
+            Text("\(Int((value * 100).rounded()))%")
+                .font(.system(size: 8, weight: .semibold, design: .rounded)).monospacedDigit()
+                .foregroundStyle(.white.opacity(0.4)).frame(width: 34, alignment: .trailing)
+        }
+        .padding(.horizontal, 10).frame(height: 36)
+        .background(RoundedRectangle(cornerRadius: 11, style: .continuous).fill(Color.white.opacity(0.035)))
+    }
+
+    private func audioInheritedRow(_ app: AudioProcessApp) -> some View {
+        HStack(spacing: 9) {
+            Group {
+                if let icon = app.icon { Image(nsImage: icon).resizable().scaledToFit() }
+                else { Image(systemName: "speaker.wave.2").font(.system(size: 11, weight: .medium)) }
+            }
+            .frame(width: 22, height: 22)
+            Text(app.name).font(.system(size: 9, weight: .medium)).lineLimit(1)
+            Spacer(minLength: 6)
+            Image(systemName: "link").font(.system(size: 8, weight: .medium))
+            Text("General").font(.system(size: 8, weight: .medium))
+        }
+        .foregroundStyle(.white.opacity(0.55))
+        .padding(.horizontal, 10).frame(height: 34)
+        .background(RoundedRectangle(cornerRadius: 11, style: .continuous).fill(Color.white.opacity(0.025)))
+        .help(tr("Esta aplicación sigue el volumen general de macOS"))
     }
 
     private func systemMetricCard(_ metric: MenuBarMetric, compact: Bool) -> some View {

@@ -40,13 +40,14 @@ struct AudioPage: View {
                 VStack(alignment: .leading, spacing: 16) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Volumen por app").font(.callout.weight(.semibold))
-                        Text("macOS no permite cambiar el volumen de otras apps; Música y Spotify sí tienen el suyo.")
+                        Text("Faro detecta las apps que están sonando. Música y Spotify ofrecen volumen propio; las demás siguen el volumen general de macOS.")
                             .font(.caption).foregroundStyle(.secondary)
                     }
                     appRow("Música", "music.note", value: mixer.musicVolume) { mixer.setAppVolume("Music", $0) }
                     appRow("Spotify", "music.quarternote.3", value: mixer.spotifyVolume) { mixer.setAppVolume("Spotify", $0) }
-                    if mixer.musicVolume == nil && mixer.spotifyVolume == nil {
-                        Text("Abre Música o Spotify para ver su volumen aquí.").font(.caption).foregroundStyle(.tertiary)
+                    ForEach(inheritedApps) { app in inheritedAppRow(app) }
+                    if mixer.musicVolume == nil && mixer.spotifyVolume == nil && inheritedApps.isEmpty {
+                        Text("Reproduce audio en una aplicación para verla aquí.").font(.caption).foregroundStyle(.tertiary)
                     }
                 }
             }
@@ -65,5 +66,30 @@ struct AudioPage: View {
                     .foregroundStyle(.secondary).frame(width: 44, alignment: .trailing)
             }
         }
+    }
+
+    private var inheritedApps: [AudioProcessApp] {
+        mixer.activeOutputApps.filter { app in
+            if app.bundleID == "com.apple.Music" { return mixer.musicVolume == nil }
+            if app.bundleID == "com.spotify.client" { return mixer.spotifyVolume == nil }
+            return true
+        }
+    }
+
+    private func inheritedAppRow(_ app: AudioProcessApp) -> some View {
+        HStack(spacing: 14) {
+            Group {
+                if let icon = app.icon { Image(nsImage: icon).resizable().scaledToFit() }
+                else { Image(systemName: "speaker.wave.2") }
+            }
+            .frame(width: 24, height: 24)
+            Text(app.name).font(.callout).lineLimit(1).frame(width: 130, alignment: .leading)
+            Spacer()
+            Label("Volumen general", systemImage: "link")
+                .font(.caption.weight(.medium)).foregroundStyle(.secondary)
+                .padding(.horizontal, 10).padding(.vertical, 6)
+                .background(Capsule().fill(Color.primary.opacity(0.055)))
+        }
+        .instantTip("macOS no ofrece un control de volumen independiente para esta aplicación.")
     }
 }

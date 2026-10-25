@@ -109,6 +109,36 @@
   vol.addEventListener('input', function () { S.volume = +vol.value; renderVolume() })
   renderVolume()
 
+  // ---------- Mezclador por aplicaciones ----------
+  $$('[data-audio]').forEach(function (input) {
+    input.style.setProperty('--v', input.value + '%')
+    input.addEventListener('input', function () {
+      var key = input.getAttribute('data-audio')
+      input.style.setProperty('--v', input.value + '%')
+      var value = $('[data-audio-value="' + key + '"]')
+      if (value) value.textContent = input.value
+      if (key === 'master') {
+        S.volume = +input.value
+        vol.value = input.value
+        renderVolume()
+        var chrome = $('[data-audio="chrome"]')
+        var chromeValue = $('[data-audio-value="chrome"]')
+        if (chrome) { chrome.value = input.value; chrome.style.setProperty('--v', input.value + '%') }
+        if (chromeValue) chromeValue.textContent = input.value
+      }
+    })
+  })
+
+  // ---------- Mascota ----------
+  var pet = $('[data-demo-pet]')
+  if (pet) pet.addEventListener('click', function () {
+    pet.classList.remove('is-loved')
+    void pet.offsetWidth
+    pet.classList.add('is-loved')
+    toast({ icon: 'heart', text: T.mascot.loved, ms: 2200 })
+    setTimeout(function () { pet.classList.remove('is-loved') }, 1900)
+  })
+
   // ---------- Pastilla (notch recogido) ----------
   function renderPill() {
     var left = '', right = ''
@@ -297,6 +327,7 @@
     screen.addEventListener('mousemove', function (e) {
       var r = screen.getBoundingClientRect(), x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5
       screen.style.setProperty('--px', (x * 14).toFixed(1) + 'px'); screen.style.setProperty('--py', (y * 10).toFixed(1) + 'px')
+      screen.style.setProperty('--pet-x', (x * 3.5).toFixed(1) + 'px'); screen.style.setProperty('--pet-y', (y * 2.8).toFixed(1) + 'px')
       $('.demo-wall').style.transform = 'translate(' + (x * -10).toFixed(1) + 'px,' + (y * -8).toFixed(1) + 'px) scale(1.04)'
     })
   }

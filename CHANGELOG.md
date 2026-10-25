@@ -2,6 +2,18 @@
 
 Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen [SemVer](https://semver.org/lang/es/).
 
+## [1.9.0] — 2026-10-25
+
+### Novedades
+- **Notch listo en segundos.** Cuatro plantillas predeterminadas —Minimal, Productividad, Multimedia y Centro de control— aplican un diseño completo con un solo clic.
+- **Edición directa en la vista previa.** Los widgets se seleccionan, ordenan, ocultan y redimensionan dentro de una reproducción fiel del notch. El editor limita los tamaños a opciones útiles y deja los ajustes menos frecuentes en secciones avanzadas.
+- **Pestaña Audio.** El notch detecta qué aplicaciones reproducen sonido y muestra controles para el volumen general, Música y Spotify. Chrome y las demás apps aparecen vinculadas al volumen general que expone macOS.
+- **Mascota protagonista.** La página web y la documentación presentan sus expresiones, reacciones y opciones de personalización, con capturas reales de la app.
+
+### Cambios
+- La página Audio de escritorio explica con claridad qué controles son independientes y cuáles dependen del volumen general.
+- La configuración del notch pasa de una lista larga de controles a un flujo breve de tres pasos: plantilla, vista previa y detalles opcionales.
+
 ## [1.8.0] — 2026-10-25
 
 ### Novedades

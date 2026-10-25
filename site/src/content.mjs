@@ -72,6 +72,7 @@ export const features = {
       lead: 'Un panel que cuelga del notch con lo que suena (y su letra, en tiempo real), el volumen, el clima y tu próximo evento. Tú decides qué widgets van, en qué orden y de qué tamaño.',
       points: [
         'Se abre al pasar el cursor o solo con un clic, como prefieras. En un Mac sin notch, una isla flotante hace lo mismo.',
+        'Cuatro plantillas listas —Minimal, Productividad, Multimedia y Centro de control— y una vista previa que también sirve para ordenar y redimensionar.',
         'Temporizador Pomodoro, silenciar el micrófono, gotero de color y accesos al portapapeles y a la bandeja.',
         'Avisos de batería, descargas, capturas, discos USB, AirPods y cámara o micrófono en uso.',
       ],
@@ -92,9 +93,10 @@ export const features = {
       id: 'audio',
       img: 'audio.png',
       alt: 'La página Audio con la salida y el volumen',
-      title: 'El volumen, a mano.',
-      lead: 'Salida, volumen y silencio de tu Mac, y el volumen propio de Música y Spotify.',
-      points: ['También dentro del panel del notch.'],
+      title: 'Cada app, a su volumen.',
+      lead: 'Control general, salida y silencio del Mac, más controles independientes para Música y Spotify desde una pestaña dedicada del notch.',
+      points: ['Detecta las aplicaciones que están reproduciendo audio.', 'Música y Spotify tienen control independiente; Chrome y las demás quedan vinculadas al volumen general por las reglas de audio de macOS.', 'Todo cabe en el panel del notch, sin abrir Preferencias del Sistema.'],
+      extra: ['notch-audio.png'],
     },
   ],
   en: [
@@ -166,6 +168,7 @@ export const features = {
       lead: 'A panel that hangs from the notch with what’s playing (and its lyrics, in real time), volume, weather and your next event. You choose which widgets go, in what order and what size.',
       points: [
         'Opens on hover or only on click, whichever you prefer. On a Mac without a notch, a floating island does the same.',
+        'Four ready-made layouts —Minimal, Productivity, Multimedia and Control Center— plus a preview you can use to reorder and resize.',
         'Pomodoro timer, mute the microphone, color eyedropper and quick buttons for the clipboard and the shelf.',
         'Notices for battery, downloads, screenshots, USB drives, AirPods and camera or microphone in use.',
       ],
@@ -186,9 +189,10 @@ export const features = {
       id: 'audio',
       img: 'audio.png',
       alt: 'The Audio page with output and volume',
-      title: 'Volume, at hand.',
-      lead: 'Your Mac’s output, volume and mute, plus the own volume of Music and Spotify.',
-      points: ['Also inside the notch panel.'],
+      title: 'Every app, at its own volume.',
+      lead: 'Master volume, output and mute for your Mac, plus independent controls for Music and Spotify in a dedicated notch tab.',
+      points: ['Detects the apps that are currently playing audio.', 'Music and Spotify have independent controls; Chrome and other apps follow the master volume because of macOS audio rules.', 'It all fits in the notch panel, with no trip to System Settings.'],
+      extra: ['notch-audio.png'],
     },
   ],
 }
@@ -232,6 +236,8 @@ export const timeline = {
     ['1.5', 'Temporizador, micrófono, baterías, avisos y herramientas en la bandeja.'],
     ['1.6', 'Letras sincronizadas en el notch.'],
     ['1.7', 'Notch reorganizable, isla flotante sin notch y cuidado de la batería.'],
+    ['1.8', 'Llega la mascota: expresiones, accesorios y reacciones que viven en el notch.'],
+    ['1.9', 'Plantillas de notch, edición directa en la vista previa y mezclador de audio por aplicaciones.'],
   ],
   en: [
     ['0.1', 'A prototype that changed the wallpaper using Wallhaven.'],
@@ -246,6 +252,8 @@ export const timeline = {
     ['1.5', 'Timer, microphone, batteries, notices and shelf tools.'],
     ['1.6', 'Synced lyrics in the notch.'],
     ['1.7', 'Rearrangeable notch, floating island without a notch and battery care.'],
+    ['1.8', 'The mascot arrives: expressions, accessories and reactions that live in the notch.'],
+    ['1.9', 'Notch presets, direct editing in the preview and per-app audio mixing.'],
   ],
 }
 
@@ -271,7 +279,7 @@ export const ui = {
     theme: 'Cambiar tema',
     home: {
       title: 'faro — tu Mac, más claro, rápido y tuyo',
-      description: 'faro convierte la barra de menú y el notch en un centro de control personalizable para tu Mac. Fondos, sistema, portapapeles, archivos, música y herramientas, sin cuentas ni telemetría.',
+      description: 'faro convierte la barra de menú y el notch en un centro de control personalizable para tu Mac, con widgets, audio por aplicación y una mascota que reacciona contigo. Sin cuentas ni telemetría.',
       kicker: 'Un producto de Conecta Lab · Hecho para macOS',
       h1a: 'Tu Mac tiene mucho que decir.',
       h1b: 'faro lo pone a tu alcance.',
@@ -288,8 +296,13 @@ export const ui = {
       howTitle: 'Se adapta a ti, no al revés.',
       howLead: 'Elige qué aparece, dónde aparece y cuánto espacio usa. El panel se reorganiza, se compacta y también funciona como isla flotante en pantallas sin notch.',
       customizeTitle: 'Diseña tu propio centro de control.',
-      customizeLead: 'Arrastra widgets, cambia su ancho, decide qué controles viven arriba y reduce cada vista hasta que se sienta hecha para tu flujo.',
-      customizePoints: ['Widgets de 1/3, 2/3 o ancho completo', 'Música y calendario en una o dos filas', 'Fondos transparentes o con contraste', 'Títulos, iconos y descripciones opcionales', 'Volumen, pantalla y teclado por separado', 'Herramientas como círculo, rectángulo o sin fondo'],
+      customizeLead: 'Empieza con una plantilla y ajústala sobre una vista previa real: arrastra widgets, cambia su ancho o altura y ve el resultado sin adivinar.',
+      customizePoints: ['4 plantillas para empezar en segundos', 'Edición directa dentro de la vista previa', 'Widgets de 1/3, 2/3 o ancho completo', 'Música y calendario en una o dos filas', 'Fondos transparentes o con contraste', 'Títulos, iconos y descripciones opcionales'],
+      mascotEyebrow: 'La personalidad de faro',
+      mascotTitle: 'Hay una pequeña luz viviendo en tu notch.',
+      mascotLead: 'Te mira, se duerme, celebra, baila con la música y reacciona cuando conectas tus AirPods o terminas un temporizador. No es un adorno: convierte el estado de tu Mac en algo que se entiende de un vistazo.',
+      mascotPoints: ['Expresiones y colores personalizables', 'Sombreros, audífonos y otros accesorios', 'Reacciones a música, Bluetooth, batería y temporizadores', 'Se puede ocultar, pausar o dejar totalmente a tu gusto'],
+      mascotCta: 'Conocer a la mascota',
       steps: [
         ['Instálalo', 'Descarga el .dmg, arrastra faro a Aplicaciones y ábrelo. Está firmado y notarizado por Apple.'],
         ['Elígelo a tu medida', 'Escoge un canal de fondos, los datos de la barra y los módulos del notch. Cada permiso es opcional y se pide solo cuando lo necesita.'],
@@ -358,7 +371,7 @@ export const ui = {
     theme: 'Toggle theme',
     home: {
       title: 'faro — your Mac, clearer, faster and yours',
-      description: 'faro turns the menu bar and notch into a customizable control center for your Mac. Wallpapers, system status, clipboard, files, music and tools, with no accounts or telemetry.',
+      description: 'faro turns the menu bar and notch into a customizable control center for your Mac, with widgets, per-app audio and a mascot that reacts with you. No accounts or telemetry.',
       kicker: 'A Conecta Lab product · Made for macOS',
       h1a: 'Your Mac has a lot to say.',
       h1b: 'faro puts it within reach.',
@@ -375,8 +388,13 @@ export const ui = {
       howTitle: 'It adapts to you, not the other way around.',
       howLead: 'Choose what appears, where it appears and how much room it takes. The panel rearranges, compacts and also works as a floating island on displays without a notch.',
       customizeTitle: 'Design your own control center.',
-      customizeLead: 'Drag widgets, change their width, decide which controls live on top and reduce every view until it feels made for your flow.',
-      customizePoints: ['1/3, 2/3 or full-width widgets', 'Music and calendar in one or two rows', 'Transparent or contrasted backgrounds', 'Optional titles, icons and descriptions', 'Separate volume, display and keyboard controls', 'Circular, rectangular or background-free tools'],
+      customizeLead: 'Start from a preset and tune it on a real preview: drag widgets, change their width or height and see the result without guessing.',
+      customizePoints: ['4 presets to get started in seconds', 'Direct editing inside the preview', '1/3, 2/3 or full-width widgets', 'Music and calendar in one or two rows', 'Transparent or contrasted backgrounds', 'Optional titles, icons and descriptions'],
+      mascotEyebrow: 'faro’s personality',
+      mascotTitle: 'There is a little light living in your notch.',
+      mascotLead: 'It watches, sleeps, celebrates, dances to music and reacts when you connect your AirPods or finish a timer. It is more than decoration: it turns your Mac’s state into something you understand at a glance.',
+      mascotPoints: ['Custom colors and expressions', 'Hats, headphones and other accessories', 'Reactions to music, Bluetooth, battery and timers', 'Hide it, pause it or make it completely yours'],
+      mascotCta: 'Meet the mascot',
       steps: [
         ['Install it', 'Download the .dmg, drag faro to Applications and open it. It’s signed and notarized by Apple.'],
         ['Make it yours', 'Pick a wallpaper channel, the menu bar data and the notch modules. Every permission is optional and only asked for when needed.'],
@@ -441,8 +459,8 @@ export const ui = {
 
 // Notas cortas de la versión actual: salen en latest.json y la app las muestra al avisar de la actualización.
 export const releaseNotes = {
-  es: 'Notch reorganizable, isla flotante en Macs sin notch, cuidado de la batería y mejoras en la música.',
-  en: 'Rearrangeable notch, floating island on Macs without a notch, battery care and music improvements.',
+  es: 'Plantillas para configurar el notch en segundos, edición directa en la vista previa, nueva pestaña de audio por aplicaciones y una mascota más viva.',
+  en: 'Notch presets for a faster setup, direct editing in the preview, a new per-app audio tab and a livelier mascot.',
 }
 
 export const privacy = {
@@ -561,9 +579,11 @@ export const demo = {
   es: {
     eyebrow: 'Pruébalo aquí',
     title: 'Un notch que funciona de verdad.',
-    lead: 'Pasa el cursor por el notch (o tócalo), cambia de pestaña, pon música, arranca el temporizador, suelta un archivo o elige un color de tu pantalla. Todo ocurre en tu navegador.',
+    lead: 'Pasa el cursor por el notch (o tócalo), cambia de pestaña, mezcla el audio, pon música, arranca el temporizador o saluda a la mascota. Todo ocurre en tu navegador.',
     hint: 'Pasa el cursor por el notch',
-    tabs: { home: 'Inicio', system: 'Sistema', tools: 'Herramientas' },
+    tabs: { home: 'Inicio', system: 'Sistema', audio: 'Audio', tools: 'Herramientas' },
+    audio: { master: 'General', music: 'Música', spotify: 'Spotify', chrome: 'Chrome', linked: 'Vinculado a General' },
+    mascot: { label: 'Saludar a la mascota', loved: '¡La mascota te saluda!' },
     tracks: [
       { title: 'Luz de faro', artist: 'Marea Alta', hue: 28 },
       { title: 'Noche en la bahía', artist: 'Cuatro Velas', hue: 200 },
@@ -595,9 +615,11 @@ export const demo = {
   en: {
     eyebrow: 'Try it here',
     title: 'A notch that really works.',
-    lead: 'Hover the notch (or tap it), switch tabs, play music, start the timer, drop a file or pick a color from your screen. Everything happens in your browser.',
+    lead: 'Hover the notch (or tap it), switch tabs, mix your audio, play music, start a timer or say hello to the mascot. Everything happens in your browser.',
     hint: 'Hover the notch',
-    tabs: { home: 'Home', system: 'System', tools: 'Tools' },
+    tabs: { home: 'Home', system: 'System', audio: 'Audio', tools: 'Tools' },
+    audio: { master: 'Master', music: 'Music', spotify: 'Spotify', chrome: 'Chrome', linked: 'Linked to Master' },
+    mascot: { label: 'Say hello to the mascot', loved: 'The mascot says hello!' },
     tracks: [
       { title: 'Lighthouse Light', artist: 'High Tide', hue: 28 },
       { title: 'Night in the Bay', artist: 'Four Sails', hue: 200 },

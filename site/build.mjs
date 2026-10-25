@@ -223,6 +223,8 @@ ${header(lang, 'home')}
 
 ${demoSection(lang)}
 
+${mascotSection(lang)}
+
 <ul class="facts" aria-label="faro">${h.facts.map((f, i) => `<li class="reveal"><span class="facts__icon">${icon(['cpu', 'shield-check', 'sliders-horizontal', 'code-xml'][i], 22)}</span><strong>${f}</strong><small>${h.factsSub[i]}</small></li>`).join('')}</ul>
 
 <div class="marquee" aria-hidden="true">
@@ -371,7 +373,7 @@ function demoSection(lang) {
       <p class="lead">${d.lead}</p>
     </div>
     <div class="demo-stage reveal" data-notch-demo>
-      <script type="application/json" data-demo-i18n>${JSON.stringify({ ...d, icons: Object.fromEntries(['timer', 'mic', 'mic-off', 'coffee', 'headphones', 'usb', 'download', 'battery-charging', 'keyboard', 'pipette', 'clipboard', 'inbox', 'play', 'pause', 'volume-2', 'x', 'music', 'sliders-horizontal', 'folder-down', 'plug-zap', 'cloud-sun', 'zap'].filter((n) => lucide[n]).map((n) => [n, lucide[n]])) })}</script>
+      <script type="application/json" data-demo-i18n>${JSON.stringify({ ...d, icons: Object.fromEntries(['timer', 'mic', 'mic-off', 'coffee', 'headphones', 'usb', 'download', 'battery-charging', 'keyboard', 'pipette', 'clipboard', 'inbox', 'play', 'pause', 'volume-2', 'x', 'music', 'sliders-horizontal', 'folder-down', 'plug-zap', 'cloud-sun', 'zap', 'chrome', 'link-2', 'heart'].filter((n) => lucide[n]).map((n) => [n, lucide[n]])) })}</script>
       <div class="demo-screen">
         <div class="demo-wall" aria-hidden="true"></div>
         <div class="demo-menubar" aria-hidden="true">
@@ -387,7 +389,8 @@ function demoSection(lang) {
           <div class="dn-lyric" data-pill-lyric></div>
           <div class="dn-panel" data-panel>
             <div class="dn-tabs" role="tablist">
-              ${['home', 'system', 'tools'].map((t, k) => `<button role="tab" type="button" data-tab="${t}" aria-selected="${k === 0}">${d.tabs[t]}</button>`).join('')}
+              <button class="dn-pet" type="button" data-demo-pet aria-label="${d.mascot.label}"><i><b></b><b></b></i><em>♥</em></button>
+              ${['home', 'system', 'audio', 'tools'].map((t, k) => `<button role="tab" type="button" data-tab="${t}" aria-selected="${k === 0}">${d.tabs[t]}</button>`).join('')}
               <button class="dn-close" type="button" data-collapse aria-label="Cerrar">${icon('x', 16)}</button>
             </div>
             <div class="dn-views">
@@ -417,6 +420,14 @@ function demoSection(lang) {
               <div class="dn-view dn-view--system" data-view="system" hidden>
                 ${[['cpu', 'cpu'], ['mem', 'activity'], ['disk', 'hard-drive'], ['bat', 'battery-charging']].map(([k, ic]) => `<div class="dn-ring" data-ring="${k}"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="26"/><circle class="dn-ring__bar" cx="32" cy="32" r="26" pathLength="100"/></svg><span class="dn-ring__icon">${icon(ic, 16)}</span><strong data-ring-value>0</strong><small>${d.system[k]}</small></div>`).join('')}
               </div>
+              <div class="dn-view dn-view--audio" data-view="audio" hidden>
+                ${[
+                  ['master', 'volume-2', 60, ''],
+                  ['music', 'music', 74, ''],
+                  ['spotify', 'headphones', 48, ''],
+                  ['chrome', 'chrome', 60, d.audio.linked],
+                ].map(([k, ic, value, note]) => `<label class="dn-audio-row${note ? ' is-linked' : ''}"><span class="dn-audio-icon">${icon(ic, 18)}</span><span class="dn-audio-name"><strong>${d.audio[k]}</strong>${note ? `<small>${note}</small>` : ''}</span><input type="range" min="0" max="100" value="${value}" data-audio="${k}" ${note ? 'disabled' : ''}><b data-audio-value="${k}">${value}</b></label>`).join('')}
+              </div>
               <div class="dn-view dn-view--tools" data-view="tools" hidden>
                 ${tools.map(([k, ic], n) => `<button type="button" class="dn-tool" data-tool="${k}" style="--i:${n}">${icon(ic, 20)}<span>${d.tools[k]}</span></button>`).join('')}
               </div>
@@ -434,6 +445,30 @@ function demoSection(lang) {
         <span>${d.simulate}</span>
         ${sims.map(([k, ic]) => `<button type="button" class="chip" data-sim="${k}">${icon(ic, 15)}${d.sims[k]}</button>`).join('')}
       </div>
+    </div>
+  </div>
+</section>`
+}
+
+function mascotSection(lang) {
+  const h = ui[lang].home
+  const labels = lang === 'es'
+    ? ['Sigue tu mirada', 'Baila con la música', 'Celebra contigo', 'También toma siestas']
+    : ['Follows your gaze', 'Dances to music', 'Celebrates with you', 'Also takes naps']
+  return `<section class="section mascot" id="mascota">
+  <div class="wrap mascot__grid">
+    <div class="mascot__copy reveal">
+      <span class="eyebrow">${h.mascotEyebrow}</span>
+      <h2>${h.mascotTitle}</h2>
+      <p class="lead">${h.mascotLead}</p>
+      <ul>${h.mascotPoints.map((point) => `<li>${icons.arrow}<span>${point}</span></li>`).join('')}</ul>
+      <div class="mascot__cta">${downloadButton(lang)}<a href="#funciones">${h.mascotCta}${icons.arrow}</a></div>
+    </div>
+    <div class="mascot__showcase reveal" data-tilt>
+      <div class="mascot__halo" aria-hidden="true"></div>
+      <div class="mascot__strip">${img('mascota-personalizada.png', lang === 'es' ? 'Tres versiones personalizadas de la mascota de faro' : 'Three customized versions of faro’s mascot')}</div>
+      <div class="mascot__app">${img('mascota.png', lang === 'es' ? 'La página para personalizar la mascota, con expresiones, colores y accesorios' : 'The mascot customization page with expressions, colors and accessories')}</div>
+      <div class="mascot__reactions" aria-hidden="true">${labels.map((label, index) => `<span style="--i:${index}">${['◉', '♫', '♥', 'zZ'][index]} ${label}</span>`).join('')}</div>
     </div>
   </div>
 </section>`

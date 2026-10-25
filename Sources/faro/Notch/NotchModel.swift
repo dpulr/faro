@@ -104,6 +104,10 @@ enum NotchLyricsDisplay: String, Codable, CaseIterable, Identifiable {
     }
 }
 
+enum NotchExpandedSection {
+    case home, system, audio, tools
+}
+
 enum NotchWidgetSize: String, Codable, CaseIterable, Identifiable {
     case compact, regular, featured
     var id: String { rawValue }
@@ -245,6 +249,7 @@ final class NotchModel: ObservableObject {
 
     // MARK: Estado
     @Published var expanded = false { didSet { if expanded { mascot.wake() } } }
+    @Published var expandedSection: NotchExpandedSection = .home
     @Published var expandedHeight: CGFloat = 160
     @Published var track: Track?
     @Published var artwork: NSImage?

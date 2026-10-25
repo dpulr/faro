@@ -5,7 +5,7 @@
 # faro
 
 **Tu Mac tiene mucho que decir. faro lo pone a tu alcance.**
-Un centro de control nativo, local y personalizable que vive en la barra de menú y el notch. Fondos, sistema, portapapeles, archivos, música y herramientas, sin cuentas ni telemetría.
+Un centro de control nativo, local y personalizable que vive en la barra de menú y el notch. Widgets, audio por aplicación, una mascota que reacciona contigo y las herramientas que usas todos los días, sin cuentas ni telemetría.
 
 [Sitio oficial](https://faro.conectalab.co) · [Descargar](https://faro.conectalab.co/descargar) · [Explorar el código](https://github.com/dpulr/faro) · [Reportar un problema](https://github.com/dpulr/faro/issues)
 
@@ -21,13 +21,14 @@ Un centro de control nativo, local y personalizable que vive en la barra de men�
 
 </div>
 
-> **English in one line:** *faro* is a free, local-first macOS menu-bar suite (wallpaper channels, system monitor, clipboard history, file shelf, notch panel, keyboard-cleaning lock and profiles) written in SwiftUI. The interface comes in Spanish and English (it follows your system language, or pick one in *General*).
+> **English in one line:** *faro* is a free, local-first macOS menu-bar suite with a customizable notch, per-app audio controls and a small reactive mascot, written natively in SwiftUI. The interface comes in Spanish and English.
 
 ---
 
 ## Contenido
 
 - [¿Qué es faro?](#qué-es-faro)
+- [La mascota](#la-mascota)
 - [Funciones](#funciones)
 - [Requisitos](#requisitos)
 - [Instalación](#instalación)
@@ -54,6 +55,16 @@ Principios con los que está hecho:
 - **Sin pagos ni claves de API.** Las fuentes de fotos, el clima y la medición de internet funcionan sin registrarse en nada.
 - **Respeta tu disco.** Solo guarda la foto actual de cada monitor; todo lo demás se descarga y se borra.
 - **Diseño propio.** Cristal líquido en macOS 26, un logo de faro dibujado a mano (disponible en [SVG](docs/images/logo.svg)) y controles propios en lugar de los genéricos del sistema.
+
+## La mascota
+
+<p align="center">
+  <img src="docs/images/mascota-personalizada.png" width="680" alt="Tres versiones personalizadas de la mascota de faro, con diferentes colores, ojos y accesorios">
+</p>
+
+Una pequeña luz vive en el notch. **Sigue el cursor con la mirada, baila con la música, celebra cuando termina un temporizador, reacciona al Bluetooth y se duerme cuando no la usas.** Puedes cambiar su forma, color, ojos, accesorio y tiempo de descanso, o apagarla por completo.
+
+<img src="docs/images/mascota.png" width="900" alt="Página Mascota de faro con expresiones, colores, accesorios y una vista previa en vivo">
 
 ## Funciones
 
@@ -85,9 +96,10 @@ Un perfil es un **modo guardado**: con un clic cambia el canal de fondos, cada c
 - **Sistema:** procesador, memoria, almacenamiento, red en vivo y batería (ciclos y salud), con gráficas y un resumen en lenguaje llano ("Tu Mac va tranquilo").
 - **Internet:** mide tu conexión con la herramienta `networkQuality` de macOS, a mano o **automáticamente** cada 30 minutos a 1 día, y guarda un historial con gráfica.
 - **Energía:** mantiene el Mac despierto durante 30 minutos a 8 horas, o sin límite. Y **cuida la batería**: avisa al 80 % para desenchufar, recuerda si sigue enchufada y guarda el historial de su salud.
-- **Audio:** el volumen y la salida de tu Mac (bocinas, audífonos, AirPlay) a mano, con silencio y un volumen propio para Música y Spotify. macOS no deja cambiar el volumen de otras apps.
+- **Audio:** el volumen y la salida de tu Mac (bocinas, audífonos, AirPlay) a mano, con una pestaña del notch que detecta las aplicaciones que están reproduciendo. Música y Spotify tienen volumen independiente; Chrome y las demás aparecen vinculadas al volumen general que permite macOS.
 
 <img src="docs/images/audio.png" width="760" alt="Página Audio con la salida, el volumen y el volumen por app">
+<img src="docs/images/notch-audio.png" width="760" alt="Pestaña Audio del notch con volumen general y controles para las aplicaciones que están reproduciendo">
 
 ### Almacenamiento y limpieza
 
@@ -152,6 +164,8 @@ Un panel negro que cuelga del notch: lleva el cursor arriba al centro de la pant
 - **Bluetooth:** un aviso al conectarse tus audífonos, teclado, ratón o mando.
 - **Soltar archivos:** arrastra un archivo hacia el notch y suéltalo en la zona que aparece; se guarda en la bandeja.
 - **Notch a tu medida:** widgets que activas, ordenas y redimensionas, pestañas, dock de herramientas y varios estilos. En un Mac sin notch, una isla flotante hace lo mismo.
+- **Configuración en segundos:** plantillas Minimal, Productividad, Multimedia y Centro de control, más un editor directo sobre una vista previa fiel del notch.
+- **Mezclador en el notch:** una pestaña Audio reúne el volumen general, la salida activa y las aplicaciones que están reproduciendo. Música y Spotify tienen controles independientes; Chrome y las demás apps aparecen vinculadas al volumen general que permite macOS.
 - **Editor visual:** arrastra widgets sobre una vista previa real, cambia su prioridad y elige anchos de 1/3, 2/3 o completos.
 - **Cada detalle cuenta:** títulos, iconos, descripciones, fondos, forma de las herramientas y letras de cero, una o dos líneas son configurables.
 - **Mascota:** un personaje que sigue el cursor, baila con la música, se pone azul con el Bluetooth y se duerme sola cuando no usas el notch. Se personaliza (forma, color, ojos y accesorio).
