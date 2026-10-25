@@ -7,8 +7,11 @@
 **Tu Mac tiene mucho que decir. faro lo pone a tu alcance.**
 Un centro de control nativo, local y personalizable que vive en la barra de menú y el notch. Widgets, audio por aplicación, una mascota que reacciona contigo y las herramientas que usas todos los días, sin cuentas ni telemetría.
 
-[Sitio oficial](https://faro.conectalab.co) · [Descargar](https://faro.conectalab.co/descargar) · [Explorar el código](https://github.com/dpulr/faro) · [Reportar un problema](https://github.com/dpulr/faro/issues)
+[Sitio oficial](https://faro.conectalab.co) · [Descargar](https://faro.conectalab.co/descargar) · [Actualizaciones](https://faro.conectalab.co/actualizaciones) · [Press kit](https://faro.conectalab.co/prensa) · [Reportar un problema](https://github.com/dpulr/faro/issues)
 
+[![Compilación](https://github.com/dpulr/faro/actions/workflows/ci.yml/badge.svg)](https://github.com/dpulr/faro/actions/workflows/ci.yml)
+[![Versión](https://img.shields.io/github/v/release/dpulr/faro)](https://github.com/dpulr/faro/releases/latest)
+[![Descargas](https://img.shields.io/github/downloads/dpulr/faro/total)](https://github.com/dpulr/faro/releases)
 [![Licencia: AGPL v3](https://img.shields.io/badge/licencia-AGPL--3.0--or--later-2e7d6b.svg)](LICENSE)
 ![macOS 14+](https://img.shields.io/badge/macOS-14%2B-lightgrey)
 ![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange)
@@ -21,7 +24,7 @@ Un centro de control nativo, local y personalizable que vive en la barra de men�
 
 </div>
 
-> **English in one line:** *faro* is a free, local-first macOS menu-bar suite with a customizable notch, per-app audio controls and a small reactive mascot, written natively in SwiftUI. The interface comes in Spanish and English.
+> **English:** Read the complete [English README](README.en.md).
 
 ---
 
@@ -221,7 +224,7 @@ Sin notch, el panel aparece como una cápsula arriba al centro.
 
 ## Instalación
 
-Cuando haya una *Release* publicada, descarga el `.dmg` y arrastra faro a *Aplicaciones* (firmado y notarizado por Apple). Mientras tanto, o si prefieres compilarlo tú, se **compila desde el código fuente**. Para publicar una versión, mira [`docs/DISTRIBUCION.md`](docs/DISTRIBUCION.md).
+Descarga el `.dmg` firmado y notarizado por Apple desde la [última Release](https://github.com/dpulr/faro/releases/latest) o desde la [página oficial](https://faro.conectalab.co/descargar), y arrastra faro a *Aplicaciones*. Si prefieres compilarlo tú, usa el código fuente. Para publicar una versión, mira [`docs/DISTRIBUCION.md`](docs/DISTRIBUCION.md).
 
 ```bash
 git clone https://github.com/dpulr/faro.git

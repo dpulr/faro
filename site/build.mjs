@@ -80,7 +80,10 @@ function head(lang, key, meta) {
 <meta property="og:title" content="${esc(meta.title)}">
 <meta property="og:description" content="${esc(meta.description)}">
 <meta property="og:url" content="${url}">
-<meta property="og:image" content="${SITE}/img/notch-configurar.png">
+<meta property="og:image" content="${SITE}/img/social-preview.png">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="faro — native, local-first control center for macOS">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#0d1217">
 <link rel="icon" type="image/svg+xml" href="/img/logo.svg">
@@ -136,6 +139,8 @@ function footer(lang) {
     <div class="foot__links">
       <a href="${t.path.home}">${lang === 'es' ? 'Inicio' : 'Home'}</a>
       <a href="${t.path.download}">${t.nav.download}</a>
+      <a href="${t.path.updates}">${lang === 'es' ? 'Actualizaciones' : 'Updates'}</a>
+      <a href="${t.path.press}">${lang === 'es' ? 'Prensa' : 'Press kit'}</a>
       <a href="${REPO}">GitHub</a>
       <a href="${t.path.home}#apoyo">${support[lang].footer}</a>
       <a href="${t.path.privacy}">${t.footer.privacy}</a>
@@ -205,6 +210,11 @@ ${header(lang, 'home')}
       ${codeLink}
     </div>
     <p class="hero__note">${h.ctaNote(version)}</p>
+    <ul class="hero-trust" aria-label="${lang === 'es' ? 'Confianza y compatibilidad' : 'Trust and compatibility'}">
+      <li>${icon('shield-check', 16)}${lang === 'es' ? 'Firmado y notarizado por Apple' : 'Signed and notarized by Apple'}</li>
+      <li>${icon('cpu', 16)}Apple Silicon + Intel</li>
+      <li>${icon('eye', 16)}${lang === 'es' ? 'Sin cuentas ni telemetría' : 'No accounts or telemetry'}</li>
+    </ul>
   </div>
   <div class="hero__art" data-tilt>
     <div class="scene">
@@ -298,6 +308,10 @@ ${mascotSection(lang)}
       <h2>${h.openTitle}</h2>
       <p class="lead">${h.openLead}</p>
       <p><a class="btn btn--github" href="${REPO}" rel="noopener">${icons.code}<span>${h.openRepo}</span></a></p>
+      <div class="open-source__links">
+        <a href="${REPO}/issues/new/choose">${lang === 'es' ? 'Reportar o proponer' : 'Report or suggest'}${icons.arrow}</a>
+        <a href="${t.path.updates}">${lang === 'es' ? 'Ver actualizaciones' : 'View updates'}${icons.arrow}</a>
+      </div>
       ${REPO_PUBLIC ? '' : `<p class="muted">${h.openSoon}</p>`}
     </div>
     <div class="terminal reveal" aria-label="${lang === 'es' ? 'Ejemplo para compilar faro' : 'Example commands to build faro'}">
@@ -525,6 +539,7 @@ ${header(lang, 'download')}
     <p class="lead">${d.sub}</p>
     <div class="dl__cta">${button}</div>
     ${download.available ? `<p class="hero__note">${d.meta(version, download.size, download.date)}</p>` : `<p class="hero__note">${t.home.ctaNote(version)}</p>`}
+    <ul class="hero-trust hero-trust--center"><li>${icon('shield-check', 16)}${lang === 'es' ? 'Notarizado por Apple' : 'Apple notarized'}</li><li>${icon('cpu', 16)}Apple Silicon + Intel</li><li>${icon('code-xml', 16)}AGPL-3.0</li></ul>
   </div>
 </section>
 <section class="section section--tint dl__body">
@@ -568,6 +583,75 @@ ${header(lang, 'privacy')}
 ${footer(lang)}`
 }
 
+function updatesPage(lang) {
+  const es = lang === 'es'
+  const t = ui[lang]
+  const releases = es ? [
+    ['2.0.0', '25 de octubre de 2026', 'Faro entiende el Mac, no solo lo mide.', [
+      'Diagnóstico ordenado por gravedad para memoria, procesador, disco, temperatura y energía, con la aplicación responsable y una acción concreta.',
+      'Análisis del cargador, puertos USB-C y MagSafe, discos externos, ventiladores y baterías de periféricos.',
+      'Nueva pestaña Equipo y alertas de conexión en el notch.',
+      'Escenas automáticas por aplicación, reunión, pantalla completa, Bluetooth, monitor, batería u horario.',
+      'Asistente de almacenamiento, limpieza segura, archivos olvidados y previsión de llenado.',
+      'Centro de comandos para encontrar escenas, secciones y herramientas desde el teclado.',
+    ]],
+    ['1.9.0', '25 de octubre de 2026', 'Configurar el notch dejó de ser complicado.', ['Plantillas Minimal, Productividad, Multimedia y Centro de control.', 'Edición directa sobre la vista previa y tamaños discretos.', 'Pestaña Audio con controles para Música y Spotify.']],
+    ['1.8.0', '24 de octubre de 2026', 'Una pequeña luz llegó al notch.', ['Mascota reactiva con formas, colores, ojos y accesorios.', 'Reacciones a música, Bluetooth, batería y temporizadores.']],
+    ['1.7.0', '24 de octubre de 2026', 'El notch se adapta a cada pantalla.', ['Isla flotante para monitores sin notch.', 'Widgets reorganizables, letras configurables y cuidado de batería.']],
+  ] : [
+    ['2.0.0', 'October 25, 2026', 'Faro understands the Mac instead of merely measuring it.', [
+      'Severity-ranked diagnostics for memory, CPU, disk, temperature and power, with the responsible app and a concrete action.',
+      'Charger analysis, USB-C and MagSafe ports, external drives, fans and peripheral batteries.',
+      'A new Equipment tab and connection alerts in the notch.',
+      'Automatic Scenes triggered by apps, meetings, full screen, Bluetooth, displays, battery or schedules.',
+      'Storage assistant, safe cleanup, forgotten files and fill forecast.',
+      'Command center for finding scenes, sections and tools from the keyboard.',
+    ]],
+    ['1.9.0', 'October 25, 2026', 'Configuring the notch became simple.', ['Minimal, Productivity, Media and Control Center presets.', 'Direct editing on the preview with predictable sizes.', 'Audio tab with controls for Music and Spotify.']],
+    ['1.8.0', 'October 24, 2026', 'A small light moved into the notch.', ['Reactive mascot with shapes, colors, eyes and accessories.', 'Reactions to music, Bluetooth, battery and timers.']],
+    ['1.7.0', 'October 24, 2026', 'The notch adapts to every display.', ['Floating island for displays without a notch.', 'Rearrangeable widgets, configurable lyrics and battery care.']],
+  ]
+  const cards = releases.map(([v, date, title, points], index) => `<article class="release-card${index === 0 ? ' release-card--latest' : ''}">
+    <div class="release-card__meta"><span>v${v}</span><time>${date}</time>${index === 0 ? `<em>${es ? 'Actual' : 'Latest'}</em>` : ''}</div>
+    <h2>${title}</h2><ul>${points.map((p) => `<li>${icons.arrow}<span>${p}</span></li>`).join('')}</ul>
+    ${index === 0 ? `<p><a class="btn" href="${t.path.download}">${icons.down}<span>${es ? 'Descargar Faro 2.0' : 'Download Faro 2.0'}</span></a></p>` : ''}
+  </article>`).join('')
+  return `${head(lang, 'updates', { title: es ? 'Actualizaciones de Faro' : 'Faro updates', description: es ? 'Novedades, mejoras y correcciones de cada versión de Faro para macOS.' : 'New features, improvements and fixes in every version of Faro for macOS.' })}
+${header(lang, 'updates')}
+<section class="dl dl--left"><div class="wrap wrap--narrow"><span class="eyebrow">Changelog · Faro</span><h1>${es ? 'Una app que sigue encendiendo nuevas luces.' : 'An app that keeps turning on new lights.'}</h1><p class="lead">${es ? 'Cada versión se publica con código, instalador verificable y notas claras.' : 'Every version ships with source code, a verifiable installer and plain release notes.'}</p></div></section>
+<section class="section section--tint"><div class="wrap wrap--narrow updates">${cards}<p class="updates__more"><a href="${REPO}/blob/main/CHANGELOG.md">${es ? 'Historial técnico completo' : 'Complete technical changelog'}${icons.arrow}</a><a href="${REPO}/releases">GitHub Releases${icons.arrow}</a></p></div></section>
+${footer(lang)}`
+}
+
+function pressPage(lang) {
+  const es = lang === 'es'
+  const t = ui[lang]
+  const assets = [
+    ['logo.svg', es ? 'Logo horizontal' : 'Horizontal logo'],
+    ['icon.png', es ? 'Ícono de la aplicación' : 'Application icon'],
+    ['social-preview.png', es ? 'Imagen social 1280 × 640' : 'Social image 1280 × 640'],
+    ['diagnostico.png', es ? 'Captura de Diagnóstico' : 'Diagnostics screenshot'],
+    ['notch-equipo.png', es ? 'Pestaña Equipo' : 'Equipment tab'],
+    ['mascota-personalizada.png', es ? 'Mascota de Faro' : 'Faro mascot'],
+  ]
+  const assetCards = assets.map(([file, label]) => `<article class="asset-card"><a href="/img/${file}" download><img src="/img/${file}" alt="${label}" loading="lazy"><span>${label}${icons.down}</span></a></article>`).join('')
+  const short = es
+    ? 'Faro convierte la barra de menú y el notch del Mac en un centro de control nativo para diagnóstico, automatización, almacenamiento, audio y herramientas cotidianas.'
+    : 'Faro turns the Mac menu bar and notch into a native control center for diagnostics, automation, storage, audio and everyday tools.'
+  const long = es
+    ? 'Faro es una aplicación gratuita, open source y local-first para macOS. Explica qué frena al Mac, convierte el notch en una matriz de widgets, automatiza la experiencia mediante Escenas, muestra el equipo conectado y ayuda a recuperar almacenamiento de forma segura. No tiene cuentas ni telemetría.'
+    : 'Faro is a free, open-source and local-first macOS app. It explains what is slowing the Mac down, turns the notch into a widget matrix, automates the experience through Scenes, shows connected equipment and helps recover storage safely. It has no accounts or telemetry.'
+  return `${head(lang, 'press', { title: es ? 'Prensa y recursos · Faro' : 'Press and resources · Faro', description: es ? 'Logos, capturas, datos y textos oficiales de Faro para medios y directorios.' : 'Official Faro logos, screenshots, facts and copy for media and directories.' })}
+${header(lang, 'press')}
+<section class="dl dl--left"><div class="wrap wrap--narrow"><span class="eyebrow">Press kit · Conecta Lab</span><h1>${es ? 'Todo lo necesario para contar la historia de Faro.' : 'Everything needed to tell Faro’s story.'}</h1><p class="lead">${es ? 'Recursos oficiales para artículos, directorios, videos y publicaciones.' : 'Official resources for articles, directories, videos and posts.'}</p></div></section>
+<section class="section section--tint"><div class="wrap press">
+  <div class="press-copy"><div class="copy-box"><span>${es ? 'En una línea' : 'One line'}</span><p>${short}</p></div><div class="copy-box"><span>${es ? 'Descripción corta' : 'Short description'}</span><p>${long}</p></div></div>
+  <div class="press-facts"><h2>${es ? 'Datos del producto' : 'Product facts'}</h2><dl><div><dt>${es ? 'Producto' : 'Product'}</dt><dd>Faro 2.0</dd></div><div><dt>${es ? 'Creador' : 'Maker'}</dt><dd>Conecta Lab Corp.</dd></div><div><dt>${es ? 'Plataforma' : 'Platform'}</dt><dd>macOS 14+</dd></div><div><dt>${es ? 'Precio' : 'Price'}</dt><dd>${es ? 'Gratis' : 'Free'}</dd></div><div><dt>${es ? 'Licencia' : 'License'}</dt><dd>AGPL-3.0-or-later</dd></div><div><dt>${es ? 'Idiomas' : 'Languages'}</dt><dd>${es ? 'Español e inglés' : 'English and Spanish'}</dd></div></dl></div>
+  <h2>${es ? 'Recursos visuales' : 'Visual assets'}</h2><div class="press-grid">${assetCards}</div>
+  <div class="press-actions"><a class="btn" href="${t.path.download}">${icons.down}<span>${es ? 'Descargar Faro' : 'Download Faro'}</span></a><a class="btn btn--ghost" href="${REPO}">${icons.code}<span>GitHub</span></a><a class="link" href="https://conectalab.co/${es ? 'contacto' : 'en/contact'}">${es ? 'Contacto de prensa' : 'Press contact'}${icons.arrow}</a></div>
+</div></section>${footer(lang)}`
+}
+
 function notFound() {
   return `${head('es', 'home', { title: 'No encontrado · faro', description: ui.es.home.description }).replace('<head>', '<head>\n<meta name="robots" content="noindex">')}
 ${header('es', 'home')}
@@ -595,6 +679,10 @@ write('descargar/index.html', downloadPage('es'))
 write('en/download/index.html', downloadPage('en'))
 write('privacidad/index.html', privacyPage('es'))
 write('en/privacy/index.html', privacyPage('en'))
+write('actualizaciones/index.html', updatesPage('es'))
+write('en/updates/index.html', updatesPage('en'))
+write('prensa/index.html', pressPage('es'))
+write('en/press/index.html', pressPage('en'))
 write('404.html', notFound())
 
 mkdirSync(join(dist, 'download'), { recursive: true })
@@ -611,7 +699,7 @@ writeFileSync(join(dist, 'download', 'latest.json'), JSON.stringify({
   ...(download.available ? { file: download.file, size: download.size, sha256: download.sha } : {}),
 }, null, 2) + '\n')
 
-const urls = ['es', 'en'].flatMap((l) => ['home', 'download', 'privacy'].map((k) => pageUrl(l, k)))
+const urls = ['es', 'en'].flatMap((l) => ['home', 'download', 'privacy', 'updates', 'press'].map((k) => pageUrl(l, k)))
 write('sitemap.xml', `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n')}\n</urlset>\n`)
 write('robots.txt', `User-agent: *\nAllow: /\nSitemap: ${SITE}/sitemap.xml\n`)
 

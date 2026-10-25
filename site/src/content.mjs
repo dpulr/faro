@@ -418,7 +418,7 @@ export const ui = {
       contact: 'Contacto',
       privacy: 'Privacidad',
     },
-    path: { home: '/', download: '/descargar', privacy: '/privacidad' },
+    path: { home: '/', download: '/descargar', privacy: '/privacidad', updates: '/actualizaciones', press: '/prensa' },
   },
   en: {
     lang: 'en',
@@ -510,7 +510,7 @@ export const ui = {
       contact: 'Contact',
       privacy: 'Privacy',
     },
-    path: { home: '/en/', download: '/en/download', privacy: '/en/privacy' },
+    path: { home: '/en/', download: '/en/download', privacy: '/en/privacy', updates: '/en/updates', press: '/en/press' },
   },
 }
 
@@ -525,7 +525,7 @@ export const privacy = {
     title: 'Política de privacidad · faro',
     description: 'Qué datos guarda faro, a qué servidores se conecta y qué permisos usa. Sin cuentas, sin telemetría y sin cookies de seguimiento.',
     h1: 'Política de privacidad.',
-    updated: 'Última actualización: 24 de octubre de 2026.',
+    updated: 'Última actualización: 25 de octubre de 2026.',
     intro: 'faro es una app para macOS que funciona en tu Mac. No tiene cuentas, no tiene telemetría y no envía tu información a ningún servidor propio. Esta página explica qué guarda, a dónde se conecta y qué permisos usa. Cubre la app y este sitio.',
     sections: [
       ['Lo que se queda en tu Mac', [
@@ -566,7 +566,7 @@ export const privacy = {
     title: 'Privacy policy · faro',
     description: 'What data faro stores, which servers it connects to and which permissions it uses. No accounts, no telemetry and no tracking cookies.',
     h1: 'Privacy policy.',
-    updated: 'Last updated: October 24, 2026.',
+    updated: 'Last updated: October 25, 2026.',
     intro: 'faro is a macOS app that runs on your Mac. It has no accounts, no telemetry and sends your information to no server of its own. This page explains what it stores, where it connects and which permissions it uses. It covers the app and this website.',
     sections: [
       ['What stays on your Mac', [

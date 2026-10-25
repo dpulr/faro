@@ -1,0 +1,46 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    name: macOS 26 · Swift
+    runs-on: macos-26
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Toolchain
+        run: swift --version
+
+      - name: Build Faro
+        run: swift build -c release
+
+      - name: Build website
+        env:
+          SITE_NO_DMG: "1"
+        run: node site/build.mjs
+
+      - name: Verify generated website
+        run: |
+          test -s site/dist/index.html
+          test -s site/dist/en/index.html
+          test -s site/dist/descargar/index.html
+          test -s site/dist/en/download/index.html
+          test -s site/dist/actualizaciones/index.html
+          test -s site/dist/en/updates/index.html
+          test -s site/dist/prensa/index.html
+          test -s site/dist/en/press/index.html
+          test -s site/dist/sitemap.xml
+
