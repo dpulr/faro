@@ -48,6 +48,8 @@ struct MascotStyle {
 
 enum MascotPainter {
     private static let ink = Color(red: 0.07, green: 0.08, blue: 0.1)
+    /// Color claro para accesorios finos: se ven sobre el fondo negro de la pastilla y del panel.
+    private static let rim = Color(red: 0.93, green: 0.95, blue: 0.98)
 
     private static func mix(_ color: Color, with other: Color, _ amount: Double) -> Color {
         let a = NSColor(color).usingColorSpace(.sRGB) ?? .gray, b = NSColor(other).usingColorSpace(.sRGB) ?? .gray
@@ -221,7 +223,7 @@ enum MascotPainter {
         case .none: break
         case .antenna:
             var stem = Path(); stem.move(to: CGPoint(x: s * 0.5, y: s * 0.16)); stem.addQuadCurve(to: CGPoint(x: s * 0.58, y: s * 0.02), control: CGPoint(x: s * 0.5, y: s * 0.06))
-            context.stroke(stem, with: .color(ink.opacity(0.8)), style: StrokeStyle(lineWidth: max(1, s * 0.03), lineCap: .round))
+            context.stroke(stem, with: .color(rim), style: StrokeStyle(lineWidth: max(1, s * 0.03), lineCap: .round))
             let glow = 0.7 + 0.3 * sin(t * 4)
             context.fill(Path(ellipseIn: CGRect(x: s * 0.54, y: -s * 0.02, width: s * 0.09, height: s * 0.09)), with: .color(Color(red: 1, green: 0.85, blue: 0.4).opacity(glow)))
         case .bow:
@@ -232,9 +234,11 @@ enum MascotPainter {
             context.fill(Path(ellipseIn: CGRect(x: s * 0.69, y: s * 0.17, width: s * 0.06, height: s * 0.06)), with: .color(mix(c, with: .black, 0.25)))
         case .headphones:
             var band = Path(); band.addArc(center: CGPoint(x: s * 0.5, y: s * 0.5), radius: s * 0.43, startAngle: .degrees(200), endAngle: .degrees(340), clockwise: false)
-            context.stroke(band, with: .color(ink.opacity(0.85)), style: StrokeStyle(lineWidth: max(1.5, s * 0.05), lineCap: .round))
+            context.stroke(band, with: .color(rim), style: StrokeStyle(lineWidth: max(1.5, s * 0.05), lineCap: .round))
             for x in [0.09, 0.91] {
-                context.fill(Path(roundedRect: CGRect(x: s * (x - 0.06), y: s * 0.36, width: s * 0.12, height: s * 0.22), cornerRadius: s * 0.05), with: .color(ink.opacity(0.9)))
+                let cup = CGRect(x: s * (x - 0.065), y: s * 0.35, width: s * 0.13, height: s * 0.24)
+                context.fill(Path(roundedRect: cup, cornerRadius: s * 0.055), with: .color(rim))
+                context.fill(Path(roundedRect: cup.insetBy(dx: s * 0.028, dy: s * 0.04), cornerRadius: s * 0.03), with: .color(mix(body, with: .black, 0.35)))
             }
         }
     }
