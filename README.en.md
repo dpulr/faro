@@ -52,6 +52,14 @@ A native, local-first macOS control center for the menu bar and notch. Faro comb
 
 Download the signed and Apple-notarized DMG from the [latest release](https://github.com/dpulr/faro/releases/latest) or from the [official download page](https://faro.conectalab.co/en/download). Open it, drag Faro to Applications and launch it.
 
+**With Homebrew:**
+
+```bash
+brew install --cask dpulr/faro/faro
+```
+
+To update: `brew upgrade --cask faro`. To uninstall: `brew uninstall --cask faro`.
+
 Requirements:
 
 - macOS 14 Sonoma or later.

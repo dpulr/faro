@@ -224,7 +224,17 @@ Sin notch, el panel aparece como una cápsula arriba al centro.
 
 ## Instalación
 
-Descarga el `.dmg` firmado y notarizado por Apple desde la [última Release](https://github.com/dpulr/faro/releases/latest) o desde la [página oficial](https://faro.conectalab.co/descargar), y arrastra faro a *Aplicaciones*. Si prefieres compilarlo tú, usa el código fuente. Para publicar una versión, mira [`docs/DISTRIBUCION.md`](docs/DISTRIBUCION.md).
+Descarga el `.dmg` firmado y notarizado por Apple desde la [última Release](https://github.com/dpulr/faro/releases/latest) o desde la [página oficial](https://faro.conectalab.co/descargar), y arrastra faro a *Aplicaciones*.
+
+**Con Homebrew:**
+
+```bash
+brew install --cask dpulr/faro/faro
+```
+
+Para actualizar: `brew upgrade --cask faro`. Para desinstalar: `brew uninstall --cask faro`.
+
+Si prefieres compilarlo tú, usa el código fuente. Para publicar una versión, mira [`docs/DISTRIBUCION.md`](docs/DISTRIBUCION.md).
 
 ```bash
 git clone https://github.com/dpulr/faro.git

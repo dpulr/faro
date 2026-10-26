@@ -15,6 +15,8 @@ const REPO = 'https://github.com/dpulr/faro'
 const REPO_PUBLIC = process.env.SITE_REPO_PUBLIC !== '0'
 // Los espacios de apoyo se muestran como "próximamente" hasta que se configure cada enlace.
 const SPONSORS_URL = process.env.SITE_SPONSORS === '1' ? 'https://github.com/sponsors/dpulr' : ''
+// El bloque de Homebrew se muestra cuando el tap existe (SITE_BREW=1).
+const BREW = process.env.SITE_BREW === '1'
 const KOFI_URL = process.env.SITE_KOFI_URL || 'https://ko-fi.com/conectalab'
 const version = readFileSync(join(root, '../VERSION'), 'utf8').trim()
 
@@ -159,8 +161,10 @@ function footer(lang) {
 </html>`
 }
 
-function downloadButton(lang, cls = '') {
+// `direct` baja el .dmg sin pasar por la página de descarga (si el .dmg está en el sitio).
+function downloadButton(lang, cls = '', direct = false) {
   const t = ui[lang]
+  if (direct && download.available) return `<a class="btn ${cls}" href="/download/faro.dmg" download="${download.file}">${icons.down}<span>${t.home.cta}</span></a>`
   return `<a class="btn ${cls}" href="${t.path.download}">${icons.down}<span>${t.home.cta}</span></a>`
 }
 
@@ -206,10 +210,10 @@ ${header(lang, 'home')}
     <h1>${h.h1a}<br><span>${h.h1b}</span></h1>
     <p class="hero__sub">${h.sub}</p>
     <div class="hero__cta">
-      ${downloadButton(lang)}
+      ${downloadButton(lang, '', true)}
       ${codeLink}
     </div>
-    <p class="hero__note">${h.ctaNote(version)}</p>
+    <p class="hero__note">${h.ctaNote(version)} · <a href="${t.path.download}">${h.reqLink}</a></p>
     <ul class="hero-trust" aria-label="${lang === 'es' ? 'Confianza y compatibilidad' : 'Trust and compatibility'}">
       <li>${icon('shield-check', 16)}${lang === 'es' ? 'Firmado y notarizado por Apple' : 'Signed and notarized by Apple'}</li>
       <li>${icon('cpu', 16)}Apple Silicon + Intel</li>
@@ -548,6 +552,7 @@ ${header(lang, 'download')}
     <ul>${d.req.map((r) => `<li>${r}</li>`).join('')}</ul>
     <h3>${d.installTitle}</h3>
     <ol>${d.install.map((r) => `<li>${r}</li>`).join('')}</ol>
+    ${BREW ? `<h3>${d.brewTitle}</h3><p>${d.brewLead}</p><pre class="code"><code>brew install --cask dpulr/faro/faro</code></pre>` : ''}
     <h3>${d.permsTitle}</h3>
     <p>${d.perms}</p>
     ${sha}
