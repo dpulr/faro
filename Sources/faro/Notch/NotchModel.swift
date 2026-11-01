@@ -309,6 +309,8 @@ final class NotchModel: ObservableObject {
     @Published var dropActive = false
     /// Lo que hace el botón del aviso actual.
     var toastAction: (() -> Void)?
+    /// Tamaño del aviso visible; el controlador lo usa para que solo el aviso reciba el ratón.
+    var toastSize: CGSize = .zero
     /// Se llama al conectarse un dispositivo Bluetooth (para refrescar su batería).
     var onBluetoothConnect: (() -> Void)?
     /// Recoge el panel desplegado (lo asigna el controlador).

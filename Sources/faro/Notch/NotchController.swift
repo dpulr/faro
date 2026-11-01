@@ -209,6 +209,15 @@ final class NotchController {
             if panel?.ignoresMouseEvents == interactive { panel?.ignoresMouseEvents = !interactive }
         }
 
+        // Un aviso con botón (descarga lista, USB…) solo recibe el ratón sobre sí mismo: el panel mide 780×720 y,
+        // si fuera interactivo entero, taparía el centro de la pantalla mientras el aviso está vivo.
+        if !model.expanded, !model.dropActive, model.toast?.actionLabel != nil {
+            let size = model.toastSize
+            let rect = CGRect(x: screen.frame.midX - size.width / 2, y: top - size.height, width: size.width, height: size.height)
+            let interactive = size != .zero && rect.contains(p)
+            if panel?.ignoresMouseEvents == interactive { panel?.ignoresMouseEvents = !interactive }
+        }
+
         // La ventana disparadora solo atiende al ratón mientras hay un arrastre, para no tapar la barra de menú.
         // No se depende del portapapeles de arrastre (el Dock y otras apps no siempre lo cambian): con el botón
         // pulsado cerca del notch la ventana ya escucha, y solo los archivos la activan.
@@ -243,7 +252,8 @@ final class NotchController {
     /// El panel solo recibe el ratón cuando está desplegado o mostrando la zona de soltar.
     private func updateMouseTransparency() {
         guard let model else { return }
-        panel?.ignoresMouseEvents = !(model.expanded || model.dropActive || model.toast?.actionLabel != nil)
+        // Con un aviso con botón decide pollMouse según dónde esté el cursor.
+        panel?.ignoresMouseEvents = !(model.expanded || model.dropActive)
     }
 
     private func setExpanded(_ on: Bool) {

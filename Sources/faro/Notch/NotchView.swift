@@ -34,6 +34,11 @@ private struct HeightKey: PreferenceKey {
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) { value = max(value, nextValue()) }
 }
 
+private struct ToastSizeKey: PreferenceKey {
+    static var defaultValue: CGSize = .zero
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) { value = nextValue() }
+}
+
 /// Panel negro que cuelga del notch: pequeño con "alas" cuando algo está en vivo y desplegado al acercar el cursor.
 struct NotchView: View {
     @ObservedObject var model: NotchModel
@@ -282,6 +287,8 @@ struct NotchView: View {
         .padding(.bottom, 14)
         .frame(minWidth: 280)
         .background(NotchSurfaceShape(radius: 26, attachedToTop: hasHardwareNotch).fill(Color.black))
+        .background(GeometryReader { Color.clear.preference(key: ToastSizeKey.self, value: $0.size) })
+        .onPreferenceChange(ToastSizeKey.self) { model.toastSize = $0 }
     }
 
     private var dropZone: some View {
