@@ -592,6 +592,7 @@ function updatesPage(lang) {
   const es = lang === 'es'
   const t = ui[lang]
   const releases = es ? [
+    ['2.0.1', '1 de noviembre de 2026', 'Los avisos del notch ya no estorban.', ['Un aviso con botón (descarga lista, disco conectado, captura guardada) ya no bloquea el ratón en el resto de la pantalla mientras está visible.']],
     ['2.0.0', '25 de octubre de 2026', 'Faro entiende el Mac, no solo lo mide.', [
       'Diagnóstico ordenado por gravedad para memoria, procesador, disco, temperatura y energía, con la aplicación responsable y una acción concreta.',
       'Análisis del cargador, puertos USB-C y MagSafe, discos externos, ventiladores y baterías de periféricos.',
@@ -604,6 +605,7 @@ function updatesPage(lang) {
     ['1.8.0', '24 de octubre de 2026', 'Una pequeña luz llegó al notch.', ['Mascota reactiva con formas, colores, ojos y accesorios.', 'Reacciones a música, Bluetooth, batería y temporizadores.']],
     ['1.7.0', '24 de octubre de 2026', 'El notch se adapta a cada pantalla.', ['Isla flotante para monitores sin notch.', 'Widgets reorganizables, letras configurables y cuidado de batería.']],
   ] : [
+    ['2.0.1', 'November 1, 2026', 'Notch notices no longer get in the way.', ['A notice with a button (download ready, drive connected, screenshot saved) no longer blocks the mouse on the rest of the screen while it is visible.']],
     ['2.0.0', 'October 25, 2026', 'Faro understands the Mac instead of merely measuring it.', [
       'Severity-ranked diagnostics for memory, CPU, disk, temperature and power, with the responsible app and a concrete action.',
       'Charger analysis, USB-C and MagSafe ports, external drives, fans and peripheral batteries.',

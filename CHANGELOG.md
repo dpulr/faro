@@ -2,6 +2,11 @@
 
 Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen [SemVer](https://semver.org/lang/es/).
 
+## [2.0.1] — 2026-11-01
+
+### Correcciones
+- Un aviso con botón en el notch (descarga lista, disco conectado, captura guardada) ya no bloquea el ratón en el resto de la pantalla mientras está visible: antes se podía impedir seleccionar texto o pulsar botones en otras apps durante esos segundos.
+
 ## [2.0.0] — 2026-10-25
 
 ### Novedades
