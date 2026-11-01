@@ -13,10 +13,10 @@ const dist = join(root, 'dist')
 const SITE = process.env.SITE_URL || 'https://faro.conectalab.co'
 const REPO = 'https://github.com/dpulr/faro'
 const REPO_PUBLIC = process.env.SITE_REPO_PUBLIC !== '0'
-// Los espacios de apoyo se muestran como "próximamente" hasta que se configure cada enlace.
-const SPONSORS_URL = process.env.SITE_SPONSORS === '1' ? 'https://github.com/sponsors/dpulr' : ''
-// El bloque de Homebrew se muestra cuando el tap existe (SITE_BREW=1).
-const BREW = process.env.SITE_BREW === '1'
+// GitHub Sponsors y Ko-fi están activos; SITE_SPONSORS=0 deja Sponsors como "próximamente".
+const SPONSORS_URL = process.env.SITE_SPONSORS === '0' ? '' : 'https://github.com/sponsors/dpulr'
+// El bloque de Homebrew se muestra siempre; SITE_BREW=0 lo oculta.
+const BREW = process.env.SITE_BREW !== '0'
 const KOFI_URL = process.env.SITE_KOFI_URL || 'https://ko-fi.com/conectalab'
 const version = readFileSync(join(root, '../VERSION'), 'utf8').trim()
 
