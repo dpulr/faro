@@ -2,6 +2,11 @@
 
 Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen [SemVer](https://semver.org/lang/es/).
 
+## [Sin publicar]
+
+### Correcciones
+- En la bandeja ya se pueden arrastrar los archivos hacia otras apps: antes, al intentarlo, se movía la ventana completa. Ahora la bandeja se mueve desde la cabecera y los bordes.
+
 ## [2.0.1] — 2026-11-01
 
 ### Correcciones

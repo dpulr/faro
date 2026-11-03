@@ -48,7 +48,14 @@ final class ShelfPanelController {
         p.isOpaque = false
         p.backgroundColor = .clear
         p.hidesOnDeactivate = false
-        p.isMovableByWindowBackground = true
+        // Solo se arrastra la ventana desde el borde y la cabecera (sin los botones); el resto es de los archivos.
+        p.dragRegions = { size in
+            let edge: CGFloat = 14, header: CGFloat = 54, buttons: CGFloat = 126
+            return [CGRect(x: 0, y: size.height - header, width: size.width - buttons, height: header),
+                    CGRect(x: 0, y: 0, width: size.width, height: edge),
+                    CGRect(x: 0, y: 0, width: edge, height: size.height),
+                    CGRect(x: size.width - edge, y: 0, width: edge, height: size.height)]
+        }
         p.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         p.contentView = host
         if !p.setFrameUsingName("FaroShelf") {

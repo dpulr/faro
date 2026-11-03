@@ -8,6 +8,20 @@ import Carbon.HIToolbox
 final class FloatingPanel: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
+
+    /// Zonas (en coordenadas de la ventana, origen abajo a la izquierda) desde las que un clic arrastra la ventana.
+    /// Si es `nil` el panel no se mueve. No se usa `isMovableByWindowBackground`: movería la ventana también al
+    /// intentar arrastrar un elemento de dentro (por ejemplo un archivo de la bandeja hacia otra app).
+    var dragRegions: ((CGSize) -> [CGRect])?
+
+    override func sendEvent(_ event: NSEvent) {
+        if event.type == .leftMouseDown, let regions = dragRegions?(frame.size),
+           regions.contains(where: { $0.contains(event.locationInWindow) }) {
+            performDrag(with: event)
+            return
+        }
+        super.sendEvent(event)
+    }
 }
 
 /// Panel que aparece junto al cursor con ⌃⌥⌘V. No activa faro, así la app donde estabas sigue al frente y el pegado llega ahí.
