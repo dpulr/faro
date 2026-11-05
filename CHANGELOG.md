@@ -2,7 +2,7 @@
 
 Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/) y las versiones siguen [SemVer](https://semver.org/lang/es/).
 
-## [Sin publicar]
+## [2.1.0] — 2026-11-05
 
 ### Novedades
 - **Inicio y Modo ligero.** Una página nueva con un interruptor por función (notch, mascota, cambio de fondo, portapapeles, vigilancia de internet y avisos de descargas, capturas y discos). Lo que se apaga se detiene de verdad, sin temporizadores. El Modo ligero apaga todo lo opcional con un clic y se puede deshacer.

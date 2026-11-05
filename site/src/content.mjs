@@ -550,8 +550,8 @@ export const ui = {
 
 // Notas cortas de la versión actual: salen en latest.json y la app las muestra al avisar de la actualización.
 export const releaseNotes = {
-  es: 'Diagnóstico del Mac, análisis del cargador y puertos, pestaña Equipo, alertas de conexión, escenas automáticas y almacenamiento inteligente.',
-  en: 'Mac diagnostics, charger and port analysis, Equipment tab, connection alerts, automatic scenes and smarter storage.',
+  es: 'Inicio con Modo ligero, interfaz más simple, y arreglos en los avisos del notch y en la bandeja de archivos.',
+  en: 'Home with Light mode, a simpler interface, and fixes for notch notices and the file shelf.',
 }
 
 export const privacy = {
