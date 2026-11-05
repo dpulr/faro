@@ -715,6 +715,34 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate, NSWindowD
         try? manager.createDirectory(at: tmp, withIntermediateDirectories: true)
         defer { try? manager.removeItem(at: tmp) }
 
+        // Funciones apagables: lo apagado se detiene de verdad.
+        let memBefore = ProcessMemory.footprintMB()
+        openMain(.diagnostico)
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        let memOpen = ProcessMemory.footprintMB()
+        mainWindow?.close()
+        try? await Task.sleep(nanoseconds: 2_000_000_000)
+        let memClosed = ProcessMemory.footprintMB()
+        check("ventana principal: se suelta al cerrar", mainWindow == nil,
+              String(format: "(%.0f MB antes, %.0f abierta, %.0f cerrada)", memBefore, memOpen, memClosed))
+        clipboard.setActive(false)
+        check("funciones: portapapeles apagado", !clipboard.active)
+        clipboard.setActive(true)
+        check("funciones: portapapeles se vuelve a encender", clipboard.active)
+        extras.connection.setMonitoring(false)
+        check("funciones: conexión apagada", !extras.connection.monitoring && extras.connection.issue == nil)
+        extras.connection.setMonitoring(true)
+        check("funciones: conexión se vuelve a encender", extras.connection.monitoring)
+        let notchWas = notch.enabled
+        notch.enabled = false
+        NotchController.shared.apply()
+        check("funciones: notch apagado sin ventana", NotchController.shared.window == nil)
+        notch.enabled = true
+        NotchController.shared.apply()
+        check("funciones: notch vuelve a aparecer", NotchController.shared.window != nil)
+        notch.enabled = notchWas
+        NotchController.shared.apply()
+
         // Temporizador
         let timer = FocusTimer()
         var events: [String] = []
@@ -1402,7 +1430,8 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate, NSWindowD
                 .environmentObject(engine).environmentObject(monitor).environmentObject(speed)
                 .environmentObject(awake).environmentObject(storage).environmentObject(diskHistory).environmentObject(clipboard)
                 .environmentObject(cleaning).environmentObject(notch).environmentObject(diskAlert).environmentObject(updates).environmentObject(extras).environmentObject(mixer).environmentObject(appearance))
-            window.center()
+            if !window.setFrameUsingName("FaroMain") { window.center() }
+            window.setFrameAutosaveName("FaroMain")
             mainWindow = window
             appResignObserver = NotificationCenter.default.addObserver(
                 forName: NSApplication.didResignActiveNotification, object: NSApp, queue: .main
@@ -1424,6 +1453,11 @@ final class AppController: NSObject, UNUserNotificationCenterDelegate, NSWindowD
     func windowWillClose(_ notification: Notification) {
         guard notification.object as? NSWindow === mainWindow else { return }
         NSApp.setActivationPolicy(.accessory)
+        // Cerrada la ventana, se suelta su contenido (las imágenes de las páginas ocupan decenas de MB); se rearma al abrirla.
+        if let observer = appResignObserver { NotificationCenter.default.removeObserver(observer); appResignObserver = nil }
+        let window = mainWindow
+        mainWindow = nil
+        DispatchQueue.main.async { window?.contentView = nil; window?.delegate = nil }
     }
 }
 

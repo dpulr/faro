@@ -86,6 +86,11 @@ final class NotchController {
             forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in self?.apply() }
         }
+        startPolling()
+    }
+
+    private func startPolling() {
+        guard timer == nil else { return }
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.pollMouse() }
         }
@@ -94,7 +99,16 @@ final class NotchController {
     /// Crea o quita el panel según el ajuste y lo ubica en la pantalla donde está trabajando el usuario.
     func apply() {
         guard let model, let mixer, let extras, let engine, let monitor, let speed, let awake else { return }
-        guard model.enabled else { panel?.orderOut(nil); panel = nil; return }
+        // Apagado, el notch no deja nada en marcha: ni ventanas ni temporizadores.
+        extras.setRunning(model.enabled)
+        model.setRunning(model.enabled)
+        guard model.enabled else {
+            timer?.invalidate(); timer = nil
+            panel?.orderOut(nil); panel = nil
+            trigger?.orderOut(nil); trigger = nil
+            return
+        }
+        startPolling()
         let mouse = NSEvent.mouseLocation
         let target = NSScreen.screens.first { $0.frame.contains(mouse) } ?? NSScreen.main ?? NSScreen.screens[0]
         screen = target

@@ -99,10 +99,21 @@ final class NotchExtras: ObservableObject {
         Hotkeys.shared.register(keyCode: kVK_ANSI_M, modifiers: cmdKey | optionKey | controlKey) { [weak self] in
             Task { @MainActor in self?.toggleMic() }
         }
+        startClock()
+    }
+
+    private func startClock() {
+        guard clock == nil else { return }
         clock = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.poll() }
         }
         clock?.tolerance = 0.1
+    }
+
+    /// El reloj de Bloq Mayús, cámara y micrófono solo corre mientras el notch esté encendido.
+    func setRunning(_ on: Bool) {
+        guard notch != nil else { return }
+        if on { startClock() } else { clock?.invalidate(); clock = nil; cameraOn = false; micOn = false }
     }
 
     /// Cada medio segundo: Bloq Mayús; cada 2 s: cámara y micrófono; y las baterías al desplegar el panel.

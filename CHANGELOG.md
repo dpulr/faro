@@ -4,6 +4,13 @@ Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a 
 
 ## [Sin publicar]
 
+### Novedades
+- **Inicio y Modo ligero.** Una página nueva con un interruptor por función (notch, mascota, cambio de fondo, portapapeles, vigilancia de internet y avisos de descargas, capturas y discos). Lo que se apaga se detiene de verdad, sin temporizadores. El Modo ligero apaga todo lo opcional con un clic y se puede deshacer.
+- **Navegación más simple.** La barra lateral pasa de 14 páginas a 5 grupos (Inicio, Mi Mac, Personalizar, Herramientas y Ajustes), con las páginas de cada grupo en pestañas.
+
+### Cambios
+- Al cerrar la ventana principal, faro suelta su contenido para liberar memoria; al abrirla de nuevo vuelve al mismo lugar.
+
 ### Correcciones
 - En la bandeja ya se pueden arrastrar los archivos hacia otras apps: antes, al intentarlo, se movía la ventana completa. Ahora la bandeja se mueve desde la cabecera y los bordes.
 

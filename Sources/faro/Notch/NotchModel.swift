@@ -462,8 +462,16 @@ final class NotchModel: ObservableObject {
 
     // MARK: Ciclo de vida
 
+    /// Apaga el reloj interno (música, calendario, clima, mascota) cuando el notch está desactivado.
+    func setRunning(_ on: Bool) {
+        if on { if started { startTimer() } } else { timer?.invalidate(); timer = nil }
+    }
+
+    private var started = false
+
     func start() {
         guard timer == nil else { return }
+        started = true
         bluetooth.onConnect = { [weak self] name, symbol in
             Task { @MainActor in
                 self?.showToast(symbol: symbol, text: String(format: tr("%@ conectado"), name))
@@ -476,6 +484,11 @@ final class NotchModel: ObservableObject {
         refreshCalendar()
         Task { await refreshWeather() }
         pollMusic()
+        startTimer()
+    }
+
+    private func startTimer() {
+        guard timer == nil else { return }
         timer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.tick() }
         }

@@ -31,6 +31,8 @@ final class ConnectionMonitor: ObservableObject {
     @Published private(set) var issue: Issue?
     @Published private(set) var latencyHistory: [Double] = []
     @Published var alertsEnabled: Bool { didSet { UserDefaults.standard.set(alertsEnabled, forKey: "connectionAlerts") } }
+    /// Apagado, no sondea la red ni vigila el Wi‑Fi o la VPN.
+    @Published private(set) var monitoring = UserDefaults.standard.object(forKey: "connectionMonitoring") as? Bool ?? true
     var onAlert: ((Alert) -> Void)?
 
     // Umbrales: una lectura mala suelta no avisa, hace falta que se repita.
@@ -39,7 +41,7 @@ final class ConnectionMonitor: ObservableObject {
     static let confirmations = 3
     static let vpnGrace: TimeInterval = 600
 
-    private let pathMonitor = NWPathMonitor()
+    private var pathMonitor = NWPathMonitor()
     private var path: NWPath?
     private var timer: Timer?
     private var failedProbes = 0, slowStreak = 0, weakStreak = 0
@@ -50,9 +52,20 @@ final class ConnectionMonitor: ObservableObject {
         alertsEnabled = UserDefaults.standard.object(forKey: "connectionAlerts") as? Bool ?? true
     }
 
+    func setMonitoring(_ on: Bool) {
+        guard on != monitoring else { return }
+        monitoring = on
+        UserDefaults.standard.set(on, forKey: "connectionMonitoring")
+        if on { start() } else {
+            stop()
+            reading = Reading(); issue = nil; latencyHistory = []
+        }
+    }
+
     func start() {
-        guard !started else { return }
+        guard monitoring, !started else { return }
         started = true
+        pathMonitor = NWPathMonitor() // un NWPathMonitor cancelado no se puede reiniciar
         pathMonitor.pathUpdateHandler = { [weak self] path in
             Task { @MainActor in self?.path = path; self?.sample() }
         }
@@ -67,6 +80,8 @@ final class ConnectionMonitor: ObservableObject {
     func stop() {
         pathMonitor.cancel()
         timer?.invalidate()
+        timer = nil
+        path = nil
         started = false
     }
 

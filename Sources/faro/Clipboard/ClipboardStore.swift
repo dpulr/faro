@@ -62,6 +62,9 @@ final class ClipboardStore: ObservableObject {
         didSet { if settings != oldValue { prune(); scheduleSave() } }
     }
 
+    /// Apagado, ni siquiera vigila el portapapeles (sin temporizador).
+    @Published private(set) var active = UserDefaults.standard.object(forKey: "clipboardActive") as? Bool ?? true
+
     private let persistent: Bool
     private var lastChange = NSPasteboard.general.changeCount
     private var timer: Timer?
@@ -87,11 +90,23 @@ final class ClipboardStore: ObservableObject {
         guard persistent else { return }
         load()
         prune()
+        if active { startTimer() }
+        ClipboardPanelController.shared.install(store: self)
+    }
+
+    func setActive(_ on: Bool) {
+        guard on != active else { return }
+        active = on
+        UserDefaults.standard.set(on, forKey: "clipboardActive")
+        if on { lastChange = NSPasteboard.general.changeCount; startTimer() } else { timer?.invalidate(); timer = nil }
+    }
+
+    private func startTimer() {
+        timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 0.6, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.poll() }
         }
         timer?.tolerance = 0.2
-        ClipboardPanelController.shared.install(store: self)
     }
 
     // MARK: Lectura
