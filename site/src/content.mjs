@@ -5,6 +5,18 @@
 export const features = {
   es: [
     {
+      id: 'inicio',
+      img: 'inicio.png',
+      alt: 'La página Inicio de faro con el Modo ligero y un interruptor por función',
+      title: 'Enciende solo lo que uses.',
+      lead: 'Una página con un interruptor por función y un Modo ligero que apaga todo lo opcional con un clic.',
+      points: [
+        'Lo que apagas se detiene de verdad: sin temporizadores, memoria ni batería gastados.',
+        'El Modo ligero es reversible: deja solo el ícono en la barra de menú y vuelve a como estaba cuando quieras.',
+        'Te dice qué permisos faltan, para qué sirven y abre el ajuste correcto.',
+      ],
+    },
+    {
       id: 'fondos',
       img: 'fondos.png',
       alt: 'La página Fondos de faro: la foto actual con cuatro botones y los canales como tarjetas',
@@ -127,6 +139,18 @@ export const features = {
     },
   ],
   en: [
+    {
+      id: 'inicio',
+      img: 'inicio.png',
+      alt: 'faro’s Home page with Light mode and one switch per feature',
+      title: 'Turn on only what you use.',
+      lead: 'One page with a switch per feature and a Light mode that turns off everything optional with one click.',
+      points: [
+        'What you turn off really stops: no timers, memory or battery spent.',
+        'Light mode is reversible: it leaves only the menu bar icon and goes back to how it was whenever you want.',
+        'It tells you which permissions are missing, what they are for, and opens the right setting.',
+      ],
+    },
     {
       id: 'fondos',
       img: 'fondos.png',
@@ -253,6 +277,7 @@ export const features = {
 
 export const more = {
   es: [
+    ['Modo ligero', 'Apaga todo lo opcional con un clic y recupera memoria y batería; se deshace cuando quieras.'],
     ['Almacenamiento', 'Un asistente que ordena qué limpiar, encuentra archivos olvidados y predice cuándo se llena el disco.'],
     ['Mantener despierto', 'Evita que la pantalla se apague, por el tiempo que elijas.'],
     ['Barra de menú viva', 'Procesador, memoria, disco, red o batería, a tu elección.'],
@@ -264,6 +289,7 @@ export const more = {
     ['Atajos globales', 'Cambia de foto, guarda o abre paneles sin usar el ratón.'],
   ],
   en: [
+    ['Light mode', 'Turns off everything optional with one click to save memory and battery; undo it whenever you like.'],
     ['Storage', 'An assistant that ranks what to clean, finds forgotten files and predicts when your disk fills up.'],
     ['Keep awake', 'Stops the screen from sleeping, for as long as you choose.'],
     ['Live menu bar', 'Processor, memory, disk, network or battery, your pick.'],
@@ -293,6 +319,7 @@ export const timeline = {
     ['1.8', 'Llega la mascota: expresiones, accesorios y reacciones que viven en el notch.'],
     ['1.9', 'Plantillas de notch, edición directa en la vista previa y mezclador de audio por aplicaciones.'],
     ['2.0', 'Diagnóstico, Equipo en el notch, escenas automáticas, puertos, cargador, conexión y almacenamiento inteligente.'],
+    ['2.1', 'Inicio con Modo ligero, interfaz más simple y avisos y bandeja que ya no estorban.'],
   ],
   en: [
     ['0.1', 'A prototype that changed the wallpaper using Wallhaven.'],
@@ -310,6 +337,7 @@ export const timeline = {
     ['1.8', 'The mascot arrives: expressions, accessories and reactions that live in the notch.'],
     ['1.9', 'Notch presets, direct editing in the preview and per-app audio mixing.'],
     ['2.0', 'Diagnostics, Equipment in the notch, automatic scenes, ports, charger, connection and smarter storage.'],
+    ['2.1', 'Home with Light mode, a simpler interface, and notices and shelf that no longer get in the way.'],
   ],
 }
 

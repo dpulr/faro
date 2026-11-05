@@ -3,6 +3,7 @@
 
 import SwiftUI
 import Darwin
+import EventKit
 
 /// Memoria que está usando faro ahora mismo (la misma cifra que muestra el Monitor de Actividad).
 enum ProcessMemory {
@@ -26,6 +27,8 @@ struct ModulosPage: View {
     @EnvironmentObject var extras: NotchExtras
 
     @State private var memoryMB = ProcessMemory.footprintMB()
+    @State private var accessibilityOK = AXIsProcessTrusted()
+    @State private var calendarOK = Self.calendarGranted()
     @State private var lightOn = UserDefaults.standard.dictionary(forKey: Self.backupKey) != nil
     private let refresh = Timer.publish(every: 3, on: .main, in: .common).autoconnect()
 
@@ -37,6 +40,8 @@ struct ModulosPage: View {
             PageHeader(title: "Inicio", subtitle: "Enciende solo lo que uses. Lo que apagas aquí deja de funcionar y no gasta memoria ni batería.")
 
             lightCard
+
+            if needsAttention { pendingCard }
 
             Card(padding: 4) {
                 VStack(spacing: 0) {
@@ -67,13 +72,67 @@ struct ModulosPage: View {
                 }
             }
 
+            // En las capturas de documentación la cifra sería la del proceso que las genera, no la de un uso normal.
+            if ProcessInfo.processInfo.environment["FARO_SNAPSHOT"] == nil {
             HStack(spacing: 8) {
                 Image(systemName: "memorychip").foregroundStyle(.secondary)
                 Text("faro está usando \(Int(memoryMB.rounded())) MB de memoria ahora.")
                     .font(.callout).foregroundStyle(.secondary)
             }
+            }
         }
-        .onReceive(refresh) { _ in memoryMB = ProcessMemory.footprintMB() }
+        .onReceive(refresh) { _ in
+            memoryMB = ProcessMemory.footprintMB()
+            accessibilityOK = AXIsProcessTrusted()
+            calendarOK = Self.calendarGranted()
+        }
+    }
+
+    // MARK: Cosas por activar
+
+    private static func calendarGranted() -> Bool {
+        let status = EKEventStore.authorizationStatus(for: .event)
+        return status == .fullAccess || status == .authorized
+    }
+
+    private var needsAttention: Bool { !accessibilityOK || (notch.showCalendar && !calendarOK) }
+
+    /// Los permisos de macOS que faltan, explicados con la función que habilitan y un botón que abre el ajuste correcto.
+    private var pendingCard: some View {
+        Card {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Cosas por activar").font(.headline)
+                if !accessibilityOK {
+                    pendingRow("hand.raised", "Accesibilidad",
+                               "Para limpiar el teclado sin que se escriba nada y para pegar solo desde el historial.") {
+                        _ = AXIsProcessTrustedWithOptions(["AXTrustedCheckOptionPrompt": true] as CFDictionary)
+                        open("Privacy_Accessibility")
+                    }
+                }
+                if notch.showCalendar && !calendarOK {
+                    pendingRow("calendar", "Calendarios", "Para mostrar tu próxima reunión en el notch.") {
+                        open("Privacy_Calendars")
+                    }
+                }
+            }
+        }
+    }
+
+    private func pendingRow(_ symbol: String, _ title: LocalizedStringKey, _ detail: LocalizedStringKey,
+                            action: @escaping () -> Void) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: symbol).font(.system(size: 17)).frame(width: 26).foregroundStyle(Theme.warning)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.callout.weight(.medium))
+                Text(detail).font(.caption).foregroundStyle(.secondary)
+            }
+            Spacer()
+            Button("Activar", action: action).buttonStyle(PillButtonStyle(prominent: true))
+        }
+    }
+
+    private func open(_ pane: String) {
+        if let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?\(pane)") { NSWorkspace.shared.open(url) }
     }
 
     // MARK: Modo ligero

@@ -71,6 +71,14 @@ Una pequeña luz vive en el notch. **Sigue el cursor con la mirada, baila con la
 
 ## Funciones
 
+### Inicio y Modo ligero
+
+<img src="docs/images/inicio.png" width="760" alt="Página Inicio con el Modo ligero y un interruptor por función">
+
+La ventana de faro se organiza en cinco secciones: **Inicio**, **Mi Mac** (Estado, Almacenamiento, Energía e Internet), **Personalizar** (Fondos, Notch y Escenas), **Herramientas** (Portapapeles, Audio y Limpiar teclado) y **Ajustes**. Cada página muestra primero lo esencial y deja lo avanzado en secciones plegadas.
+
+En **Inicio** enciendes solo lo que usas, con una frase que explica cada función: notch, mascota, cambio de fondo, historial del portapapeles, vigilancia de internet y avisos de descargas, capturas y discos. Lo que se apaga se detiene de verdad (sin temporizadores ni vigilancia en segundo plano). El **Modo ligero** apaga todo lo opcional con un clic, deja solo el ícono en la barra de menú y vuelve a como estaba cuando quieras. Si falta algún permiso de macOS, Inicio explica para qué sirve y abre el ajuste correcto. Al cerrar la ventana, faro libera su contenido y recuerda dónde la dejaste.
+
 ### Fondos de pantalla con canales mezclados
 
 <img src="docs/images/fondos.png" width="760" alt="Página Fondos: la foto actual con cuatro botones y, debajo, los canales como tarjetas">
@@ -110,9 +118,9 @@ Pulsa `⌃⌥⌘F` desde cualquier aplicación para buscar y ejecutar todo lo qu
 
 ### Diagnóstico y equipo conectado
 
-<img src="docs/images/diagnostico.png" width="760" alt="Página Diagnóstico con el estado del Mac, cargador, puertos, discos, ventiladores y periféricos">
+<img src="docs/images/diagnostico.png" width="760" alt="Página Estado con el diagnóstico del Mac, cargador, puertos, discos, ventiladores y periféricos">
 
-Faro reúne en una sola página lo que suele estar repartido por macOS:
+La pestaña **Estado** (dentro de *Mi Mac*, con el Sistema en vivo en «Ver el Mac en detalle») reúne en una sola página lo que suele estar repartido por macOS:
 
 - **Qué frena al Mac:** memoria, procesador, disco, temperatura y energía, con la aplicación que más consume y un botón para actuar.
 - **Cargador explicado:** potencia del adaptador, energía que entra al Mac, consumo del sistema y vatios que llegan a la batería.

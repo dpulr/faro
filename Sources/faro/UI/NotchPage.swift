@@ -79,13 +79,19 @@ struct NotchPage: View {
     @State private var showCompactSettings = false
     @State private var showAppearanceSettings = false
     @State private var showContentSettings = false
+    @State private var showEditor = false
+    @State private var showMascot = false
+    @State private var showBar = false
+    @State private var showHowTo = false
+    /// Otras partes de faro (menú, comandos) pueden pedir abrir directamente la mascota o la barra de menú.
+    @AppStorage("notchSection") private var requestedSection = ""
 
     private let breakOptions = [20, 30, 45, 60]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
             PageHeader(title: "Notch",
-                       subtitle: "Un panel que cuelga del notch y se despliega desde arriba al centro de la pantalla.")
+                       subtitle: "El panel de arriba de la pantalla con lo que más usas: música, temporizador, baterías y más.")
 
             Card {
                 HStack(spacing: 14) {
@@ -104,8 +110,10 @@ struct NotchPage: View {
             }
 
             presetCard
-            layoutEditorCard
             quickSetupCard
+
+            CollapsibleSection(title: "Elegir y ordenar lo que aparece", detail: "Arrastra los widgets para ponerlos donde quieras.",
+                               symbol: "square.grid.2x2", isExpanded: $showEditor) { layoutEditorCard }
 
             settingsDisclosure("Vista compacta", "Iconos y métricas que permanecen alrededor del notch cerrado.",
                                symbol: "rectangle.topthird.inset.filled", isExpanded: $showCompactSettings)
@@ -177,20 +185,39 @@ struct NotchPage: View {
             alertsCard
             }
 
-            Card {
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Cómo se usa").font(.callout.weight(.semibold))
-                    tip("cursorarrow.motionlines", notch.openOnClick ? "Haz clic en el notch: el panel se despliega y, al alejar el cursor, se recoge." : "Lleva el cursor al notch: el panel se despliega y, al alejarlo, se recoge.")
-                    tip("waveform", "Mientras suena música o corre un descanso, aparecen detalles a los lados del notch sin desplegarlo.")
-                    tip("tray.and.arrow.down", "Arrastra un archivo hacia el notch y suéltalo en la zona que aparece: se guarda en la bandeja.")
-                    tip("eye", "En el panel, el botón «Descanso» empieza la pausa de 20 segundos cuando tú quieras.")
+            CollapsibleSection(title: "Mascota", detail: "El personaje del notch y cómo reacciona.",
+                               symbol: "face.smiling", isExpanded: $showMascot) { MascotaPage(embedded: true) }
+
+            CollapsibleSection(title: "Barra de menú", detail: "Qué datos aparecen arriba junto al notch.",
+                               symbol: "menubar.rectangle", isExpanded: $showBar) { BarraPage(embedded: true) }
+
+            CollapsibleSection(title: "Cómo se usa", detail: "Cuatro consejos para sacarle provecho.",
+                               symbol: "questionmark.circle", isExpanded: $showHowTo) {
+                Card {
+                    VStack(alignment: .leading, spacing: 10) {
+                        tip("cursorarrow.motionlines", notch.openOnClick ? "Haz clic en el notch: el panel se despliega y, al alejar el cursor, se recoge." : "Lleva el cursor al notch: el panel se despliega y, al alejarlo, se recoge.")
+                        tip("waveform", "Mientras suena música o corre un descanso, aparecen detalles a los lados del notch sin desplegarlo.")
+                        tip("tray.and.arrow.down", "Arrastra un archivo hacia el notch y suéltalo en la zona que aparece: se guarda en la bandeja.")
+                        tip("eye", "En el panel, el botón «Descanso» empieza la pausa de 20 segundos cuando tú quieras.")
+                    }
                 }
             }
         }
+        .onAppear { openRequestedSection() }
+        .onChange(of: requestedSection) { _ in openRequestedSection() }
         .onAppear {
             cityDraft = notch.city
             if selectedWidget == nil { selectedWidget = previewVisibleConfigs.first?.kind }
         }
+    }
+
+    private func openRequestedSection() {
+        switch requestedSection {
+        case "mascota": showMascot = true
+        case "barra": showBar = true
+        default: return
+        }
+        requestedSection = ""
     }
 
     private func toggle(_ isOn: Binding<Bool>) -> some View {

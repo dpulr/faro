@@ -28,12 +28,15 @@ struct AlmacenamientoPage: View {
         _expanded = State(initialValue: expandedInitially)
     }
 
+    @State private var showAlert = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             PageHeader(title: "Almacenamiento",
                        subtitle: "Encuentra qué ocupa espacio y libéralo sin tocar tus documentos.")
             summary
-            alertCard
+            CollapsibleSection(title: "Avisarme cuando falte espacio", detail: "Una alerta cuando el disco se esté llenando.",
+                               symbol: "bell", isExpanded: $showAlert) { alertCard }
             Segments(selection: $tab, options: Tab.allCases.map { ($0.rawValue, $0) })
 
             switch tab {

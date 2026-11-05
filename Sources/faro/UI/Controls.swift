@@ -246,3 +246,35 @@ struct FaroSlider: View {
         .frame(height: 22)
     }
 }
+
+
+/// Sección que empieza cerrada: un título con su explicación y, al pulsarla, el contenido.
+struct CollapsibleSection<Content: View>: View {
+    var title: LocalizedStringKey
+    var detail: LocalizedStringKey
+    var symbol: String
+    @Binding var isExpanded: Bool
+    @ViewBuilder var content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            Button { withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() } } label: {
+                HStack(spacing: 13) {
+                    Image(systemName: symbol).font(.system(size: 15, weight: .medium)).foregroundStyle(Theme.accent)
+                        .frame(width: 34, height: 34).background(Circle().fill(Theme.accent.opacity(0.1)))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title).font(.callout.weight(.semibold))
+                        Text(detail).font(.caption).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.down").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                }
+                .padding(14).contentShape(Rectangle())
+                .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.card))
+            }
+            .buttonStyle(.plain)
+            if isExpanded { content }
+        }
+    }
+}

@@ -14,11 +14,12 @@ struct PerfilesPage: View {
     @EnvironmentObject var monitor: SystemMonitor
     @State private var editing: UUID?
     @State private var message: String?
+    @State private var showHistory = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            PageHeader(title: "Escenas Faro",
-                       subtitle: "El notch se adapta a lo que haces sin obligarte a configurar cada detalle una y otra vez.")
+            PageHeader(title: "Escenas",
+                       subtitle: "Cada escena es un modo (Trabajo, Reunión, Película…). Faro lo activa solo según lo que estés haciendo.")
 
             if !engine.state.sceneOnboardingCompleted { onboardingCard }
             automationCard
@@ -41,7 +42,10 @@ struct PerfilesPage: View {
                 }
             }
 
-            if !engine.state.sceneHistory.isEmpty { historyCard }
+            if !engine.state.sceneHistory.isEmpty {
+                CollapsibleSection(title: "Deshacer cambios recientes", detail: "Vuelve a como estaba Faro antes de una escena.",
+                                   symbol: "clock.arrow.circlepath", isExpanded: $showHistory) { historyCard }
+            }
             if let message { Text(message).font(.caption).foregroundStyle(Theme.accent) }
         }
         .sheet(item: Binding(get: { editing.map(ProfileTarget.init) }, set: { editing = $0?.id })) { target in
@@ -271,6 +275,8 @@ struct ProfileSheet: View {
     @EnvironmentObject var notch: NotchModel
     @EnvironmentObject var extras: NotchExtras
     @Environment(\.dismiss) private var dismiss
+    @State private var showActions = false
+    @State private var showBarMetrics = false
 
     private let symbols = ["briefcase", "video", "moon.stars", "book", "display.2", "gamecontroller", "sparkles", "music.note", "cup.and.saucer"]
     private let intervals: [(String, Int)] = [("15 min", 15), ("30 min", 30), ("1 hora", 60), ("2 horas", 120), ("6 horas", 360), ("1 día", 1440), ("A mano", 0)]
@@ -360,6 +366,8 @@ struct ProfileSheet: View {
                         if profile.wrappedValue.autoStart { schedule(profile) }
                     }
 
+                    CollapsibleSection(title: "Acciones al entrar (opcional)", detail: "Volumen, brillo, micrófono, enfoque y aplicaciones que se abren.",
+                                       symbol: "slider.horizontal.3", isExpanded: $showActions) {
                     section("Acciones al entrar", "Solo se ejecutan al activar la escena. Al terminar una activación automática, Faro restaura los controles anteriores.") {
                         actionSlider("Volumen", symbol: "speaker.wave.2", value: profile.actions.volume, fallback: 45)
                         actionSlider("Brillo de pantalla", symbol: "sun.max", value: profile.actions.screenBrightness, fallback: 70)
@@ -387,6 +395,10 @@ struct ProfileSheet: View {
                         }
                     }
 
+                    }
+
+                    CollapsibleSection(title: "Barra de menú (opcional)", detail: "Los datos que acompañan esta escena.",
+                                       symbol: "menubar.rectangle", isExpanded: $showBarMetrics) {
                     section("Barra de menú", "Elige los datos que acompañan esta escena.") {
                         FlowRow(items: MenuBarMetric.allCases) { metric in
                             let on = profile.wrappedValue.menuBarMetrics.contains(metric)
@@ -397,6 +409,8 @@ struct ProfileSheet: View {
                                     .padding(.horizontal, 11).padding(.vertical, 5).background(Capsule().fill(on ? Theme.accent : Theme.fill))
                             }.buttonStyle(.plain)
                         }.padding(.vertical, 9)
+                    }
+
                     }
 
                     HStack { Spacer(); Button("Listo") { dismiss() }.buttonStyle(PillButtonStyle(prominent: true)) }

@@ -36,6 +36,7 @@ A native, local-first macOS control center for the menu bar and notch. Faro comb
 
 | Area | What it does |
 |---|---|
+| Home | One switch per feature and a Light mode that turns off everything optional |
 | Diagnostics | Explains bottlenecks and opens the relevant system action |
 | Notch | Resizable widgets, presets, floating island and contextual notices |
 | Scenes | Automates the visual layout and system controls, then restores them |
@@ -47,6 +48,14 @@ A native, local-first macOS control center for the menu bar and notch. Faro comb
 <p align="center">
   <img src="docs/images/diagnostico.png" width="760" alt="Faro Diagnostics page">
 </p>
+
+## A simple window
+
+Faro's window has five sections: **Home**, **My Mac** (Status, Storage, Energy and Internet), **Customize** (Wallpapers, Notch and Scenes), **Tools** (Clipboard, Audio and Keyboard cleaning) and **Settings**. Every page shows the essentials first and keeps advanced options in collapsed sections.
+
+<img src="docs/images/inicio.png" width="760" alt="Faro Home page with Light mode and one switch per feature">
+
+On **Home** you turn on only what you use, each with a plain sentence: notch, mascot, wallpaper changes, clipboard history, internet watching, and download, screenshot and drive notices. What you turn off really stops (no timers or background watching). **Light mode** turns off everything optional with one click, leaves only the menu bar icon, and goes back to how it was whenever you want. If a macOS permission is missing, Home explains what it is for and opens the right setting. When you close the window Faro releases its contents and remembers where you left it.
 
 ## Install
 

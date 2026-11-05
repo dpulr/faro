@@ -14,7 +14,7 @@ enum Page: String, CaseIterable, Identifiable {
         case .fondos: return tr("Fondos")
         case .perfiles: return tr("Escenas")
         case .sistema: return tr("Sistema")
-        case .diagnostico: return tr("Diagnóstico")
+        case .diagnostico: return tr("Estado")
         case .almacenamiento: return tr("Almacenamiento")
         case .internet: return tr("Internet")
         case .portapapeles: return tr("Portapapeles")
@@ -78,14 +78,20 @@ enum PageGroup: String, CaseIterable, Identifiable {
     var pages: [Page] {
         switch self {
         case .inicio: return [.modulos]
-        case .mac: return [.diagnostico, .sistema, .almacenamiento, .energia, .internet]
-        case .personalizar: return [.fondos, .notch, .mascota, .perfiles, .barra]
+        case .mac: return [.diagnostico, .almacenamiento, .energia, .internet]
+        case .personalizar: return [.fondos, .notch, .perfiles]
         case .herramientas: return [.portapapeles, .audio, .teclado]
         case .ajustes: return [.general]
         }
     }
 
-    static func of(_ page: Page) -> PageGroup { allCases.first { $0.pages.contains(page) } ?? .inicio }
+    static func of(_ page: Page) -> PageGroup {
+        switch page {
+        case .sistema: return .mac
+        case .mascota, .barra: return .personalizar
+        default: return allCases.first { $0.pages.contains(page) } ?? .inicio
+        }
+    }
 }
 
 struct MainWindow: View {
@@ -98,6 +104,17 @@ struct MainWindow: View {
     private func open(_ group: PageGroup) {
         let saved = UserDefaults.standard.string(forKey: "page.\(group.rawValue)").flatMap(Page.init(rawValue:))
         select(saved.flatMap { group.pages.contains($0) ? $0 : nil } ?? group.pages[0])
+    }
+
+    /// Sistema, Mascota y Barra de menú ya no tienen pestaña propia: viven dentro de Estado y de Notch.
+    private func normalize() {
+        let defaults = UserDefaults.standard
+        switch pageRaw {
+        case Page.sistema.rawValue: defaults.set(true, forKey: "diagnosticoDetails"); pageRaw = Page.diagnostico.rawValue
+        case Page.mascota.rawValue: defaults.set("mascota", forKey: "notchSection"); pageRaw = Page.notch.rawValue
+        case Page.barra.rawValue: defaults.set("barra", forKey: "notchSection"); pageRaw = Page.notch.rawValue
+        default: break
+        }
     }
 
     private func select(_ page: Page) {
@@ -138,6 +155,8 @@ struct MainWindow: View {
             }
         }
         .frame(minWidth: 900, minHeight: 620)
+        .onAppear { normalize() }
+        .onChange(of: pageRaw) { _ in normalize() }
     }
 
     private var sidebar: some View {

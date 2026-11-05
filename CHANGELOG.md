@@ -6,7 +6,9 @@ Todos los cambios importantes de faro se anotan aquí. El formato sigue [Keep a 
 
 ### Novedades
 - **Inicio y Modo ligero.** Una página nueva con un interruptor por función (notch, mascota, cambio de fondo, portapapeles, vigilancia de internet y avisos de descargas, capturas y discos). Lo que se apaga se detiene de verdad, sin temporizadores. El Modo ligero apaga todo lo opcional con un clic y se puede deshacer.
-- **Navegación más simple.** La barra lateral pasa de 14 páginas a 5 grupos (Inicio, Mi Mac, Personalizar, Herramientas y Ajustes), con las páginas de cada grupo en pestañas.
+- **Navegación más simple.** La barra lateral pasa de 14 páginas a 5 grupos (Inicio, Mi Mac, Personalizar, Herramientas y Ajustes), con las páginas de cada grupo en pestañas. *Diagnóstico* y *Sistema* se unen en **Estado**; *Mascota* y *Barra de menú* viven dentro de **Notch**.
+- **Lo esencial primero.** Notch, Escenas, Almacenamiento y Estado muestran arriba lo importante y dejan lo avanzado en secciones plegadas (editor de widgets, acciones y barra de menú de cada escena, historial de escenas, aviso de poco espacio, detalle del Mac).
+- **Cosas por activar.** Inicio lista los permisos de macOS que faltan (Accesibilidad, Calendarios), explica para qué sirven y abre el ajuste correcto.
 
 ### Cambios
 - Al cerrar la ventana principal, faro suelta su contenido para liberar memoria; al abrirla de nuevo vuelve al mismo lugar.

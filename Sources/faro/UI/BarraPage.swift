@@ -9,10 +9,14 @@ struct BarraPage: View {
     @EnvironmentObject var speed: SpeedTest
     @EnvironmentObject var awake: KeepAwake
 
+    var embedded = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            PageHeader(title: "Barra de menú",
-                       subtitle: "Úsala junto al notch o apágala por completo para dejar los datos solo arriba al centro.")
+            if !embedded {
+                PageHeader(title: "Barra de menú",
+                           subtitle: "Úsala junto al notch o apágala por completo para dejar los datos solo arriba al centro.")
+            }
 
             Card {
                 HStack(spacing: 14) {

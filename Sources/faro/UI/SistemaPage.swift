@@ -7,10 +7,12 @@ struct SistemaPage: View {
     @EnvironmentObject var monitor: SystemMonitor
     @AppStorage("page") private var page = Page.fondos.rawValue
 
+    var embedded = false
+
     var body: some View {
         let health = monitor.health
         VStack(alignment: .leading, spacing: 24) {
-            PageHeader(title: "Sistema", subtitle: "Cómo está tu Mac en este momento, actualizado cada pocos segundos.")
+            if !embedded { PageHeader(title: "Sistema", subtitle: "Cómo está tu Mac en este momento, actualizado cada pocos segundos.") }
 
             Card {
                 HStack(spacing: 12) {

@@ -46,6 +46,7 @@ enum Snapshot {
         render(MenuView().environment(\.colorScheme, .dark).background(Color(red: 0.07, green: 0.086, blue: 0.105)), name: "site-menu", size: nil)
         UserDefaults.standard.set("sistema", forKey: "page")
         render(MainWindow(), name: "window", size: CGSize(width: 1020, height: 720))
+        UserDefaults.standard.set(false, forKey: "diagnosticoDetails") // las capturas de páginas muestran Estado plegado
         func framed<V: View>(_ v: V) -> some View {
             v.padding(32).frame(width: 860, alignment: .leading)
                 .background(Color(nsColor: .windowBackgroundColor))
@@ -54,6 +55,7 @@ enum Snapshot {
         render(framed(SistemaPage()), name: "page-sistema", size: nil)
         render(framed(InternetPage()), name: "page-internet", size: nil)
         render(framed(DiagnosticoPage()), name: "page-diagnostico", size: nil)
+        render(framed(ModulosPage()), name: "page-inicio", size: nil)
         render(framed(EnergiaPage()), name: "page-energia", size: nil)
         render(framed(BarraPage()), name: "page-barra", size: nil)
         render(framed(GeneralPage()), name: "page-general", size: nil)

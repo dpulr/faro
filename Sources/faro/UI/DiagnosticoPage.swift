@@ -11,9 +11,11 @@ struct DiagnosticoPage: View {
     private var volumes: ConnectedVolumes { extras.volumesList }
     @AppStorage("page") private var page = Page.fondos.rawValue
 
+    @AppStorage("diagnosticoDetails") private var showDetails = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            PageHeader(title: "Diagnóstico", subtitle: "Qué frena a tu Mac ahora mismo y cómo van el cargador y tus dispositivos.")
+            PageHeader(title: "Estado de tu Mac", subtitle: "Qué frena a tu Mac ahora mismo y cómo van el cargador y tus dispositivos.")
             verdictCard
             if model.findings.count > (model.topIssue == nil ? 0 : 1) { findingsList }
             chargerCard
@@ -21,6 +23,10 @@ struct DiagnosticoPage: View {
             volumesCard
             if !model.fans.isEmpty { fansCard }
             devicesCard
+            CollapsibleSection(title: "Ver el Mac en detalle", detail: "Procesador, memoria, red y batería en vivo.",
+                               symbol: "gauge.with.dots.needle.50percent", isExpanded: $showDetails) {
+                SistemaPage(embedded: true)
+            }
         }
         .task {
             while !Task.isCancelled {

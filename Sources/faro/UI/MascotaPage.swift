@@ -8,9 +8,11 @@ struct MascotaPage: View {
     @EnvironmentObject var notch: NotchModel
     @State private var previewMood: MascotMood = .idle
 
+    var embedded = false
+
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            PageHeader(title: "Mascota", subtitle: "Un personaje que vive en el notch y reacciona a lo que pasa.")
+            if !embedded { PageHeader(title: "Mascota", subtitle: "Un personaje que vive en el notch y reacciona a lo que pasa.") }
             mascotCard
         }
     }
